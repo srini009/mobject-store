@@ -30,6 +30,8 @@ extern "C" {
 /* ASSUMPTIONS/QUESTIONS
  * - Initially we enforce one global pool for each mobject store instance for simplicity.
  *
+ * - Does ch-placement offer an algorithm similar to crush (e.g., PG concept)? 
+ *
  * - We will not implement any replication.
  *
  * - RADOS seems to expose object versions, but I only see them in the 'object operation' portion of their API, which is big and awkward (i.e., would love to not implement that). 
