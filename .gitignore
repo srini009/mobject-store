@@ -1,0 +1,17 @@
+build/
+autom4te.cache/
+m4/
+Makefile.in
+aclocal.m4
+ar-lib
+compile
+config.guess
+config.sub
+configure
+depcomp
+include/mobject-conf.h.in
+*~
+install-sh
+ltmain.sh
+missing
+
