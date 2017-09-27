@@ -28,7 +28,7 @@ int mobject_store_connect(mobject_store_t cluster)
     /* XXX ssg attach to mobject cluster group id */
 }
 
-int mobject_store_shutdown(mobject_store_t cluster)
+void mobject_store_shutdown(mobject_store_t cluster)
 {
     /* XXX ssg detatch from mobject cluster group id */
 
