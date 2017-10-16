@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS="-Im4"
-lib_LTLIBRARIES = libmobject.la
-libmobject_la_SOURCES = src/mobject-store.c \
+lib_LTLIBRARIES = libmobject-store.la
+libmobject_store_la_SOURCES = src/libmobject-store.c \
 			include/mobject-store.h
 
 include_HEADERS = include/mobject-store.h

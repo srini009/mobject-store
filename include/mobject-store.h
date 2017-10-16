@@ -46,14 +46,9 @@ extern "C" {
  *
  */
 
+/* opaque type for a handle for interacting with a mobject store cluster */
+typedef void *rados_t;
 
-/* opaque handle for interacting with a mobject cluster */
-typedef struct mobject_store_handle *mobject_store_t;
-
-/* opaque mobject store i/o context type */
-typedef struct mobject_store_ioctx *mobject_store_ioctx_t;
-
-extern const char *mobject_global_pool;
 
 /*****************************************
  * mobject store setup/teardown routines *
@@ -63,6 +58,7 @@ extern const char *mobject_global_pool;
  * Create a handle to a mobject cluster.
  *
  * @param[in/out] cluster   pointer to store mobject cluster handle at
+ * @param[in]          id   the user to connect as (NOTE: ignored in mobject store)
  * @returns 0 on success, negative error code on failure
  *
  * NOTES:
@@ -70,30 +66,34 @@ extern const char *mobject_global_pool;
  *          - drop user_id from API
  *      - may eventually need conf. file, env variable checking, etc.
  */
-int mobject_store_create(
-    mobject_store_t *cluster);
+int rados_create(
+    rados_t *cluster,
+    const char * const id);
 
+#if 0
 /**
  * Connect to a mobject cluster.
  *
  * @param[in] cluster   handle to mobject cluster
  * @returns 0 on success, negative error code on failure
  */
-int mobject_store_connect(
+int rados_connect(
     mobject_store_t cluster);
+#endif 
 
 /**
  * Disconnects from a mobject cluster and destroys the cluster handle.
  * 
  * @param[in] cluster   handle to mobject cluster
  */
-void mobject_store_shutdown(
-    mobject_store_t cluster);
+void rados_shutdown(
+    rados_t cluster);
 
 /*****************************************************
  * mobject store i/o context setup/teardown routines *
  *****************************************************/
 
+#if 0
 /**
  * Create an I/O context for a mobject cluster.
  *
@@ -226,6 +226,8 @@ mobject_store_stat(
     const char * oid,
     uint64_t * psize,
     time_t * pmtime);
+#endif
+
 
 #ifdef __cplusplus
 }
