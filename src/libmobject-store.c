@@ -4,6 +4,11 @@
  * See COPYRIGHT in top-level directory.
  */
 
+#include "mobject-conf.h"
+
+#include <stdio.h>
+#include <assert.h>
+
 #include <margo.h>
 #include <ssg.h>
 
@@ -25,7 +30,10 @@ int rados_create(rados_t *cluster, const char * const id)
         return(-1); /* TODO: error codes */
     cluster_handle->test = 123;
 
-    /* XXX find the SSG group ID for the mobject cluster group */
+    /* TODO find the SSG group ID for the mobject cluster group */
+
+    /* set the returned cluster handle */
+    *cluster = cluster_handle;
 
     return(0);
 }
@@ -33,14 +41,20 @@ int rados_create(rados_t *cluster, const char * const id)
 #if 0
 int mobject_store_connect(mobject_store_t cluster)
 {
-    /* XXX ssg attach to mobject cluster group id */
+    /* TODO ssg attach to mobject cluster group id */
 }
 #endif
 
 void rados_shutdown(rados_t cluster)
 {
-    /* XXX ssg detatch from mobject cluster group id */
+    struct mobject_store_handle *cluster_handle =
+        (struct mobject_store_handle *)cluster;
+    assert(cluster_handle != NULL);
 
-    /* XXX free handle */
+    /* TODO ssg detatch from mobject cluster group id */
+
+    free(cluster_handle);
+
+    return;
 }
 
