@@ -10,7 +10,6 @@
 #include "write-actions.h"
 
 struct mobject_store_write_op {
-	size_t num_actions;
 	wr_action_base_t actions;
 };
 

@@ -18,7 +18,6 @@ mobject_store_write_op_t mobject_store_create_write_op(void)
 	mobject_store_write_op_t write_op = 
 		(mobject_store_write_op_t)calloc(1, sizeof(struct mobject_store_write_op));
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "Could not allocate write_op");
-	write_op->num_actions = 0;
 	write_op->actions = (wr_action_base_t)0;
 	return write_op;
 }
@@ -227,6 +226,7 @@ int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
                                    int flags)
 {
 	int r;
+	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
 	mobject_store_completion_t completion = MOBJECT_COMPLETION_NULL;
 	r = mobject_store_aio_create_completion(NULL, NULL, NULL, &completion);
 	MOBJECT_ASSERT(0 == r, "Could not create completion object");
@@ -246,5 +246,6 @@ int mobject_store_aio_write_op_operate(mobject_store_write_op_t write_op,
                                        time_t *mtime,
                                        int flags)
 {
+	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
 	// TODO
 }
