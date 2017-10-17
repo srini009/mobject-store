@@ -10,8 +10,9 @@ config.sub
 configure
 depcomp
 include/mobject-conf.h.in
+src/mobject-store-config.h.in
 *~
 install-sh
 ltmain.sh
 missing
-
+test-driver
