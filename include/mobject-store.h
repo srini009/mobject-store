@@ -130,6 +130,8 @@ typedef void *mobject_store_omap_iter_t;
  */
 typedef void *mobject_store_write_op_t;
 
+#define MOBJECT_WRITE_OP_NULL ((void*)0)
+
 /**
  * @typedef mobject_store_read_op_t
  *
@@ -152,6 +154,8 @@ typedef void *mobject_store_write_op_t;
  */
 typedef void *mobject_store_read_op_t;
 
+#define MOBJECT_READ_OP_NULL ((void*)0)
+
 /**
  * @typedef mobject_store_completion_t
  * Represents the state of an asynchronous operation - it contains the
@@ -159,6 +163,8 @@ typedef void *mobject_store_read_op_t;
  * until the operation is complete or safe.
  */
 typedef void *mobject_store_completion_t;
+
+#define MOBJECT_COMPLETION_NULL ((void*)0)
 
 /*****************************************
  * mobject store setup/teardown routines *
@@ -537,8 +543,6 @@ typedef void (*mobject_store_callback_t)(mobject_store_completion_t cb, void *ar
  * complete callback, and vice versa. This is affected by journalling
  * on the OSDs.
  *
- * TODO: more complete documentation of this elsewhere (in the RADOS docs?)
- *
  * @note Read operations only get a complete callback.
  * @note BUG: this should check for ENOMEM instead of throwing an exception
  *
@@ -586,9 +590,6 @@ int mobject_store_aio_is_complete(mobject_store_completion_t c);
  *
  * @pre The operation is safe or complete
  *
- * @note BUG: complete callback may never be called when the safe
- * message is received before the complete message
- *
  * @param c async operation to inspect
  * @returns return value of the operation
  */
@@ -604,11 +605,8 @@ int mobject_store_aio_get_return_value(mobject_store_completion_t c);
  */
 void mobject_store_aio_release(mobject_store_completion_t c);
 
-#endif
-
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* __MOBJECT_STORE */
-
