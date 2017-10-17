@@ -19,7 +19,7 @@ typedef enum {
 	WRITE_OPCODE_TRUNCATE,
 	WRITE_OPCODE_ZERO,
 	WRITE_OPCODE_OMAP_SET,
-	WRITE_OPCODE_RM_KEYS
+	WRITE_OPCODE_OMAP_RM_KEYS
 } write_op_code_t;
 
 #define WRITE_ACTION_DOWNCAST(child_obj, base_obj, child_category) \
@@ -33,8 +33,8 @@ typedef enum {
 
 typedef struct wr_action_BASE {
 	write_op_code_t        type;
-	struct wr_action_base* prev;
-	struct wr_action_base* next;
+	struct wr_action_BASE* prev;
+	struct wr_action_BASE* next;
 }* wr_action_base_t;
 
 typedef struct wr_action_CREATE {
@@ -96,7 +96,7 @@ typedef struct wr_action_RM_KEYS {
 	struct wr_action_BASE base;
 	char const* const*    keys;
 	size_t                keys_len;
-}* wr_action_rm_keys_t;
+}* wr_action_omap_rm_keys_t;
 
 #endif
 
