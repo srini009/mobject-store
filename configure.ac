@@ -32,6 +32,11 @@ LIBS="$SSG_LIBS $LIBS"
 CPPFLAGS="$SSG_CFLAGS $CPPFLAGS"
 CFLAGS="$SSG_CFLAGS $CFLAGS"
 
+PKG_CHECK_MODULES([ARGOBOTS],[argobots],[],
+	AC_MSG_ERROR([Could not find working argobots installation!]) )
+LIBS="$ARGOBOTS_LIBS $LIBS"
+CPPFLAGS="$ARGOBOTS_CFLAGS $CPPFLAGS"
+CFLAGS="$ARGOBOTS_CFLAGS $CFLAGS"
 
 # checks for typedefs, structures, and compiler characteristics.
 
