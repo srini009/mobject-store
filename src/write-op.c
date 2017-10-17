@@ -5,6 +5,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "mobject-store-config.h"
 #include "utlist.h"
 #include "libmobject-store.h"
@@ -162,12 +163,30 @@ void mobject_store_write_op_omap_set(mobject_store_write_op_t write_op,
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
 
-	wr_action_omap_set_t action = (wr_action_omap_set_t)calloc(1, sizeof(*action));
+	// compute the size required to embed the keys and values
+	size_t i;
+	size_t extra_size = sizeof(lens[0])*num;
+	for(i = 0; i < num; i++) {
+		extra_size += strlen(keys[i])+1;
+		extra_size += lens[i];
+	}
+
+	wr_action_omap_set_t action = (wr_action_omap_set_t)calloc(1, sizeof(*action)-1+extra_size);
 	action->base.type           = WRITE_OPCODE_OMAP_SET;
-	action->keys                = keys;
-	action->vals                = vals;
-    action->lens                = lens;
 	action->num                 = num;
+
+	char* data = action->data;
+	for(i = 0; i < num; i++) {
+		// serialize key
+		strcpy(data, keys[i]);
+		data += strlen(keys[i])+1;
+		// serialize size of value
+		memcpy(data, &lens[i], sizeof(lens[i]));
+		data += sizeof(lens[i]);
+		// serialize value
+		memcpy(data, vals[i], lens[i]);
+		data += lens[i];
+	}
 
 	WRITE_ACTION_UPCAST(base, action);
 	DL_APPEND(write_op->actions, base);
@@ -179,10 +198,23 @@ void mobject_store_write_op_omap_rm_keys(mobject_store_write_op_t write_op,
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
 
-	wr_action_omap_rm_keys_t action = (wr_action_omap_rm_keys_t)calloc(1, sizeof(*action));
+	// find out the extra memory to allocate
+	size_t i;
+	size_t extra_mem = 0;
+	for(i = 0; i < keys_len; i++) {
+		extra_mem += strlen(keys[i])+1;
+	}
+
+	wr_action_omap_rm_keys_t action = (wr_action_omap_rm_keys_t)calloc(1, sizeof(*action)-1+extra_mem);
 	action->base.type               = WRITE_OPCODE_OMAP_RM_KEYS;
-	action->keys                    = keys;
 	action->keys_len                = keys_len;
+
+	char* data = action->keys;
+	// serialize the keys
+	for(i = 0; i < keys_len; i++) {
+		strcpy(data, keys[i]);
+		data += strlen(keys[i])+1;
+	}
 
 	WRITE_ACTION_UPCAST(base, action);
 	DL_APPEND(write_op->actions, base);

@@ -86,17 +86,22 @@ typedef struct wr_action_ZERO {
 
 typedef struct wr_action_OMAP_SET {
 	struct wr_action_BASE base;
-	char const* const*    keys;
-	char const* const*    vals;
-	const size_t*         lens;
 	size_t                num;
+	char                  data[1];
 }* wr_action_omap_set_t;
+// data above is meant to hold keys, lengths, and values,
+// all put together in the same contiguous buffer.
+// The buffer holds a series of [key,len,value] segments
+// where key is a null-terminated string, len is a size_t,
+// and value is a len-sized segment.
 
 typedef struct wr_action_RM_KEYS {
 	struct wr_action_BASE base;
-	char const* const*    keys;
 	size_t                keys_len;
+	char                  keys[1];
 }* wr_action_omap_rm_keys_t;
+// keys above is meant to hold keys in a contiguous buffer.
+// The keys are null-terminated strings.
 
 #endif
 
