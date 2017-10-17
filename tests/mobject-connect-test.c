@@ -13,6 +13,7 @@
 #include <librados.h>
 #else
 #include <libmobject-store.h>
+#include <librados-mobject-store.h>
 #endif
 
 int main(int argc, char *argv[])

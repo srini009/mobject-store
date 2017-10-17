@@ -11,6 +11,9 @@
 extern "C" {
 #endif
 
+#include <inttypes.h>
+#include <time.h>
+
 // derived from: http://docs.ceph.com/docs/master/mobject_store/api/libmobject_store/
 
 

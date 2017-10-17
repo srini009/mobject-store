@@ -24,7 +24,7 @@ typedef mobject_store_t rados_t;
 #define LIBRADOS_OPERATION_FULL_FORCE         LIBMOBJECT_OPERATION_FULL_FORCE
 #define LIBRADOS_OPERATION_IGNORE_REDIRECT    LIBMOBJECT_OPERATION_IGNORE_REDIRECT
 
-typedef mobject_store_ioctx        rados_ioctx_t;
+typedef mobject_store_ioctx_t      rados_ioctx_t;
 typedef mobject_store_omap_iter_t  rados_omap_iter_t;
 typedef mobject_store_write_op_t   rados_write_op_t;
 typedef mobject_store_read_op_t    rados_read_op_t;
