@@ -10,7 +10,7 @@
 #include <assert.h>
 
 #ifdef USE_RADOS
-#include <librados.h>
+#include <rados/librados.h>
 #else
 #include <librados-mobject-store.h>
 #endif

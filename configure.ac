@@ -44,7 +44,7 @@ AC_ARG_WITH([rados],
     [], [])
 if test x"$with_rados" == "xyes" ; then
     # check for RADOS headers and libraries
-    AC_CHECK_HEADERS([librados.h rados_types.h],
+    AC_CHECK_HEADERS([rados/librados.h rados/rados_types.h],
         [],
         [AC_MSG_ERROR([RADOS support requested but could not find RADOS headers!])],
         [])
@@ -52,9 +52,10 @@ if test x"$with_rados" == "xyes" ; then
         [],
         [AC_MSG_ERROR([RADOS support requested but could not link against librados!])])
 
-    # both found, set output to additionally build tests against RADOS
-    AM_CONDITIONAL(HAVE_RADOS, test x"$with_rados" == "xyes")
 fi
+
+# both found, set output to additionally build tests against RADOS
+AM_CONDITIONAL(HAVE_RADOS, test x"$with_rados" == "xyes")
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
