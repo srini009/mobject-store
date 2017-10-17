@@ -604,8 +604,6 @@ int mobject_store_aio_get_return_value(mobject_store_completion_t c);
  */
 void mobject_store_aio_release(mobject_store_completion_t c);
 
-#endif
-
 #ifdef __cplusplus
 }
 #endif
