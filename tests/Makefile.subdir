@@ -1,12 +1,20 @@
 check_PROGRAMS += \
  tests/mobject-connect-test
 
+if HAVE_RADOS
+check_PROGRAMS += \
+ tests/rados-mobject-connect-test
+endif
+
 #TESTS += \
 # tests/connect-test.sh
 
-tests_mobject_connect_test_SOURCES = \
- tests/mobject-connect-test.c
-tests_mobject_connect_test_LDADD = \
- src/libmobject-store.la
-
+tests_mobject_connect_test_SOURCES = tests/mobject-connect-test.c
 tests_mobject_connect_test_CPPFLAGS = -I${srcdir}/include
+tests_mobject_connect_test_LDADD = src/libmobject-store.la
+
+if HAVE_RADOS
+tests_rados_mobject_connect_test_SOURCES = tests/mobject-connect-test.c
+tests_rados_mobject_connect_test_CFLAGS = -DUSE_RADOS
+tests_rados_mobject_connect_test_LDADD = -lrados
+endif

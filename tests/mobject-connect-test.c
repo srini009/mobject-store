@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#ifdef USE_LIBRADOS
+#ifdef USE_RADOS
 #include <librados.h>
 #else
 #include <librados-mobject-store.h>

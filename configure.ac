@@ -38,11 +38,23 @@ LIBS="$ARGOBOTS_LIBS $LIBS"
 CPPFLAGS="$ARGOBOTS_CFLAGS $CPPFLAGS"
 CFLAGS="$ARGOBOTS_CFLAGS $CFLAGS"
 
-# checks for typedefs, structures, and compiler characteristics.
+# check for RADOS
+AC_ARG_WITH([rados],
+    AS_HELP_STRING([--with_rados], [Additionally build tests against librados (default is no)]),
+    [], [])
+if test x"$with_rados" == "xyes" ; then
+    # check for RADOS headers and libraries
+    AC_CHECK_HEADERS([librados.h rados_types.h],
+        [],
+        [AC_MSG_ERROR([RADOS support requested but could not find RADOS headers!])],
+        [])
+    AC_CHECK_LIB([rados], [rados_create],
+        [],
+        [AC_MSG_ERROR([RADOS support requested but could not link against librados!])])
 
-
-# chekcs for library functions
-
+    # both found, set output to additionally build tests against RADOS
+    AM_CONDITIONAL(HAVE_RADOS, test x"$with_rados" == "xyes")
+fi
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
