@@ -4,7 +4,7 @@
  * See COPYRIGHT in top-level directory.
  */
 
-#include "mobject-conf.h"
+#include "mobject-store-config.h"
 
 #include <stdio.h>
 #include <assert.h>
@@ -12,14 +12,14 @@
 #include <margo.h>
 #include <ssg.h>
 
-#include "mobject-store.h"
+#include "libmobject-store.h"
 
 struct mobject_store_handle
 {
     int test;
 };
 
-int rados_create(rados_t *cluster, const char * const id)
+int mobject_store_create(mobject_store_t *cluster, const char * const id)
 {
     struct mobject_store_handle *cluster_handle;
     (void)id; /* XXX: id unused in mobject */
@@ -45,7 +45,7 @@ int mobject_store_connect(mobject_store_t cluster)
 }
 #endif
 
-void rados_shutdown(rados_t cluster)
+void mobject_store_shutdown(mobject_store_t cluster)
 {
     struct mobject_store_handle *cluster_handle =
         (struct mobject_store_handle *)cluster;
