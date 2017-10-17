@@ -1,3 +1,5 @@
 src_libmobject_store_la_SOURCES += \
  src/libmobject-store.c \
+ src/completion.c  src/completion.h \
+ src/log.h src/write-op.c  src/write-op.h \
  include/libmobject-store.h
