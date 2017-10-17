@@ -11,7 +11,12 @@ AM_CXXFLAGS = $(AM_CFLAGS)
 
 lib_LTLIBRARIES = src/libmobject-store.la
 
-include_HEADERS = include/libmobject-store.h
+include_HEADERS = include/libmobject-store.h \
+		  include/librados-mobject-store.h
+
+# setting this to empty so subdir makefiles can use +=
+noinst_HEADERS =
+
 src_libmobject_la_CPPFLAGS = -I${srcdir}/include -I${srcdir}/src
 
 include Make.rules
