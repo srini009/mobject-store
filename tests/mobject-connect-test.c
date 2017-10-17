@@ -12,7 +12,6 @@
 #ifdef USE_LIBRADOS
 #include <librados.h>
 #else
-#include <libmobject-store.h>
 #include <librados-mobject-store.h>
 #endif
 
