@@ -78,6 +78,22 @@ void mobject_store_write_op_write_full(mobject_store_write_op_t write_op,
 	action->buffer                = buffer;
 	action->len                   = len;
 
+	// a write_full will replace the entire content of the object
+	// so we can try and optimize by removing some operations that will
+	// be overwritten anyway
+	wr_action_base_t current, temp;
+	DL_FOREACH_SAFE(write_op->actions, current, temp) {
+		if(current->type == WRITE_OPCODE_WRITE
+		|| current->type == WRITE_OPCODE_WRITE_FULL
+		|| current->type == WRITE_OPCODE_WRITE_SAME
+		|| current->type == WRITE_OPCODE_APPEND
+		|| current->type == WRITE_OPCODE_TRUNCATE
+		|| current->type == WRITE_OPCODE_ZERO) {
+			DL_DELETE(write_op->actions, current);
+			free(current);
+		}
+	}
+
 	WRITE_ACTION_UPCAST(base, action);
 	DL_APPEND(write_op->actions, base);
 }
@@ -122,9 +138,23 @@ void mobject_store_write_op_remove(mobject_store_write_op_t write_op)
 
 	wr_action_remove_t action = (wr_action_remove_t)calloc(1, sizeof(*action));
 	action->base.type         = WRITE_OPCODE_REMOVE;
-	
-	WRITE_ACTION_UPCAST(base, action);
-	DL_APPEND(write_op->actions, base);
+
+	// a remove operation will make all previous operations unecessary
+	// so we can delete all previously posted operations (and potentially
+	// not even post the remove)	
+	wr_action_base_t current, temp;
+	int do_not_even_post = 0;
+	DL_FOREACH_SAFE(write_op->actions, current, temp) {
+		if(current->type == WRITE_OPCODE_CREATE)
+			do_not_even_post = 1;
+		DL_DELETE(write_op->actions, current);
+		free(current);
+	}
+
+	if(!do_not_even_post) {
+		WRITE_ACTION_UPCAST(base, action);
+		DL_APPEND(write_op->actions, base);
+	}
 }
 
 void mobject_store_write_op_truncate(mobject_store_write_op_t write_op,
