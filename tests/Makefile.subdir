@@ -1,10 +1,12 @@
 check_PROGRAMS += \
  tests/mobject-connect-test
 
-TESTS += \
- tests/connect-test.sh
+#TESTS += \
+# tests/connect-test.sh
 
 tests_mobject_connect_test_SOURCES = \
  tests/mobject-connect-test.c
 tests_mobject_connect_test_LDADD = \
  src/libmobject-store.la
+
+tests_mobject_connect_test_CPPFLAGS = -I${srcdir}/include

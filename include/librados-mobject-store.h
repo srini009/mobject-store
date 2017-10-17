@@ -11,6 +11,8 @@
 extern "C" {
 #endif
 
+#include "libmobject-store.h"
+
 typedef mobject_store_t rados_t;
 
 #define LIBRADOS_OPERATION_NOFLAG             LIBMOBJECT_OPERATION_NOFLAG
