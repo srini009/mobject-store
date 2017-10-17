@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "mobject-store-config.h"
 #include "libmobject-store.h"
+#include "log.h"
 #include "write-op.h"
 #include "completion.h"
 
@@ -14,8 +15,9 @@ mobject_store_write_op_t mobject_store_create_write_op(void)
 {
 	mobject_store_write_op_t write_op = 
 		(mobject_store_write_op_t)calloc(1, sizeof(struct mobject_store_write_op));
-	// XXX assert result is valid
-	// TODO: set fields
+	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "Could not allocate write_op");
+	write_op->num_actions = 0;
+	write_op->actions = (wr_action_base_t)0;
 	return write_op;
 }
 
@@ -30,7 +32,7 @@ void mobject_store_write_op_create(mobject_store_write_op_t write_op,
                                    int exclusive,
                                    const char* category)
 {
-
+	wr_action_create_t action = (wr_action_create_t)calloc(1, sizeof(*action));
 }
 
 void mobject_store_write_op_write(mobject_store_write_op_t write_op,

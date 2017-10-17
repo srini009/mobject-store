@@ -135,8 +135,6 @@ typedef struct mobject_store_write_op *mobject_store_write_op_t;
 
 #define MOBJECT_WRITE_OP_NULL ((mobject_store_write_op_t)0)
 
-#define MOBJECT_WRITE_OP_NULL ((void*)0)
-
 /**
  * @typedef mobject_store_read_op_t
  *
@@ -159,9 +157,7 @@ typedef struct mobject_store_write_op *mobject_store_write_op_t;
  */
 typedef struct mobject_store_read_op *mobject_store_read_op_t;
 
-#define MOBJECT_READ_OP_NULL ((void*)0)
-
-#define MOBJECT_READ_OP_NULL ((void*)0)
+#define MOBJECT_READ_OP_NULL ((mobject_store_read_op_t)0)
 
 /**
  * @typedef mobject_store_completion_t
@@ -172,8 +168,6 @@ typedef struct mobject_store_read_op *mobject_store_read_op_t;
 typedef struct mobject_store_completion* mobject_store_completion_t;
 
 #define MOBJECT_COMPLETION_NULL ((mobject_store_completion_t)0)
-
-#define MOBJECT_COMPLETION_NULL ((void*)0)
 
 /*****************************************
  * mobject store setup/teardown routines *
