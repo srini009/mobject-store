@@ -4,7 +4,7 @@
  * See COPYRIGHT in top-level directory.
  */
 
-#include "mobject-conf.h"
+#include "mobject-store-config.h"
 
 #include <stdio.h>
 #include <assert.h>
@@ -12,7 +12,7 @@
 #include <margo.h>
 #include <ssg.h>
 
-#include "mobject-store.h"
+#include "libmobject-store.h"
 
 struct mobject_store_handle
 {

@@ -1,0 +1,3 @@
+src_libmobject_store_la_SOURCES += \
+ src/libmobject-store.c \
+ include/libmobject-store.h
