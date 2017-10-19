@@ -67,11 +67,11 @@ void mobject_store_write_op_write(mobject_store_write_op_t write_op,
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
 	MOBJECT_ASSERT(write_op->use_local_pointers, "can't modify a write_op that has been sent");
 
-	wr_action_write_t action = (wr_action_write_t)calloc(1, sizeof(*action));
-	action->base.type        = WRITE_OPCODE_WRITE;
-	action->u.buffer         = buffer;
-	action->len              = len;
-	action->offset           = offset;
+	wr_action_write_t action  = (wr_action_write_t)calloc(1, sizeof(*action));
+	action->base.type         = WRITE_OPCODE_WRITE;
+	action->buffer.as_pointer = buffer;
+	action->len               = len;
+	action->offset            = offset;
 	
 	WRITE_ACTION_UPCAST(base, action);
 	DL_APPEND(write_op->actions, base);
@@ -88,7 +88,7 @@ void mobject_store_write_op_write_full(mobject_store_write_op_t write_op,
 	
 	wr_action_write_full_t action = (wr_action_write_full_t)calloc(1, sizeof(*action));
 	action->base.type             = WRITE_OPCODE_WRITE_FULL;
-	action->u.buffer              = buffer;
+	action->buffer.as_pointer     = buffer;
 	action->len                   = len;
 
 /* POTENTIAL OPTIMIZATION (INCOMPLETE)
@@ -126,7 +126,7 @@ void mobject_store_write_op_writesame(mobject_store_write_op_t write_op,
 
 	wr_action_write_same_t action = (wr_action_write_same_t)calloc(1, sizeof(*action));
 	action->base.type             = WRITE_OPCODE_WRITE_SAME;
-	action->u.buffer                = buffer;
+	action->buffer.as_pointer     = buffer;
 	action->data_len              = data_len;
 	action->write_len             = write_len;
 	action->offset                = offset;
@@ -146,7 +146,7 @@ void mobject_store_write_op_append(mobject_store_write_op_t write_op,
 
 	wr_action_append_t action = (wr_action_append_t)calloc(1, sizeof(*action));
 	action->base.type         = WRITE_OPCODE_APPEND;
-	action->u.buffer          = buffer;
+	action->buffer.as_pointer = buffer;
 	action->len               = len;
 
 	WRITE_ACTION_UPCAST(base, action);

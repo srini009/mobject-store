@@ -58,10 +58,10 @@ static hg_return_t decode_write_action_write(hg_proc_t proc, uint64_t* pos, wr_a
 	if(ret != HG_SUCCESS) return ret;
 
 	*action = (wr_action_write_t)calloc(1, sizeof(**action));
-	(*action)->u.bulk_offset = *pos;
-	(*action)->len           = a.len;
-	(*action)->offset        = a.offset;
-	*pos                    += a.len;
+	(*action)->buffer.as_offset = *pos;
+	(*action)->len              = a.len;
+	(*action)->offset           = a.offset;
+	*pos                       += a.len;
 
 	return ret;
 }
@@ -83,7 +83,7 @@ static hg_return_t decode_write_action_write_full(hg_proc_t proc, uint64_t* pos,
 	if(ret != HG_SUCCESS) return ret;
 
 	*action = (wr_action_write_full_t)calloc(1, sizeof(**action));
-	(*action)->u.bulk_offset = *pos;
+	(*action)->buffer.as_offset = *pos;
 	(*action)->len       = a.len;
 	*pos                += a.len;
 
@@ -109,11 +109,11 @@ static hg_return_t decode_write_action_write_same(hg_proc_t proc, uint64_t* pos,
 	if(ret != HG_SUCCESS) return ret;
 
 	*action = (wr_action_write_same_t)calloc(1, sizeof(**action));
-	(*action)->u.bulk_offset    = *pos;
-	(*action)->data_len  = a.data_len;
-	(*action)->write_len = a.write_len;
-	(*action)->offset    = a.offset;
-	*pos                += a.data_len;
+	(*action)->buffer.as_offset = *pos;
+	(*action)->data_len         = a.data_len;
+	(*action)->write_len        = a.write_len;
+	(*action)->offset           = a.offset;
+	*pos                       += a.data_len;
 
 	return ret;
 }
@@ -135,9 +135,9 @@ static hg_return_t decode_write_action_append(hg_proc_t proc, uint64_t* pos, wr_
 	if(ret != HG_SUCCESS) return ret;
 	
 	*action = (wr_action_append_t)calloc(1, sizeof(**action));
-	(*action)->u.bulk_offset = *pos;
-	(*action)->len           = a.len;
-	*pos                    += a.len;
+	(*action)->buffer.as_offset = *pos;
+	(*action)->len              = a.len;
+	*pos                       += a.len;
 
 	return ret;
 }
@@ -297,6 +297,8 @@ hg_return_t hg_proc_mobject_store_write_op_t(hg_proc_t proc, mobject_store_write
 	switch(hg_proc_get_op(proc)) {
 
 	case HG_ENCODE:
+
+		MOBJECT_ASSERT(write_op->use_local_pointers == 0, "Cannot encode a write_op before it has been prepared");
 		// encode the bulk handle associated with the series of operations
 		ret = hg_proc_hg_bulk_t(proc, &(write_op->bulk_handle));
 		if(ret != HG_SUCCESS) return ret;

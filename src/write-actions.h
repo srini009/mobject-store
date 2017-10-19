@@ -46,9 +46,9 @@ typedef struct wr_action_CREATE {
 typedef struct wr_action_WRITE {
 	struct wr_action_BASE base;
 	union {
-		const char*       buffer;
-		uint64_t          bulk_offset;
-	} u;
+		const char*       as_pointer;
+		uint64_t          as_offset;
+	} buffer;
 	size_t                len;
 	uint64_t              offset;
 }* wr_action_write_t;
@@ -56,18 +56,18 @@ typedef struct wr_action_WRITE {
 typedef struct wr_action_WRITE_FULL {
 	struct wr_action_BASE base;
 	union {
-		const char*       buffer;
-		uint64_t          bulk_offset;
-	} u;
+		const char*       as_pointer;
+		uint64_t          as_offset;
+	} buffer;
 	size_t                len;
 }* wr_action_write_full_t;
 
 typedef struct wr_action_WRITE_SAME {
 	struct wr_action_BASE base;
 	union {
-		const char*       buffer;
-		uint64_t          bulk_offset;
-	} u;
+		const char*       as_pointer;
+		uint64_t          as_offset;
+	} buffer;
 	size_t                data_len;
 	size_t                write_len;
 	uint64_t              offset;
@@ -76,9 +76,9 @@ typedef struct wr_action_WRITE_SAME {
 typedef struct wr_action_APPEND {
 	struct wr_action_BASE base;
 	union {
-		const char*       buffer;
-		uint64_t          bulk_offset;
-	} u;
+		const char*       as_pointer;
+		uint64_t          as_offset;
+	} buffer;
 	size_t                len;
 }* wr_action_append_t;
 

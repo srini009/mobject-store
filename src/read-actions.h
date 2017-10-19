@@ -45,9 +45,9 @@ typedef struct rd_action_READ {
 	uint64_t              offset;
 	size_t                len;
     union {
-		char*             buffer;
-		uint64_t          bulk_offset;
-	} u;
+		char*             as_pointer;
+		uint64_t          as_offset;
+	} buffer;
 	size_t*               bytes_read;
 	int*                  prval;
 }* rd_action_read_t;

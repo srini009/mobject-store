@@ -37,7 +37,7 @@ static hg_return_t encode_read_action_read(hg_proc_t proc, uint64_t* pos, rd_act
 	args_rd_action_read a;
 	a.offset      = action->offset;
 	a.len         = action->len;
-    a.bulk_offset = action->u.bulk_offset;
+    a.bulk_offset = action->buffer.as_offset;
 	*pos         += a.len;
 	return hg_proc_memcpy(proc, &a, sizeof(a));
 }
@@ -50,10 +50,10 @@ static hg_return_t decode_read_action_read(hg_proc_t proc, uint64_t* pos, rd_act
 	if(ret != HG_SUCCESS) return ret;
 
 	*action = (rd_action_read_t)calloc(1, sizeof(**action));
-	(*action)->offset        = a.offset;
-	(*action)->len           = a.len;
-	(*action)->u.bulk_offset = a.bulk_offset;
-	*pos                    += a.len;
+	(*action)->offset           = a.offset;
+	(*action)->len              = a.len;
+	(*action)->buffer.as_offset = a.bulk_offset;
+	*pos                       += a.len;
 
 	return ret;
 }
@@ -195,6 +195,8 @@ hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_o
 	switch(hg_proc_get_op(proc)) {
 
 	case HG_ENCODE:
+
+		MOBJECT_ASSERT(read_op->use_local_pointers == 0, "Cannot encode a read_op before it has been prepared");
 		// encode the bulk handle associated with the series of operations
 		ret = hg_proc_hg_bulk_t(proc, &(read_op->bulk_handle));
 		if(ret != HG_SUCCESS) return ret;

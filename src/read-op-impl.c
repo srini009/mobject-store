@@ -66,13 +66,13 @@ void mobject_store_read_op_read(mobject_store_read_op_t read_op,
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
 	MOBJECT_ASSERT(read_op->use_local_pointers, "can't modify a read_op that has been sent");
 
-	rd_action_read_t action = (rd_action_read_t)calloc(1, sizeof(*action));
-	action->base.type       = READ_OPCODE_READ;
-	action->offset          = offset;
-	action->len             = len;
-	action->u.buffer        = buffer;
-	action->bytes_read      = bytes_read;
-	action->prval           = prval;
+	rd_action_read_t action   = (rd_action_read_t)calloc(1, sizeof(*action));
+	action->base.type         = READ_OPCODE_READ;
+	action->offset            = offset;
+	action->len               = len;
+	action->buffer.as_pointer = buffer;
+	action->bytes_read        = bytes_read;
+	action->prval             = prval;
 
 	READ_ACTION_UPCAST(base, action);
 	DL_APPEND(read_op->actions, base);
