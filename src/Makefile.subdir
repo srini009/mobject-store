@@ -4,10 +4,12 @@ src_libmobject_store_la_SOURCES = \
  src/write-op-impl.c \
  src/read-op-impl.c \
  src/proc-write-actions.c \
- src/proc-read-actions.c
+ src/proc-read-actions.c \
+ src/prepare-write-op.c
 
 noinst_HEADERS += src/log.h src/completion.h \
 		  src/write-op-impl.h src/write-actions.h \
           src/read-op-impl.h src/read-actions.h \
 		  src/utlist.h src/proc-write-actions.h \
-		  src/proc-read-actions.h
+		  src/proc-read-actions.h \
+		  src/prepare-write-op.h
