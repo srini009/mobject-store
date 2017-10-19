@@ -20,19 +20,25 @@
 typedef hg_return_t (*encode_fn)(hg_proc_t, uint64_t*, void*);
 typedef hg_return_t (*decode_fn)(hg_proc_t, uint64_t*, void*);
 
-static hg_return_t encode_read_action_stat(hg_proc_t proc, uint64_t* pos, rd_action_stat_t action)
+static hg_return_t encode_read_action_stat(hg_proc_t proc, 
+                                           uint64_t* pos, 
+                                           rd_action_stat_t action)
 {
 	return HG_SUCCESS;
 }
 
-static hg_return_t decode_read_action_stat(hg_proc_t proc, uint64_t* pos, rd_action_stat_t* action)
+static hg_return_t decode_read_action_stat(hg_proc_t proc, 
+                                           uint64_t* pos, 
+                                           rd_action_stat_t* action)
 {
 	hg_return_t ret = HG_SUCCESS;
 	*action = (rd_action_stat_t)calloc(1, sizeof(**action));
 	return ret;	
 }
 
-static hg_return_t encode_read_action_read(hg_proc_t proc, uint64_t* pos, rd_action_read_t action)
+static hg_return_t encode_read_action_read(hg_proc_t proc, 
+                                           uint64_t* pos, 
+                                           rd_action_read_t action)
 {
 	args_rd_action_read a;
 	a.offset      = action->offset;
@@ -42,7 +48,9 @@ static hg_return_t encode_read_action_read(hg_proc_t proc, uint64_t* pos, rd_act
 	return hg_proc_memcpy(proc, &a, sizeof(a));
 }
 
-static hg_return_t decode_read_action_read(hg_proc_t proc, uint64_t* pos, rd_action_read_t* action)
+static hg_return_t decode_read_action_read(hg_proc_t proc, 
+                                           uint64_t* pos, 
+                                           rd_action_read_t* action)
 {
 	hg_return_t ret = HG_SUCCESS;
 	args_rd_action_read a;
@@ -58,7 +66,9 @@ static hg_return_t decode_read_action_read(hg_proc_t proc, uint64_t* pos, rd_act
 	return ret;
 }
 
-static hg_return_t encode_read_action_omap_get_keys(hg_proc_t proc, uint64_t* pos, rd_action_omap_get_keys_t action)
+static hg_return_t encode_read_action_omap_get_keys(hg_proc_t proc, 
+                                                    uint64_t* pos, 
+                                                    rd_action_omap_get_keys_t action)
 {
 	args_rd_action_omap_get_keys a;
 	a.max_return = action->max_return;
@@ -68,11 +78,13 @@ static hg_return_t encode_read_action_omap_get_keys(hg_proc_t proc, uint64_t* po
 	ret = hg_proc_memcpy(proc, &a, sizeof(a));
 	if(ret != HG_SUCCESS) return ret;
 	
-	ret = hg_proc_hg_string_t(proc, action->start_after);
+	ret = hg_proc_memcpy(proc, action->data, action->data_size);
 	return ret;
 }
 
-static hg_return_t decode_read_action_omap_get_keys(hg_proc_t proc, uint64_t* pos, rd_action_omap_get_keys_t* action)
+static hg_return_t decode_read_action_omap_get_keys(hg_proc_t proc, 
+                                                    uint64_t* pos, 
+                                                    rd_action_omap_get_keys_t* action)
 {
 	hg_return_t ret = HG_SUCCESS;
 	args_rd_action_omap_get_keys a;
@@ -83,12 +95,14 @@ static hg_return_t decode_read_action_omap_get_keys(hg_proc_t proc, uint64_t* po
 	(*action)->max_return  = a.max_return;
 	(*action)->data_size   = a.data_size;
 	(*action)->start_after = (*action)->data;
-	ret = hg_proc_hg_string_t(proc, (*action)->start_after);
 
+	ret = hg_proc_memcpy(proc, (*action)->data, (*action)->data_size);
 	return ret;
 }
 
-static hg_return_t encode_read_action_omap_get_vals(hg_proc_t proc, uint64_t* pos, rd_action_omap_get_vals_t action)
+static hg_return_t encode_read_action_omap_get_vals(hg_proc_t proc,
+                                                    uint64_t* pos,
+                                                    rd_action_omap_get_vals_t action)
 {
 	args_rd_action_omap_get_vals a;
 	a.max_return = action->max_return;
@@ -98,14 +112,14 @@ static hg_return_t encode_read_action_omap_get_vals(hg_proc_t proc, uint64_t* po
 	ret = hg_proc_memcpy(proc, &a, sizeof(a));
 	if(ret != HG_SUCCESS) return ret;
 	
-	ret = hg_proc_hg_string_t(proc, action->start_after);
-	if(ret != HG_SUCCESS) return ret;
-	ret = hg_proc_hg_string_t(proc, action->filter_prefix);
+	ret = hg_proc_memcpy(proc, action->data, action->data_size);
 	
 	return ret;
 }
 
-static hg_return_t decode_read_action_omap_get_vals(hg_proc_t proc, uint64_t* pos, rd_action_omap_get_vals_t* action)
+static hg_return_t decode_read_action_omap_get_vals(hg_proc_t proc,
+                                                    uint64_t* pos,
+                                                    rd_action_omap_get_vals_t* action)
 {
 	hg_return_t ret = HG_SUCCESS;
 	args_rd_action_omap_get_vals a;
@@ -119,14 +133,14 @@ static hg_return_t decode_read_action_omap_get_vals(hg_proc_t proc, uint64_t* po
 	size_t s = strlen((*action)->start_after);
 	(*action)->filter_prefix = (*action)->data + s + 1;
 
-	ret = hg_proc_hg_string_t(proc, (*action)->start_after);
-	if(ret != HG_SUCCESS) return ret;
-	ret = hg_proc_hg_string_t(proc, (*action)->filter_prefix);
-	
+	ret = hg_proc_memcpy(proc, (*action)->data, (*action)->data_size);
+
 	return ret;
 }
 
-static hg_return_t encode_read_action_omap_get_vals_by_keys(hg_proc_t proc, uint64_t* pos, rd_action_omap_get_vals_by_keys_t action)
+static hg_return_t encode_read_action_omap_get_vals_by_keys(hg_proc_t proc,
+                                                            uint64_t* pos,
+                                                            rd_action_omap_get_vals_by_keys_t action)
 {
 	args_rd_action_omap_get_vals_by_keys a;
 	a.num_keys   = action->num_keys;
@@ -141,7 +155,9 @@ static hg_return_t encode_read_action_omap_get_vals_by_keys(hg_proc_t proc, uint
 	return ret;
 }
 
-static hg_return_t decode_read_action_omap_get_vals_by_keys(hg_proc_t proc, uint64_t* pos, rd_action_omap_get_vals_by_keys_t* action)
+static hg_return_t decode_read_action_omap_get_vals_by_keys(hg_proc_t proc,
+                                                            uint64_t* pos,
+                                                            rd_action_omap_get_vals_by_keys_t* action)
 {
 	hg_return_t ret = HG_SUCCESS;
 	args_rd_action_omap_get_vals_by_keys a;
@@ -186,7 +202,7 @@ static decode_fn decode_read_action[_READ_OPCODE_END_ENUM_] = {
  * For encoding, the object should be prepared first (that is, the union fields
  * pointing to either a buffer or an offset in a bulk should be an offset in a bulk).
  */
-hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_op_t read_op)
+hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_op_t* read_op)
 {
 	rd_action_base_t elem, tmp;
 	hg_return_t ret = HG_SUCCESS;
@@ -196,18 +212,21 @@ hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_o
 
 	case HG_ENCODE:
 
-		MOBJECT_ASSERT(read_op->use_local_pointers == 0, "Cannot encode a read_op before it has been prepared");
+		MOBJECT_ASSERT((*read_op)->use_local_pointers == 0, 
+			"Cannot encode a read_op before it has been prepared");
 		// encode the bulk handle associated with the series of operations
-		ret = hg_proc_hg_bulk_t(proc, &(read_op->bulk_handle));
+		ret = hg_proc_hg_bulk_t(proc, &((*read_op)->bulk_handle));
 		if(ret != HG_SUCCESS) return ret;
 		// encode the number of actions
-		ret = hg_proc_memcpy(proc, &(read_op->num_actions), sizeof(read_op->num_actions));
+		ret = hg_proc_memcpy(proc, &((*read_op)->num_actions), 
+								sizeof((*read_op)->num_actions));
 		if(ret != HG_SUCCESS) return ret;
 
 		// for each action ...
-		DL_FOREACH(read_op->actions,elem) {
+		DL_FOREACH((*read_op)->actions,elem) {
 			read_op_code_t opcode = elem->type;
-			MOBJECT_ASSERT((opcode <= 0 || opcode >= _READ_OPCODE_END_ENUM_), "Invalid read_op opcode");
+			MOBJECT_ASSERT((opcode <= 0 || opcode >= _READ_OPCODE_END_ENUM_),
+				"Invalid read_op opcode");
 			// encode the type of action
 			ret = hg_proc_memcpy(proc, &opcode, sizeof(opcode));
 			if(ret != HG_SUCCESS) return ret;
@@ -218,32 +237,37 @@ hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_o
 		break;
 
 	case HG_DECODE:
-
+	
+		*read_op = mobject_store_create_read_op();
+		(*read_op)->use_local_pointers = 0;
 		// decode the bulk handle
-		ret = hg_proc_hg_bulk_t(proc, &(read_op->bulk_handle));
+		ret = hg_proc_hg_bulk_t(proc, &((*read_op)->bulk_handle));
 		if(ret != HG_SUCCESS) return ret;
 		// decode the number of actions
-		ret = hg_proc_memcpy(proc, &(read_op->num_actions), sizeof(read_op->num_actions));
+		ret = hg_proc_memcpy(proc, &((*read_op)->num_actions),
+								sizeof((*read_op)->num_actions));
 		if(ret != HG_SUCCESS) return ret;
 
 		rd_action_base_t next_action;
 		size_t i;
-		for(i = 0; i < read_op->num_actions; i++) {
+		for(i = 0; i < (*read_op)->num_actions; i++) {
 			// decode the current action's type
 			read_op_code_t opcode;
 			ret = hg_proc_memcpy(proc, &opcode, sizeof(opcode));
 			if(ret != HG_SUCCESS) return ret;
-			MOBJECT_ASSERT((opcode <= 0 || opcode >= _READ_OPCODE_END_ENUM_), "Invalid write_op opcode");
+			MOBJECT_ASSERT((opcode <= 0 || opcode >= _READ_OPCODE_END_ENUM_),
+				"Invalid write_op opcode");
 			// decode the action's arguments
 			ret = decode_read_action[opcode](proc, &position, &next_action);
 			if(ret != HG_SUCCESS) return ret;
 			// append to the list
-			DL_APPEND(read_op->actions, next_action);
+			DL_APPEND((*read_op)->actions, next_action);
 		}
 		break;
 	
 	case HG_FREE:
-		mobject_store_release_read_op(read_op);
+
+		mobject_store_release_read_op(*read_op);
 		return HG_SUCCESS;
 	}
 

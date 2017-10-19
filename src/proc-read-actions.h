@@ -9,7 +9,7 @@
 #include <margo.h>
 #include "libmobject-store.h"
 
-hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_op_t list);
+hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_op_t* read_op);
 
 #endif
 
