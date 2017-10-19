@@ -10,7 +10,7 @@
 #include "utlist.h"
 #include "libmobject-store.h"
 #include "log.h"
-#include "read-op.h"
+#include "read-op-impl.h"
 #include "completion.h"
 
 mobject_store_read_op_t mobject_store_create_read_op(void)
@@ -19,6 +19,8 @@ mobject_store_read_op_t mobject_store_create_read_op(void)
 		(mobject_store_read_op_t)calloc(1, sizeof(*read_op));
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "Could not allocate read_op");
 	read_op->actions = (rd_action_base_t)0;
+	read_op->bulk_handle = HG_BULK_NULL;
+	read_op->use_local_pointers = 1;
 	return read_op;
 }
 
@@ -42,6 +44,7 @@ void mobject_store_read_op_stat(mobject_store_read_op_t read_op,
                                 int *prval)
 {
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
+	MOBJECT_ASSERT(read_op->use_local_pointers, "can't modify a read_op that has been sent");
 
 	rd_action_stat_t action = (rd_action_stat_t)calloc(1, sizeof(*action));
 	action->base.type       = READ_OPCODE_STAT;
@@ -61,17 +64,42 @@ void mobject_store_read_op_read(mobject_store_read_op_t read_op,
                                 int *prval)
 {
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
+	MOBJECT_ASSERT(read_op->use_local_pointers, "can't modify a read_op that has been sent");
 
 	rd_action_read_t action = (rd_action_read_t)calloc(1, sizeof(*action));
 	action->base.type       = READ_OPCODE_READ;
 	action->offset          = offset;
 	action->len             = len;
-	action->buffer          = buffer;
+	action->u.buffer        = buffer;
 	action->bytes_read      = bytes_read;
 	action->prval           = prval;
 
 	READ_ACTION_UPCAST(base, action);
 	DL_APPEND(read_op->actions, base);
+}
+
+void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
+				                         const char *start_after,
+				                         uint64_t max_return,
+				                         mobject_store_omap_iter_t *iter,
+                                         int *prval)
+{
+	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
+	MOBJECT_ASSERT(read_op->use_local_pointers, "can't modify a read_op that has been sent");
+
+	size_t strl = strlen(start_after);
+	
+	rd_action_omap_get_keys_t action = (rd_action_omap_get_keys_t)calloc(1, sizeof(*action)+strl);
+	action->base.type                = READ_OPCODE_OMAP_GET_KEYS;
+	action->start_after              = action->data;
+	action->max_return               = max_return;
+	action->iter                     = iter;
+	action->prval                    = prval;
+	action->data_size                = strl+1;
+	strcpy(action->data, start_after);
+
+	READ_ACTION_UPCAST(base, action);
+    DL_APPEND(read_op->actions, base);
 }
 
 void mobject_store_read_op_omap_get_vals(mobject_store_read_op_t read_op,
@@ -82,6 +110,7 @@ void mobject_store_read_op_omap_get_vals(mobject_store_read_op_t read_op,
                                          int *prval)
 {
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
+	MOBJECT_ASSERT(read_op->use_local_pointers, "can't modify a read_op that has been sent");
 
 	// compute required size for embedded data
 	size_t strl1 = strlen(start_after)+1;
@@ -95,6 +124,7 @@ void mobject_store_read_op_omap_get_vals(mobject_store_read_op_t read_op,
 	action->max_return               = max_return;
 	action->iter                     = iter;
 	action->prval                    = prval;
+	action->data_size                = extra_mem;
 	strcpy(action->data, start_after);
 	strcpy(action->data + strl1, filter_prefix);
 
@@ -109,6 +139,7 @@ void mobject_store_read_op_omap_get_vals_by_keys(mobject_store_read_op_t read_op
                                                  int *prval)
 {
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
+	MOBJECT_ASSERT(read_op->use_local_pointers, "can't modify a read_op that has been sent");
 	
 	// computing extra memory required to hold keys
 	size_t extra_mem = 0;
@@ -120,10 +151,11 @@ void mobject_store_read_op_omap_get_vals_by_keys(mobject_store_read_op_t read_op
 	rd_action_omap_get_vals_by_keys_t action =
 		(rd_action_omap_get_vals_by_keys_t)calloc(1, sizeof(*action) - 1 + extra_mem);
 	action->base.type = READ_OPCODE_OMAP_GET_VALS_BY_KEYS;
-	action->keys_len  = keys_len;
+	action->num_keys  = keys_len;
 	action->iter      = iter;
 	action->prval     = prval;
-	char* s = action->keys;
+	action->data_size = extra_mem;
+	char* s = action->data;
 	for(i = 0; i < keys_len; i++) {
 		strcpy(s, keys[i]);
 		s += strlen(keys[i]) + 1;

@@ -19,7 +19,8 @@ typedef enum {
 	WRITE_OPCODE_TRUNCATE,
 	WRITE_OPCODE_ZERO,
 	WRITE_OPCODE_OMAP_SET,
-	WRITE_OPCODE_OMAP_RM_KEYS
+	WRITE_OPCODE_OMAP_RM_KEYS,
+	_WRITE_OPCODE_END_ENUM_
 } write_op_code_t;
 
 #define WRITE_ACTION_DOWNCAST(child_obj, base_obj, child_category) \
@@ -44,20 +45,29 @@ typedef struct wr_action_CREATE {
 
 typedef struct wr_action_WRITE {
 	struct wr_action_BASE base;
-	const char*           buffer;
+	union {
+		const char*       buffer;
+		uint64_t          bulk_offset;
+	} u;
 	size_t                len;
 	uint64_t              offset;
 }* wr_action_write_t;
 
 typedef struct wr_action_WRITE_FULL {
 	struct wr_action_BASE base;
-	const char*           buffer;
+	union {
+		const char*       buffer;
+		uint64_t          bulk_offset;
+	} u;
 	size_t                len;
 }* wr_action_write_full_t;
 
 typedef struct wr_action_WRITE_SAME {
 	struct wr_action_BASE base;
-	const char*           buffer;
+	union {
+		const char*       buffer;
+		uint64_t          bulk_offset;
+	} u;
 	size_t                data_len;
 	size_t                write_len;
 	uint64_t              offset;
@@ -65,7 +75,10 @@ typedef struct wr_action_WRITE_SAME {
 
 typedef struct wr_action_APPEND {
 	struct wr_action_BASE base;
-	const char*           buffer;
+	union {
+		const char*       buffer;
+		uint64_t          bulk_offset;
+	} u;
 	size_t                len;
 }* wr_action_append_t;
 
@@ -87,6 +100,7 @@ typedef struct wr_action_ZERO {
 typedef struct wr_action_OMAP_SET {
 	struct wr_action_BASE base;
 	size_t                num;
+	size_t                data_size;
 	char                  data[1];
 }* wr_action_omap_set_t;
 // data above is meant to hold keys, lengths, and values,
@@ -97,8 +111,9 @@ typedef struct wr_action_OMAP_SET {
 
 typedef struct wr_action_RM_KEYS {
 	struct wr_action_BASE base;
-	size_t                keys_len;
-	char                  keys[1];
+	size_t                num_keys;
+	size_t                data_size;
+	char                  data[1];
 }* wr_action_omap_rm_keys_t;
 // keys above is meant to hold keys in a contiguous buffer.
 // The keys are null-terminated strings.

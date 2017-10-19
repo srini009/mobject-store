@@ -437,6 +437,24 @@ void mobject_store_read_op_read(mobject_store_read_op_t read_op,
                                 int *prval);
 
 /**
+ * Start iterating over keys on an object.
+ *
+ * They will be returned sorted by key, and the iterator
+ * will fill in NULL for all values if specified.
+ *
+ * @param read_op operation to add this action to
+ * @param start_after list keys starting after start_after
+ * @param max_return list no more than max_return keys
+ * @param iter where to store the iterator
+ * @param prval where to store the return value from this action
+ */
+void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
+                                         const char *start_after,
+				                         uint64_t max_return,
+				                         mobject_store_omap_iter_t *iter,
+                                         int *prval);
+
+/**
  * Start iterating over key/value pairs on an object.
  *
  * They will be returned sorted by key.
