@@ -8,6 +8,7 @@
 #include "utlist.h"
 #include "libmobject-store.h"
 #include "omap-iter-impl.h"
+#include "log.h"
 
 void omap_iter_create(mobject_store_omap_iter_t* iter)
 {

@@ -45,26 +45,32 @@ void execute_read_op_visitor(read_op_visitor_t visitor, mobject_store_read_op_t 
 
 static void execute_read_op_visitor_on_stat(read_op_visitor_t visitor, rd_action_stat_t a)
 {
-	visitor->visit_stat(visitor->uargs, a->psize, a->pmtime, a->prval);
+	if(visitor->visit_stat)
+		visitor->visit_stat(visitor->uargs, a->psize, a->pmtime, a->prval);
 }
 
 static void execute_read_op_visitor_on_read(read_op_visitor_t visitor, rd_action_read_t a)
 {
-	visitor->visit_read(visitor->uargs, a->offset, a->len, a->buffer, a->bytes_read, a->prval);
+	if(visitor->visit_read)
+		visitor->visit_read(visitor->uargs, a->offset, a->len, a->buffer, a->bytes_read, a->prval);
 }
 
 static void execute_read_op_visitor_on_omap_get_keys(read_op_visitor_t visitor, rd_action_omap_get_keys_t a)
 {
-	visitor->visit_omap_get_keys(visitor->uargs, a->start_after, a->max_return, a->iter, a->prval);
+	if(visitor->visit_omap_get_keys)
+		visitor->visit_omap_get_keys(visitor->uargs, a->start_after, a->max_return, a->iter, a->prval);
 }
 
 static void execute_read_op_visitor_on_omap_get_vals(read_op_visitor_t visitor, rd_action_omap_get_vals_t a)
 {
-	visitor->visit_omap_get_vals(visitor->uargs, a->start_after, a->filter_prefix, a->max_return, a->iter, a->prval);
+	if(visitor->visit_omap_get_vals)
+		visitor->visit_omap_get_vals(visitor->uargs, a->start_after, a->filter_prefix, a->max_return, a->iter, a->prval);
 }
 
 static void execute_read_op_visitor_on_omap_get_vals_by_keys(read_op_visitor_t visitor, rd_action_omap_get_vals_by_keys_t a)
 {
+	if(visitor->visit_omap_get_vals_by_keys == NULL) return;
+
 	const char* keys[a->num_keys];
 	unsigned i;
 	const char* ptr = a->data;

@@ -55,46 +55,56 @@ void execute_write_op_visitor(write_op_visitor_t visitor, mobject_store_write_op
 
 static void execute_write_op_visitor_on_create(write_op_visitor_t visitor, wr_action_create_t a)
 {
-	visitor->visit_create(visitor->uargs, a->exclusive);
+	if(visitor->visit_create)
+		visitor->visit_create(visitor->uargs, a->exclusive);
 }
 
 static void execute_write_op_visitor_on_write(write_op_visitor_t visitor, wr_action_write_t a)
 {
-	visitor->visit_write(visitor->uargs, a->buffer, a->len, a->offset);
+	if(visitor->visit_write)
+		visitor->visit_write(visitor->uargs, a->buffer, a->len, a->offset);
 }
 
 static void execute_write_op_visitor_on_write_full(write_op_visitor_t visitor, wr_action_write_full_t a)
 {
-	visitor->visit_write_full(visitor->uargs, a->buffer, a->len);
+	if(visitor->visit_write_full)
+		visitor->visit_write_full(visitor->uargs, a->buffer, a->len);
 }
 
 static void execute_write_op_visitor_on_write_same(write_op_visitor_t visitor, wr_action_write_same_t a)
 {
-	visitor->visit_writesame(visitor->uargs, a->buffer, a->data_len, a->write_len, a->offset);
+	if(visitor->visit_writesame)
+		visitor->visit_writesame(visitor->uargs, a->buffer, a->data_len, a->write_len, a->offset);
 }
 
 static void execute_write_op_visitor_on_append(write_op_visitor_t visitor, wr_action_append_t a)
 {
-	visitor->visit_append(visitor->uargs, a->buffer, a->len);
+	if(visitor->visit_append)
+		visitor->visit_append(visitor->uargs, a->buffer, a->len);
 }
 
 static void execute_write_op_visitor_on_remove(write_op_visitor_t visitor, wr_action_remove_t a)
 {
-	visitor->visit_remove(visitor->uargs);
+	if(visitor->visit_remove)
+		visitor->visit_remove(visitor->uargs);
 }
 
 static void execute_write_op_visitor_on_truncate(write_op_visitor_t visitor, wr_action_truncate_t a)
 {
-	visitor->visit_truncate(visitor->uargs, a->offset);
+	if(visitor->visit_truncate)
+		visitor->visit_truncate(visitor->uargs, a->offset);
 }
 
 static void execute_write_op_visitor_on_zero(write_op_visitor_t visitor, wr_action_zero_t a)
 {
-	visitor->visit_zero(visitor->uargs, a->offset, a->len);
+	if(visitor->visit_zero)
+		visitor->visit_zero(visitor->uargs, a->offset, a->len);
 }
 
 static void execute_write_op_visitor_on_omap_set(write_op_visitor_t visitor, wr_action_omap_set_t a)
 {
+	if(visitor->visit_omap_set == NULL) return;
+
 	size_t num = a->num;
 	size_t lens[num];
 	const char* keys[num];
@@ -121,6 +131,8 @@ static void execute_write_op_visitor_on_omap_set(write_op_visitor_t visitor, wr_
 
 static void execute_write_op_visitor_on_omap_rm_keys(write_op_visitor_t visitor, wr_action_omap_rm_keys_t a)
 {
+	if(visitor->visit_omap_rm_keys != NULL) return;
+
 	size_t num_keys = a->num_keys;
 	const char* keys[num_keys];
 
