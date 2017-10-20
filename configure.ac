@@ -20,6 +20,12 @@ PKG_PROG_PKG_CONFIG
 if test "x$PKG_CONFIG" == "x"; then
 	AC_MSG_ERROR([Could not find pkg-config utility!])
 fi
+
+dnl seems like this should be a function but my first stab at m4 exploded
+dnl mightily...
+dnl also, we need to separate client libraries from server libraries.  Just jam
+dnl it all into one set of flags for now
+
 PKG_CHECK_MODULES([MARGO],[margo],[],
 	AC_MSG_ERROR([Could not find working margo installation!]) )
 LIBS="$MARGO_LIBS $LIBS"
@@ -37,6 +43,32 @@ PKG_CHECK_MODULES([ARGOBOTS],[argobots],[],
 LIBS="$ARGOBOTS_LIBS $LIBS"
 CPPFLAGS="$ARGOBOTS_CFLAGS $CPPFLAGS"
 CFLAGS="$ARGOBOTS_CFLAGS $CFLAGS"
+
+PKG_CHECK_MODULES([SDSKEYVAL],[kv-server],[],
+	AC_MSG_ERROR([Could not find working sds-keyval server installation!]) )
+LIBS="$SDSKEYVAL_LIBS $LIBS"
+CPPFLAGS="$SDSKEYVAL_CFLAGS $CPPFLAGS"
+CFLAGS="$SDSKEYVAL_CFLAGS $CFLAGS"
+
+PKG_CHECK_MODULES([PMEM],[libpmemobj],[],
+	AC_MSG_ERROR([Could not find working libpmemobj installation!]) )
+LIBS="$PMEM_LIBS $LIBS"
+CPPFLAGS="$PMEM_CFLAGS $CPPFLAGS"
+CFLAGS="$PMEM_CFLAGS $CFLAGS"
+
+PKG_CHECK_MODULES([PMEM],[libpmemobj],[],
+	AC_MSG_ERROR([Could not find working libpmemobj installation!]) )
+LIBS="$PMEM_LIBS $LIBS"
+CPPFLAGS="$PMEM_CFLAGS $CPPFLAGS"
+CFLAGS="$PMEM_CFLAGS $CFLAGS"
+
+PKG_CHECK_MODULES([BAKE],[bake-bulk-server],[],
+	AC_MSG_ERROR([Could not find working BAKE installation!]) )
+LIBS="$BAKE_LIBS $LIBS"
+CPPFLAGS="$BAKE_CFLAGS $CPPFLAGS"
+CFLAGS="$BAKE_CFLAGS $CFLAGS"
+
+
 
 # check for RADOS
 AC_ARG_WITH([rados],
