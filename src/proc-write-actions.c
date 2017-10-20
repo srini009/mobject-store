@@ -7,6 +7,7 @@
 #include "args-write-actions.h"
 #include "write-op-impl.h"
 #include "utlist.h"
+#include "log.h"
 
 /**
  * This file contains the main hg_proc_mobject_store_write_op_t 
