@@ -26,7 +26,7 @@ hg_return_t hg_proc_mobject_store_omap_iter_t(hg_proc_t proc, mobject_store_omap
 			if(ret != HG_SUCCESS) return ret;
 			ret = hg_proc_hg_size_t(proc, &(node->value_size));
 			if(ret != HG_SUCCESS) return ret;
-			ret = hg_memcpy(proc, node->value, node->value_size);
+			ret = hg_proc_memcpy(proc, node->value, node->value_size);
 			if(ret != HG_SUCCESS) return ret;
 		}
 
