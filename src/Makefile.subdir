@@ -23,8 +23,9 @@ noinst_HEADERS += \
   src/prepare-write-op.h \
   src/prepare-read-op.h \
   src/write-op-visitor.h \
-  src/read-op-visitor.h \
-  src/buffer-union.h
+  src/buffer-union.h \
+  src/args-write-actions.h \
+  src/args-read-actions.h
 
 src_libmobject_store_server_la_SOURCES = \
 					 src/mobject-server.c
