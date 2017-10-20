@@ -23,3 +23,4 @@ include Make.rules
 
 include $(top_srcdir)/src/Makefile.subdir
 include $(top_srcdir)/tests/Makefile.subdir
+include $(top_srcdir)/tests/io-chain/Makefile.subdir
