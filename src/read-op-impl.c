@@ -54,6 +54,8 @@ void mobject_store_read_op_stat(mobject_store_read_op_t read_op,
 
 	READ_ACTION_UPCAST(base, action);
 	DL_APPEND(read_op->actions, base);
+
+	read_op->num_actions += 1;
 }
 
 void mobject_store_read_op_read(mobject_store_read_op_t read_op,
@@ -76,6 +78,8 @@ void mobject_store_read_op_read(mobject_store_read_op_t read_op,
 
 	READ_ACTION_UPCAST(base, action);
 	DL_APPEND(read_op->actions, base);
+
+	read_op->num_actions += 1;
 }
 
 void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
@@ -100,6 +104,8 @@ void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
 
 	READ_ACTION_UPCAST(base, action);
     DL_APPEND(read_op->actions, base);
+
+	read_op->num_actions += 1;
 }
 
 void mobject_store_read_op_omap_get_vals(mobject_store_read_op_t read_op,
@@ -130,6 +136,8 @@ void mobject_store_read_op_omap_get_vals(mobject_store_read_op_t read_op,
 
 	READ_ACTION_UPCAST(base, action);
 	DL_APPEND(read_op->actions, base);
+
+	read_op->num_actions += 1;
 }
 
 void mobject_store_read_op_omap_get_vals_by_keys(mobject_store_read_op_t read_op,
@@ -163,6 +171,8 @@ void mobject_store_read_op_omap_get_vals_by_keys(mobject_store_read_op_t read_op
 	
 	READ_ACTION_UPCAST(base, action);
 	DL_APPEND(read_op->actions, base);
+
+	read_op->num_actions += 1;
 }
 
 int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
