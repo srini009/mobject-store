@@ -7,6 +7,7 @@
 #include "args-read-actions.h"
 #include "read-op-impl.h"
 #include "utlist.h"
+#include "log.h"
 
 /**
  * This file contains the main hg_proc_mobject_store_read_op_t 
