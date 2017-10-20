@@ -21,7 +21,7 @@ mobject_store_write_op_t mobject_store_create_write_op(void)
 	write_op->actions     = (wr_action_base_t)0;
 	write_op->bulk_handle = HG_BULK_NULL;
 	write_op->num_actions = 0;
-	write_op->use_local_pointers = 1;
+	write_op->ready       = 0;
 	return write_op;
 }
 
@@ -47,7 +47,7 @@ void mobject_store_write_op_create(mobject_store_write_op_t write_op,
                                    const char* category)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	MOBJECT_ASSERT(write_op->use_local_pointers, "can't modify a write_op that has been sent");
+	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
 
 	wr_action_create_t action = (wr_action_create_t)calloc(1, sizeof(*action));
 	action->base.type         = WRITE_OPCODE_CREATE;
@@ -65,7 +65,7 @@ void mobject_store_write_op_write(mobject_store_write_op_t write_op,
                                   uint64_t offset)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	MOBJECT_ASSERT(write_op->use_local_pointers, "can't modify a write_op that has been sent");
+	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
 
 	wr_action_write_t action  = (wr_action_write_t)calloc(1, sizeof(*action));
 	action->base.type         = WRITE_OPCODE_WRITE;
@@ -84,7 +84,7 @@ void mobject_store_write_op_write_full(mobject_store_write_op_t write_op,
                                        size_t len)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	MOBJECT_ASSERT(write_op->use_local_pointers, "can't modify a write_op that has been sent");
+	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
 	
 	wr_action_write_full_t action = (wr_action_write_full_t)calloc(1, sizeof(*action));
 	action->base.type             = WRITE_OPCODE_WRITE_FULL;
@@ -122,7 +122,7 @@ void mobject_store_write_op_writesame(mobject_store_write_op_t write_op,
                                       uint64_t offset)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	MOBJECT_ASSERT(write_op->use_local_pointers, "can't modify a write_op that has been sent");
+	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
 
 	wr_action_write_same_t action = (wr_action_write_same_t)calloc(1, sizeof(*action));
 	action->base.type             = WRITE_OPCODE_WRITE_SAME;
@@ -142,7 +142,7 @@ void mobject_store_write_op_append(mobject_store_write_op_t write_op,
                                    size_t len)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	MOBJECT_ASSERT(write_op->use_local_pointers, "can't modify a write_op that has been sent");
+	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
 
 	wr_action_append_t action = (wr_action_append_t)calloc(1, sizeof(*action));
 	action->base.type         = WRITE_OPCODE_APPEND;
@@ -158,7 +158,7 @@ void mobject_store_write_op_append(mobject_store_write_op_t write_op,
 void mobject_store_write_op_remove(mobject_store_write_op_t write_op)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	MOBJECT_ASSERT(write_op->use_local_pointers, "can't modify a write_op that has been sent");
+	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
 
 	wr_action_remove_t action = (wr_action_remove_t)calloc(1, sizeof(*action));
 	action->base.type         = WRITE_OPCODE_REMOVE;
@@ -191,7 +191,7 @@ void mobject_store_write_op_truncate(mobject_store_write_op_t write_op,
                                      uint64_t offset)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	MOBJECT_ASSERT(write_op->use_local_pointers, "can't modify a write_op that has been sent");
+	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
 
 	wr_action_truncate_t action = (wr_action_truncate_t)calloc(1, sizeof(*action));
 	action->base.type           = WRITE_OPCODE_TRUNCATE;
@@ -207,7 +207,7 @@ void mobject_store_write_op_zero(mobject_store_write_op_t write_op,
                                  uint64_t len)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	MOBJECT_ASSERT(write_op->use_local_pointers, "can't modify a write_op that has been sent");
+	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
 
 	wr_action_zero_t action = (wr_action_zero_t)calloc(1, sizeof(*action));
 	action->base.type       = WRITE_OPCODE_ZERO;
@@ -227,7 +227,7 @@ void mobject_store_write_op_omap_set(mobject_store_write_op_t write_op,
                                      size_t num)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	MOBJECT_ASSERT(write_op->use_local_pointers, "can't modify a write_op that has been sent");
+	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
 
 	// compute the size required to embed the keys and values
 	size_t i;
@@ -266,7 +266,7 @@ void mobject_store_write_op_omap_rm_keys(mobject_store_write_op_t write_op,
                                          size_t keys_len)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	MOBJECT_ASSERT(write_op->use_local_pointers, "can't modify a write_op that has been sent");
+	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
 
 	// find out the extra memory to allocate
 	size_t i;

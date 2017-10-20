@@ -11,18 +11,11 @@
 static void prepare_read(uint64_t* cur_offset,
                           rd_action_read_t action,
                           void** ptr,
-                          size_t* len)
-{
-	uint64_t pos = *cur_offset;
-	*cur_offset += action->len;
-	*ptr         = (void*)action->buffer.as_pointer;
-	*len         = action->len;
-	action->buffer.as_offset = pos;
-}
+                          size_t* len);
 
 void prepare_read_op(margo_instance_id mid, mobject_store_read_op_t read_op) 
 {
-	if(read_op->use_local_pointers == 0) return;
+	if(read_op->ready == 1) return;
 	if(read_op->num_actions == 0) return;	
 
 	rd_action_base_t action;
@@ -52,9 +45,24 @@ void prepare_read_op(margo_instance_id mid, mobject_store_read_op_t read_op)
 
 	}
 
-	read_op->use_local_pointers = 0;
+	read_op->ready = 1;
 
 	free(pointers);
 	free(lengths);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//                          STATIC FUNCTIONS BELOW                            //
+////////////////////////////////////////////////////////////////////////////////
+
+static void prepare_read(uint64_t* cur_offset,
+                          rd_action_read_t action,
+                          void** ptr,
+                          size_t* len)
+{
+	uint64_t pos = *cur_offset;
+	*cur_offset += action->len;
+	*ptr         = (void*)action->buffer.as_pointer;
+	*len         = action->len;
+	action->buffer.as_offset = pos;
+}

@@ -11,8 +11,16 @@
 #include "libmobject-store.h"
 #include "read-actions.h"
 
+/**
+ * This object represents a handler for a list of actions
+ * to perform on a particular object.
+ * "ready" indicates that the object is ready to be
+ * sent to be used for bulk transfers: all pointers
+ * have been converted into an offset in a bulk handle.
+ * It can therefore be sent to a server and processed.
+ */
 struct mobject_store_read_op {
-	int              use_local_pointers;
+	int              ready;
 	hg_bulk_t        bulk_handle;
 	size_t           num_actions;
 	rd_action_base_t actions;

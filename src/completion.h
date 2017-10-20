@@ -9,6 +9,15 @@
 #include <abt.h>
 #include "mobject-store-config.h"
 
+/**
+ * The mobject_store_completion object is used for asynchronous
+ * functions. It contains the callbacks to call when the data is
+ * safe and when the operation has completed, as well as potential
+ * user data and required mechanism to be able to block on the
+ * completion object.
+ * mobject_store_completion* is typedef-ed as mobject_store_completion_t
+ * in libmobject-store.h.
+ */
 struct mobject_store_completion {
 	mobject_store_callback_t cb_complete;    // completion callback
 	mobject_store_callback_t cb_safe;        // safe callback

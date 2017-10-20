@@ -18,9 +18,9 @@ mobject_store_read_op_t mobject_store_create_read_op(void)
 	mobject_store_read_op_t read_op = 
 		(mobject_store_read_op_t)calloc(1, sizeof(*read_op));
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "Could not allocate read_op");
-	read_op->actions = (rd_action_base_t)0;
+	read_op->actions     = (rd_action_base_t)0;
 	read_op->bulk_handle = HG_BULK_NULL;
-	read_op->use_local_pointers = 1;
+	read_op->ready       = 0;
 	return read_op;
 }
 
@@ -44,7 +44,7 @@ void mobject_store_read_op_stat(mobject_store_read_op_t read_op,
                                 int *prval)
 {
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
-	MOBJECT_ASSERT(read_op->use_local_pointers, "can't modify a read_op that has been sent");
+	MOBJECT_ASSERT(!(read_op->ready), "can't modify a read_op that is ready to be processed");
 
 	rd_action_stat_t action = (rd_action_stat_t)calloc(1, sizeof(*action));
 	action->base.type       = READ_OPCODE_STAT;
@@ -64,7 +64,7 @@ void mobject_store_read_op_read(mobject_store_read_op_t read_op,
                                 int *prval)
 {
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
-	MOBJECT_ASSERT(read_op->use_local_pointers, "can't modify a read_op that has been sent");
+	MOBJECT_ASSERT(!(read_op->ready), "can't modify a read_op that is ready to be processed");
 
 	rd_action_read_t action   = (rd_action_read_t)calloc(1, sizeof(*action));
 	action->base.type         = READ_OPCODE_READ;
@@ -85,7 +85,7 @@ void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
                                          int *prval)
 {
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
-	MOBJECT_ASSERT(read_op->use_local_pointers, "can't modify a read_op that has been sent");
+	MOBJECT_ASSERT(!(read_op->ready), "can't modify a read_op that is ready to be processed");
 
 	size_t strl = strlen(start_after);
 	
@@ -110,7 +110,7 @@ void mobject_store_read_op_omap_get_vals(mobject_store_read_op_t read_op,
                                          int *prval)
 {
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
-	MOBJECT_ASSERT(read_op->use_local_pointers, "can't modify a read_op that has been sent");
+	MOBJECT_ASSERT(!(read_op->ready), "can't modify a read_op that is ready to be processed");
 
 	// compute required size for embedded data
 	size_t strl1 = strlen(start_after)+1;
@@ -139,7 +139,7 @@ void mobject_store_read_op_omap_get_vals_by_keys(mobject_store_read_op_t read_op
                                                  int *prval)
 {
 	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
-	MOBJECT_ASSERT(read_op->use_local_pointers, "can't modify a read_op that has been sent");
+	MOBJECT_ASSERT(!(read_op->ready), "can't modify a read_op that is ready to be processed");
 	
 	// computing extra memory required to hold keys
 	size_t extra_mem = 0;

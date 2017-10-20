@@ -8,57 +8,29 @@
 #include "utlist.h"
 #include "log.h"
 
-static void prepare_write(uint64_t* cur_offset,
+static void convert_write(uint64_t* cur_offset,
                           wr_action_write_t action,
                           void** ptr,
-                          size_t* len)
-{
-	uint64_t pos = *cur_offset;
-	*cur_offset += action->len;
-	*ptr         = (void*)action->buffer.as_pointer;
-	*len         = action->len;
-	action->buffer.as_offset = pos;
-}
+                          size_t* len);
 
-static void prepare_write_full(uint64_t* cur_offset,
+static void convert_write_full(uint64_t* cur_offset,
                                wr_action_write_full_t action,
                                void** ptr,
-                               size_t* len)
-{
-	uint64_t pos = *cur_offset;
-	*cur_offset += action->len;
-	*ptr         = (void*)action->buffer.as_pointer;
-	*len         = action->len;
-	action->buffer.as_offset = pos;
-}
+                               size_t* len);
 
-static void prepare_write_same(uint64_t* cur_offset,
+static void convert_write_same(uint64_t* cur_offset,
                                wr_action_write_same_t action,
                                void** ptr,
-                               size_t* len)
-{
-	uint64_t pos = *cur_offset;
-	*cur_offset += action->data_len;
-	*ptr         = (void*)action->buffer.as_pointer;
-	*len         = action->data_len;
-	action->buffer.as_offset = pos;
-}
+                               size_t* len);
 
-static void prepare_append(uint64_t* cur_offset,
+static void convert_append(uint64_t* cur_offset,
                            wr_action_append_t action,
                            void** ptr,
-                           size_t* len)
-{
-	uint64_t pos = *cur_offset;
-	*cur_offset += action->len;
-	*ptr         = (void*)action->buffer.as_pointer;
-	*len         = action->len;
-	action->buffer.as_offset = pos;
-}
+                           size_t* len);
 
 void prepare_write_op(margo_instance_id mid, mobject_store_write_op_t write_op) 
 {
-	if(write_op->use_local_pointers == 0) return;
+	if(write_op->ready == 1) return;
 	if(write_op->num_actions == 0) return;	
 
 	wr_action_base_t action;
@@ -72,22 +44,22 @@ void prepare_write_op(margo_instance_id mid, mobject_store_write_op_t write_op)
 
 		switch(action->type) {
 		case WRITE_OPCODE_WRITE:
-			prepare_write(&current_offset, 
+			convert_write(&current_offset, 
 				(wr_action_write_t)action, pointers+i, lengths+i);
 			i += 1;
 			break;
 		case WRITE_OPCODE_WRITE_FULL:
-			prepare_write_full(&current_offset,
+			convert_write_full(&current_offset,
 				(wr_action_write_full_t)action, pointers+i, lengths+i);
 			i += 1;
 			break;
 		case WRITE_OPCODE_WRITE_SAME:
-			prepare_write_same(&current_offset, 
+			convert_write_same(&current_offset, 
 				(wr_action_write_same_t)action, pointers+i, lengths+i);
 			i += 1;
 			break;
 		case WRITE_OPCODE_APPEND:
-			prepare_append(&current_offset, 
+			convert_append(&current_offset, 
 				(wr_action_append_t)action, pointers+i, lengths+i);
 			i += 1;
 			break;
@@ -103,6 +75,57 @@ void prepare_write_op(margo_instance_id mid, mobject_store_write_op_t write_op)
 
 	}
 
-	write_op->use_local_pointers = 0;
+	write_op->ready = 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//                          STATIC FUNCTIONS BELOW                            //
+////////////////////////////////////////////////////////////////////////////////
+
+static void convert_write(uint64_t* cur_offset,
+                          wr_action_write_t action,
+                          void** ptr,
+                          size_t* len)
+{
+	uint64_t pos = *cur_offset;
+	*cur_offset += action->len;
+	*ptr         = (void*)action->buffer.as_pointer;
+	*len         = action->len;
+	action->buffer.as_offset = pos;
+}
+
+static void convert_write_full(uint64_t* cur_offset,
+                               wr_action_write_full_t action,
+                               void** ptr,
+                               size_t* len)
+{
+	uint64_t pos = *cur_offset;
+	*cur_offset += action->len;
+	*ptr         = (void*)action->buffer.as_pointer;
+	*len         = action->len;
+	action->buffer.as_offset = pos;
+}
+
+static void convert_write_same(uint64_t* cur_offset,
+                               wr_action_write_same_t action,
+                               void** ptr,
+                               size_t* len)
+{
+	uint64_t pos = *cur_offset;
+	*cur_offset += action->data_len;
+	*ptr         = (void*)action->buffer.as_pointer;
+	*len         = action->data_len;
+	action->buffer.as_offset = pos;
+}
+
+static void convert_append(uint64_t* cur_offset,
+                           wr_action_append_t action,
+                           void** ptr,
+                           size_t* len)
+{
+	uint64_t pos = *cur_offset;
+	*cur_offset += action->len;
+	*ptr         = (void*)action->buffer.as_pointer;
+	*len         = action->len;
+	action->buffer.as_offset = pos;
+}
