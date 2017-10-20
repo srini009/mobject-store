@@ -108,7 +108,7 @@ typedef void *mobject_store_ioctx_t;
  * mobject_store_read_op_omap_get_vals_by_keys(), mobject_store_omap_get_next(), and
  * mobject_store_omap_get_end().
  */
-typedef void *mobject_store_omap_iter_t;
+typedef struct mobject_store_omap_iter *mobject_store_omap_iter_t;
 
 /**
  * @typedef mobject_store_write_op_t
