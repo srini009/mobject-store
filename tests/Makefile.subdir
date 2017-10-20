@@ -1,5 +1,6 @@
 check_PROGRAMS += \
- tests/mobject-connect-test
+ tests/mobject-connect-test \
+ tests/mobject-server
 
 if HAVE_RADOS
 check_PROGRAMS += \
@@ -12,6 +13,9 @@ endif
 tests_mobject_connect_test_SOURCES = tests/mobject-connect-test.c
 tests_mobject_connect_test_CPPFLAGS = -I${srcdir}/include
 tests_mobject_connect_test_LDADD = src/libmobject-store.la
+
+tests_mobject_server_CPPFLAGS = -I${srcdir}/include
+tests_mobject_server_LDADD = ${LIBS} src/libmobject-store-server.la
 
 if HAVE_RADOS
 tests_rados_mobject_connect_test_SOURCES = tests/mobject-connect-test.c
