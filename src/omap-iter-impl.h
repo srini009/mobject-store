@@ -8,19 +8,18 @@
 
 #include "libmobject-store.h"
 
-#define OMAP_ITER_OWNS_KEY    0x1
-#define OMAP_ITER_OWNS_VALUE  0x2
-
 typedef struct omap_iter_node* omap_iter_node_t;
 
 struct omap_iter_node {
 	char*            key;
 	char*            value;
+	size_t           key_size;
 	size_t           value_size;
 	omap_iter_node_t prev, next; 
 };
 
 struct mobject_store_omap_iter {
+	size_t           num_items;
 	omap_iter_node_t head;
 	omap_iter_node_t current;
 };
