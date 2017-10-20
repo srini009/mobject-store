@@ -7,6 +7,7 @@
 #define __MOBJECT_READ_OPCODES_H
 
 #include "mobject-store-config.h"
+#include "buffer-union.h"
 
 typedef enum {
 	READ_OPCODE_BASE = 0,
@@ -44,10 +45,7 @@ typedef struct rd_action_READ {
 	struct rd_action_BASE base;
 	uint64_t              offset;
 	size_t                len;
-    union {
-		char*             as_pointer;
-		uint64_t          as_offset;
-	} buffer;
+	buffer_u              buffer;
 	size_t*               bytes_read;
 	int*                  prval;
 }* rd_action_read_t;
