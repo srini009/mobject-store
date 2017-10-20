@@ -12,13 +12,13 @@ endif
 
 tests_mobject_connect_test_SOURCES = tests/mobject-connect-test.c
 tests_mobject_connect_test_CPPFLAGS = -I${srcdir}/include
-tests_mobject_connect_test_LDADD = src/libmobject-store.la
+tests_mobject_connect_test_LDADD = src/libmobject-store.la ${LIBS}
 
 tests_mobject_server_CPPFLAGS = -I${srcdir}/include
-tests_mobject_server_LDADD = ${LIBS} src/libmobject-store-server.la
+tests_mobject_server_LDADD = src/libmobject-store-server.la ${LIBS}
 
 if HAVE_RADOS
 tests_rados_mobject_connect_test_SOURCES = tests/mobject-connect-test.c
 tests_rados_mobject_connect_test_CFLAGS = -DUSE_RADOS
-tests_rados_mobject_connect_test_LDADD = -lrados
+tests_rados_mobject_connect_test_LDADD = -lrados ${LIBS}
 endif
