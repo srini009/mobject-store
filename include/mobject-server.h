@@ -7,16 +7,17 @@
 #ifndef MOBJECT_SERVER_H
 #define MOBJECT_SERVER_H
 
+#include <margo.h>
 /* server-side utilities and routines.  Clients are looking for either
  * libmobject-store.h or librados-mobject-store.h */
 
 /**
  * Start a mobject server instance
  *
- * @param[in] addr_str
+ * @param[in] mid
  * @param[in poolname
  * @returns 0 on success, negative error code on failure */
-int mobject_server_register(const char *addr_str, const char *poolname);
+int mobject_server_register(margo_instance_id mid, const char *poolname);
 
 
 #endif

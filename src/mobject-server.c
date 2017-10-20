@@ -6,16 +6,13 @@
 
 #include <mobject-server.h>
 
-int mobject_server_register(const char *addr_str, const char *poolname)
+int mobject_server_register(margo_instance_id mid, const char *poolname)
 {
     int ret=0;
-    margo_instance_id mid;
     kv_context *metadata;
     struct bake_pool_info *pool_info;
 
     pool_info = bake_server_makepool(poolname);
-
-    mid = margo_init(addr_str, MARGO_SERVER_MODE, 0, -1);
 
     bake_server_register(mid, pool_info);
     metadata = kv_server_register(mid);
@@ -23,10 +20,10 @@ int mobject_server_register(const char *addr_str, const char *poolname)
 }
 
 
-int mobject_shutdown()
+int mobject_shutdown(margo_instance_id mid)
 {
-    margo_wait_for_finalize(NULL);
+    margo_wait_for_finalize(mid);
     pmemobj_close(NULL);
-
+    return 0;
 
 }
