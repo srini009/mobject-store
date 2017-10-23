@@ -63,12 +63,6 @@ LIBS="$PMEM_LIBS $LIBS"
 CPPFLAGS="$PMEM_CFLAGS $CPPFLAGS"
 CFLAGS="$PMEM_CFLAGS $CFLAGS"
 
-PKG_CHECK_MODULES([PMEM],[libpmemobj],[],
-	AC_MSG_ERROR([Could not find working libpmemobj installation!]) )
-LIBS="$PMEM_LIBS $LIBS"
-CPPFLAGS="$PMEM_CFLAGS $CPPFLAGS"
-CFLAGS="$PMEM_CFLAGS $CFLAGS"
-
 PKG_CHECK_MODULES([BAKE],[bake-bulk-server],[],
 	AC_MSG_ERROR([Could not find working BAKE installation!]) )
 LIBS="$BAKE_LIBS $LIBS"
