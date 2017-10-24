@@ -10,7 +10,6 @@
 #include "buffer-union.h"
 
 typedef struct write_op_visitor {
-	void* uargs;
 	void (*visit_begin)(void*);
 	void (*visit_create)(void*, int);
 	void (*visit_write)(void*, buffer_u, size_t, uint64_t);
@@ -25,6 +24,6 @@ typedef struct write_op_visitor {
 	void (*visit_end)(void*);
 }* write_op_visitor_t;
 
-void execute_write_op_visitor(write_op_visitor_t visitor, mobject_store_write_op_t write_op);
+void execute_write_op_visitor(write_op_visitor_t visitor, mobject_store_write_op_t write_op, void* uargs);
 
 #endif

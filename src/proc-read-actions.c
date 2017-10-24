@@ -113,7 +113,7 @@ hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_o
 		// for each action ...
 		DL_FOREACH((*read_op)->actions,elem) {
 			read_op_code_t opcode = elem->type;
-			MOBJECT_ASSERT((opcode <= 0 || opcode >= _READ_OPCODE_END_ENUM_),
+			MOBJECT_ASSERT((opcode > 0 || opcode < _READ_OPCODE_END_ENUM_),
 				"Invalid read_op opcode");
 			// encode the type of action
 			ret = hg_proc_memcpy(proc, &opcode, sizeof(opcode));
@@ -143,11 +143,12 @@ hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_o
 			read_op_code_t opcode;
 			ret = hg_proc_memcpy(proc, &opcode, sizeof(opcode));
 			if(ret != HG_SUCCESS) return ret;
-			MOBJECT_ASSERT((opcode <= 0 || opcode >= _READ_OPCODE_END_ENUM_),
+			MOBJECT_ASSERT((opcode > 0 || opcode < _READ_OPCODE_END_ENUM_),
 				"Invalid write_op opcode");
 			// decode the action's arguments
 			ret = decode_read_action[opcode](proc, &position, &next_action);
 			if(ret != HG_SUCCESS) return ret;
+			next_action->type = opcode;
 			// append to the list
 			DL_APPEND((*read_op)->actions, next_action);
 		}

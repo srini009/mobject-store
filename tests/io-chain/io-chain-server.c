@@ -5,22 +5,18 @@
 #include <margo.h>
 #include <mercury.h>
 #include "types.h"
+#include "src/write-op-visitor.h"
 
 /* after serving this number of rpcs, the server will shut down. */
 static const int TOTAL_RPCS = 16;
 /* number of RPCS already received. */
 static int num_rpcs = 0;
 
-/* 
- * hello_world function to expose as an RPC.
- * This function just prints "Hello World"
- * and increment the num_rpcs variable.
- *
- * All Mercury RPCs must have a signature
- *   hg_return_t f(hg_handle_t h)
- */
-hg_return_t sum(hg_handle_t h);
-DECLARE_MARGO_RPC_HANDLER(sum)
+hg_return_t mobject_write_op_rpc(hg_handle_t h);
+DECLARE_MARGO_RPC_HANDLER(mobject_write_op_rpc)
+
+hg_return_t mobject_read_op_rpc(hg_handle_t h);
+DECLARE_MARGO_RPC_HANDLER(mobject_read_op_rpc)
 
 /*
  * main function.
@@ -29,7 +25,7 @@ int main(int argc, char** argv)
 {
 	/* Initialize Margo */
 	margo_instance_id mid = margo_init("bmi+tcp", MARGO_SERVER_MODE, 0, 0);
-    assert(mid);
+	assert(mid);
 
 	hg_addr_t my_address;
 	margo_addr_self(mid, &my_address);
@@ -40,26 +36,55 @@ int main(int argc, char** argv)
 	printf("Server running at address %s\n", addr_str);
 
 	/* Register the RPC by its name ("sum") */
-	MARGO_REGISTER(mid, "sum", sum_in_t, sum_out_t, sum);
+	MARGO_REGISTER(mid, "mobject_write_op", write_op_in_t, write_op_out_t, mobject_write_op_rpc);
+	MARGO_REGISTER(mid, "mobject_read_op", read_op_in_t, read_op_out_t, mobject_read_op_rpc)
 
 	/* NOTE: there isn't anything else for the server to do at this point
-     * except wait for itself to be shut down.  The
-     * margo_wait_for_finalize() call here yields to let Margo drive
-     * progress until that happens.
+	 * except wait for itself to be shut down.  The
+	 * margo_wait_for_finalize() call here yields to let Margo drive
+	 * progress until that happens.
 	 */
 	margo_wait_for_finalize(mid);
 
 	return 0;
 }
 
+static void write_op_printer_begin(void*);
+static void write_op_printer_end(void*);
+static void write_op_printer_create(void*, int);
+static void write_op_printer_write(void*, buffer_u, size_t, uint64_t);
+static void write_op_printer_write_full(void*, buffer_u, size_t);
+static void write_op_printer_writesame(void*, buffer_u, size_t, size_t, uint64_t);
+static void write_op_printer_append(void*, buffer_u, size_t);
+static void write_op_printer_remove(void*);
+static void write_op_printer_truncate(void*, uint64_t);
+static void write_op_printer_zero(void*, uint64_t, uint64_t);
+static void write_op_printer_omap_set(void*, char const* const*, char const* const*, const size_t*, size_t);
+static void write_op_printer_omap_rm_keys(void*, char const* const*, size_t);
+
+struct write_op_visitor write_op_printer = {
+	.visit_begin        = write_op_printer_begin,
+	.visit_create       = write_op_printer_create,
+	.visit_write        = write_op_printer_write,
+	.visit_write_full   = write_op_printer_write_full,
+	.visit_writesame    = write_op_printer_writesame,
+	.visit_append       = write_op_printer_append,
+	.visit_remove       = write_op_printer_remove,
+	.visit_truncate     = write_op_printer_truncate,
+	.visit_zero         = write_op_printer_zero,
+	.visit_omap_set     = write_op_printer_omap_set,
+	.visit_omap_rm_keys = write_op_printer_omap_rm_keys,
+	.visit_end          = write_op_printer_end
+};
+
 /* Implementation of the RPC. */
-hg_return_t sum(hg_handle_t h)
+hg_return_t mobject_write_op_rpc(hg_handle_t h)
 {
 	hg_return_t ret;
 	num_rpcs += 1;
 
-	sum_in_t in;
-	sum_out_t out;
+	write_op_in_t in;
+	write_op_out_t out;
 
 	margo_instance_id mid = margo_hg_handle_get_instance(h);
 
@@ -67,9 +92,11 @@ hg_return_t sum(hg_handle_t h)
 	ret = margo_get_input(h, &in);
 	assert(ret == HG_SUCCESS);
 
-	/* Compute the result. */
-	out.ret = in.x + in.y;
-	printf("Computed %d + %d = %d\n",in.x,in.y,out.ret);
+	/* Execute the operation chain */
+	execute_write_op_visitor(&write_op_printer, in.chain, NULL);
+
+	// set the return value of the RPC
+	out.ret = 0;
 
 	ret = margo_respond(h, &out);
 	assert(ret == HG_SUCCESS);
@@ -92,4 +119,120 @@ hg_return_t sum(hg_handle_t h)
 
 	return HG_SUCCESS;
 }
-DEFINE_MARGO_RPC_HANDLER(sum)
+DEFINE_MARGO_RPC_HANDLER(mobject_write_op_rpc)
+
+/* Implementation of the RPC. */
+hg_return_t mobject_read_op_rpc(hg_handle_t h)
+{
+	hg_return_t ret;
+	num_rpcs += 1;
+
+	read_op_in_t in;
+	read_op_out_t out;
+
+	margo_instance_id mid = margo_hg_handle_get_instance(h);
+
+	/* Deserialize the input from the received handle. */
+	ret = margo_get_input(h, &in);
+	assert(ret == HG_SUCCESS);
+
+	/* Compute the result. */
+	// TODO
+
+	ret = margo_respond(h, &out);
+	assert(ret == HG_SUCCESS);
+
+	/* Free the input data. */
+	ret = margo_free_input(h, &in);
+	assert(ret == HG_SUCCESS);
+
+	/* We are not going to use the handle anymore, so we should destroy it. */
+	ret = margo_destroy(h);
+	assert(ret == HG_SUCCESS);
+
+	if(num_rpcs == TOTAL_RPCS) {
+		/* NOTE: we assume that the server daemon is using
+		 * margo_wait_for_finalize() to suspend until this RPC executes, so there
+		 * is no need to send any extra signal to notify it.
+		 */
+		margo_finalize(mid);
+	}
+
+	return HG_SUCCESS;
+}
+DEFINE_MARGO_RPC_HANDLER(mobject_read_op_rpc)
+
+void write_op_printer_begin(void* unused)
+{
+	printf("<mobject_write_operation>\n");
+}
+
+void write_op_printer_end(void* unused)
+{
+	printf("</mobject_write_operation>\n");
+}
+
+void write_op_printer_create(void* unused, int exclusive)
+{
+	printf("\t<create exclusive=%d />\n", exclusive);
+}
+
+void write_op_printer_write(void* u, buffer_u buf, size_t len, uint64_t offset)
+{
+	printf("\t<write from=%ld length=%ld offset=%ld />\n", buf.as_offset, len, offset);
+}
+
+void write_op_printer_write_full(void* u, buffer_u buf, size_t len)
+{
+	printf("\t<write_full from=%ld length=%ld />\n", buf.as_offset, len);
+}
+
+void write_op_printer_writesame(void* u, buffer_u buf, size_t data_len, size_t write_len, uint64_t offset)
+{
+	printf("\t<writesame from=%ld data_len=%ld write_len=%ld offset=%ld />\n",
+		buf.as_offset, data_len, write_len, offset);
+}
+
+void write_op_printer_append(void* u, buffer_u buf, size_t len)
+{
+	printf("\t<append from=%ld length=%ld />\n", buf.as_offset, len);
+}
+
+void write_op_printer_remove(void* u)
+{
+	printf("\t<remove />\n");
+}
+
+void write_op_printer_truncate(void* u, uint64_t offset)
+{
+	printf("\t<truncate offset=%ld />\n", offset);
+}
+
+void write_op_printer_zero(void* u, uint64_t offset, uint64_t len)
+{
+	printf("\t<zero offset=%ld len=%ld />\n", offset, len);
+}
+
+void write_op_printer_omap_set(void* u,	char const* const* keys,
+                                     char const* const* vals,
+                                     const size_t *lens,
+                                     size_t num)
+{
+	printf("\t<omap_set num=%ld>\n", num);
+	unsigned i;
+	for(i=0; i<num; i++) {
+		printf("\t\t<record key=\"%s\"\t lens=%ld>%s</record>\n",
+			keys[i], lens[i], vals[i]);
+	}
+	printf("\t</omap_set>\n");
+}
+
+void write_op_printer_omap_rm_keys(void* u, char const* const* keys, size_t num_keys)
+{
+	printf("\t<omap_rm_keys num=%ld>\n", num_keys);
+	unsigned i;
+	for(i=0; i<num_keys; i++) {
+		printf("\t\t<record key=\"%s\" />\n", keys[i]);
+	}
+	printf("\t</omap_rm_keys>\n");
+}

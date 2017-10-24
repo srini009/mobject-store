@@ -6,7 +6,7 @@ TESTS =
 EXTRA_DIST = prepare.sh
 
 AM_CPPFLAGS = -I$(top_srcdir)/include
-AM_CFLAGS =
+AM_CFLAGS   = 
 AM_CXXFLAGS = $(AM_CFLAGS)
 
 lib_LTLIBRARIES = src/libmobject-store.la

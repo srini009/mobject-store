@@ -3,15 +3,21 @@
 
 #include <mercury.h>
 #include <mercury_macros.h>
+#include <mercury_proc_string.h>
+#include <libmobject-store.h>
+#include "src/proc-write-actions.h"
+#include "src/proc-read-actions.h"
 
-/* We use the Mercury macros to define the input
- * and output structures along with the serialization
- * functions.
- */
-MERCURY_GEN_PROC(sum_in_t,
-	((int32_t)(x))\
-	((int32_t)(y)))
+MERCURY_GEN_PROC(write_op_in_t,
+	((hg_string_t)(object_name))\
+	((mobject_store_write_op_t)(chain)))
 
-MERCURY_GEN_PROC(sum_out_t, ((int32_t)(ret)))
+MERCURY_GEN_PROC(write_op_out_t, ((int32_t)(ret)))
+
+MERCURY_GEN_PROC(read_op_in_t,
+	((hg_string_t)(object_name))\
+	((mobject_store_read_op_t)(chain)))
+
+MERCURY_GEN_PROC(read_op_out_t, ((int32_t)(ret)))
 
 #endif
