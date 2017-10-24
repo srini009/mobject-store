@@ -1,7 +1,5 @@
 #include <assert.h>
 #include <stdio.h>
-#include <abt.h>
-#include <abt-snoozer.h>
 #include <margo.h>
 #include "types.h"
 
@@ -17,26 +15,46 @@ int main(int argc, char** argv)
 	margo_instance_id mid = margo_init("bmi+tcp", MARGO_CLIENT_MODE, 0, 0);
 
 	/* Register a RPC function */
-	hg_id_t sum_rpc_id = MARGO_REGISTER(mid, "sum", sum_in_t, sum_out_t, NULL);
-	
+	hg_id_t write_op_rpc_id = MARGO_REGISTER(mid, "mobject_write_op", write_op_in_t, write_op_out_t, NULL);
+	hg_id_t read_op_rpc_id  = MARGO_REGISTER(mid, "mobject_read_op", read_op_in_t, read_op_out_t, NULL);
+
 	/* Lookup the address of the server */
 	hg_addr_t svr_addr;
 	margo_addr_lookup(mid, argv[1], &svr_addr);
-		
-	int i;
-	sum_in_t args;
-	for(i=0; i<4; i++) {
-		args.x = 42+i*2;
-		args.y = 42+i*2+1;
+
+	{ // WRITE OP TEST
+	
+		write_op_in_t in;
+
+		// TODO fill the write_op_in_t
 
 		hg_handle_t h;
-		margo_create(mid, svr_addr, sum_rpc_id, &h);
+		margo_create(mid, svr_addr, write_op_rpc_id, &h);
 		margo_forward(h, &args);
 		
-		sum_out_t resp;
+		write_op_out_t resp;
 		margo_get_output(h, &resp);
 
-		printf("Got response: %d+%d = %d\n", args.x, args.y, resp.ret);
+		// printf("Got response: %d+%d = %d\n", args.x, args.y, resp.ret);
+
+		margo_free_output(h,&resp);
+		margo_destroy(h);
+	}
+
+	{ // READ OP TEST
+		 
+		read_op_in_t in;
+
+		// TODO fill the read_op_in_t
+
+		hg_handle_t h;
+		margo_create(mid, svr_addr, read_op_rpc_id, &h);
+		margo_forward(h, &args);
+	
+		read_op_out_t resp;
+		margo_get_output(h, &resp);
+
+		// print something
 
 		margo_free_output(h,&resp);
 		margo_destroy(h);
