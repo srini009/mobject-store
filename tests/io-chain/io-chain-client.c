@@ -4,6 +4,7 @@
 #include <libmobject-store.h>
 #include "types.h"
 #include "src/prepare-write-op.h"
+#include "src/prepare-read-op.h"
 
 /* Main function. */
 int main(int argc, char** argv)
@@ -30,11 +31,7 @@ int main(int argc, char** argv)
 
 	{ // WRITE OP TEST
 	
-		write_op_in_t in;
-		in.object_name = "test-write-object";
-
 		mobject_store_write_op_t write_op = mobject_store_create_write_op();
-		in.chain = write_op;
 
 		// Add a "create" operation
 		mobject_store_write_op_create(write_op, LIBMOBJECT_CREATE_EXCLUSIVE, NULL);
@@ -59,7 +56,13 @@ int main(int argc, char** argv)
 		mobject_store_write_op_omap_set(write_op, keys, values, val_sizes, 5);
 		// Add a omap_rm_keys" operation
 		mobject_store_write_op_omap_rm_keys(write_op, keys, 5);
-		// the operation chain should be prepare for sending before being serialized
+
+		// BEGIN this is what write_op_operate should contain
+
+		write_op_in_t in;
+                in.object_name = "test-object";
+		in.chain = write_op;
+
 		prepare_write_op(mid, write_op);
 
 		hg_handle_t h;
@@ -69,18 +72,49 @@ int main(int argc, char** argv)
 		write_op_out_t resp;
 		margo_get_output(h, &resp);
 
-		// printf("Got response: %d+%d = %d\n", args.x, args.y, resp.ret);
-
 		margo_free_output(h,&resp);
 		margo_destroy(h);
+
+		// END this is what write_op_operate should contain
+
+		mobject_store_release_write_op(write_op);
 	}
 
-#if 0
 	{ // READ OP TEST
-		 
-		read_op_in_t in;
+		
+		mobject_store_read_op_t read_op = mobject_store_create_read_op();
 
-		// TODO fill the read_op_in_t
+		// Add "stat" operation
+		uint64_t psize;
+		time_t pmtime;
+		int prval1;
+		mobject_store_read_op_stat(read_op, &psize, &pmtime, &prval1);
+		// Add "read" operation
+		char read_buf[512];
+		size_t bytes_read;
+		int prval2;
+		mobject_store_read_op_read(read_op, 2, 32, buffer, &bytes_read, &prval2);
+		// Add "omap_get_keys" operation
+		const char* start_after = "shane";
+		mobject_store_omap_iter_t iter3;
+		int prval3;
+		mobject_store_read_op_omap_get_keys(read_op, start_after, 7, &iter3, &prval3);
+		// Add "omap_get_vals" operation
+		const char* filter_prefix = "p";
+		mobject_store_omap_iter_t iter4;
+		int prval4;
+		mobject_store_read_op_omap_get_vals(read_op, start_after, filter_prefix, 3, &iter4, &prval4);
+		// Add "omap_get_vals_by_keys" operation
+		const char* keys[] = {"matthieu", "shane"};
+		mobject_store_read_op_omap_get_vals_by_keys(read_op, keys, 2, &iter4, &prval4);
+
+		// BEGIN this is what read_op_operate should contain
+
+		read_op_in_t in;
+		in.object_name = "test-object";
+		in.chain = read_op;
+
+		prepare_read_op(mid, read_op);
 
 		hg_handle_t h;
 		margo_create(mid, svr_addr, read_op_rpc_id, &h);
@@ -93,8 +127,12 @@ int main(int argc, char** argv)
 
 		margo_free_output(h,&resp);
 		margo_destroy(h);
+
+		// END this is what read_op_operate should contain
+
+		mobject_store_release_read_op(read_op);
 	}
-#endif
+
 	/* free the address */
 	margo_addr_free(mid, svr_addr);
 

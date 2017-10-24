@@ -6,6 +6,7 @@
 #include <mercury.h>
 #include "types.h"
 #include "src/write-op-visitor.h"
+#include "src/read-op-visitor.h"
 
 /* after serving this number of rpcs, the server will shut down. */
 static const int TOTAL_RPCS = 16;
@@ -93,7 +94,7 @@ hg_return_t mobject_write_op_rpc(hg_handle_t h)
 	assert(ret == HG_SUCCESS);
 
 	/* Execute the operation chain */
-	execute_write_op_visitor(&write_op_printer, in.chain, NULL);
+	execute_write_op_visitor(&write_op_printer, in.chain, in.object_name);
 
 	// set the return value of the RPC
 	out.ret = 0;
@@ -121,6 +122,25 @@ hg_return_t mobject_write_op_rpc(hg_handle_t h)
 }
 DEFINE_MARGO_RPC_HANDLER(mobject_write_op_rpc)
 
+
+static void read_op_printer_begin(void*);
+static void read_op_printer_stat(void*, uint64_t*, time_t*, int*);
+static void read_op_printer_read(void*, uint64_t, size_t, buffer_u, size_t*, int*);
+static void read_op_printer_omap_get_keys(void*, const char*, uint64_t, mobject_store_omap_iter_t*, int*);
+static void read_op_printer_omap_get_vals(void*, const char*, const char*, uint64_t, mobject_store_omap_iter_t*, int*);
+static void read_op_printer_omap_get_vals_by_keys(void*, char const* const*, size_t, mobject_store_omap_iter_t*, int*);
+static void read_op_printer_end(void*);
+
+struct read_op_visitor read_op_printer = {
+	.visit_begin                   = read_op_printer_begin,
+	.visit_end                     = read_op_printer_end,
+	.visit_stat                    = read_op_printer_stat,
+	.visit_read                    = read_op_printer_read,
+	.visit_omap_get_keys           = read_op_printer_omap_get_keys,
+	.visit_omap_get_vals           = read_op_printer_omap_get_vals,
+	.visit_omap_get_vals_by_keys   = read_op_printer_omap_get_vals_by_keys
+};
+
 /* Implementation of the RPC. */
 hg_return_t mobject_read_op_rpc(hg_handle_t h)
 {
@@ -137,7 +157,7 @@ hg_return_t mobject_read_op_rpc(hg_handle_t h)
 	assert(ret == HG_SUCCESS);
 
 	/* Compute the result. */
-	// TODO
+	execute_read_op_visitor(&read_op_printer, in.chain, in.object_name);
 
 	ret = margo_respond(h, &out);
 	assert(ret == HG_SUCCESS);
@@ -162,9 +182,9 @@ hg_return_t mobject_read_op_rpc(hg_handle_t h)
 }
 DEFINE_MARGO_RPC_HANDLER(mobject_read_op_rpc)
 
-void write_op_printer_begin(void* unused)
+void write_op_printer_begin(void* object_name)
 {
-	printf("<mobject_write_operation>\n");
+	printf("<mobject_write_operation on=\"%s\">\n",(char*)object_name);
 }
 
 void write_op_printer_end(void* unused)
@@ -235,4 +255,45 @@ void write_op_printer_omap_rm_keys(void* u, char const* const* keys, size_t num_
 		printf("\t\t<record key=\"%s\" />\n", keys[i]);
 	}
 	printf("\t</omap_rm_keys>\n");
+}
+
+void read_op_printer_begin(void* u)
+{
+	printf("<mobject_read_operation object_name=\"%s\">\n", (char*)u);
+}
+
+void read_op_printer_stat(void* u, uint64_t* psize, time_t* pmtime, int* prval)
+{
+	printf("\t<stat/>\n");
+}
+
+void read_op_printer_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_t* bytes_read, int* prval)
+{
+	printf("\t<read offset=%ld length=%ld to=%ld/>\n",offset, len, buf.as_offset);
+}
+
+void read_op_printer_omap_get_keys(void* u, const char* start_after, uint64_t max_return, 
+				mobject_store_omap_iter_t* iter, int* prval)
+{
+	printf("\t<omap_get_keys start_after=\"%s\" max_return=%ld />\n", start_after, max_return);
+}
+
+void read_op_printer_omap_get_vals(void* u, const char* start_after, const char* filter_prefix, uint64_t max_return, mobject_store_omap_iter_t* iter, int* prval)
+{
+	printf("\t<omap_get_vals start_after=\"%s\" filter_prefix=\"%s\" max_return=%ld />\n",
+		start_after, filter_prefix, max_return);
+}
+
+void read_op_printer_omap_get_vals_by_keys(void* u, char const* const* keys, size_t num_keys, mobject_store_omap_iter_t* iter, int* prval)
+{
+	printf("\t<omap_get_vals_by_keys num=%ld>\n", num_keys);
+	unsigned i;
+	for(i=0; i<num_keys; i++)
+		printf("\t\t<record key=\"%s\" />\n",  keys[i]);
+	printf("\t<omap_get_vals_by_keys/>\n");
+}
+
+void read_op_printer_end(void* u)
+{
+	printf("</mobject_read_operation>\n");
 }

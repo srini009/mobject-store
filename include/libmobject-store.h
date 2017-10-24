@@ -453,8 +453,8 @@ void mobject_store_read_op_read(mobject_store_read_op_t read_op,
  */
 void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
                                          const char *start_after,
-				                         uint64_t max_return,
-				                         mobject_store_omap_iter_t *iter,
+					 uint64_t max_return,
+					 mobject_store_omap_iter_t *iter,
                                          int *prval);
 
 /**

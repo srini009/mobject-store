@@ -277,10 +277,10 @@ static hg_return_t decode_read_action_omap_get_vals(hg_proc_t proc,
 	(*action)->max_return  = a.max_return;
 	(*action)->data_size   = a.data_size;
 	(*action)->start_after = (*action)->data;
-	size_t s = strlen((*action)->start_after);
-	(*action)->filter_prefix = (*action)->data + s + 1;
 
 	ret = hg_proc_memcpy(proc, (*action)->data, (*action)->data_size);
+	size_t s = strlen((*action)->start_after);
+	(*action)->filter_prefix = (*action)->data + s + 1;
 
 	return ret;
 }
