@@ -10,7 +10,6 @@
 #include "buffer-union.h"
 
 typedef struct read_op_visitor {
-	void* uargs;
 	void (*visit_begin)(void*);
 	void (*visit_stat)(void*, uint64_t*, time_t*, int*);
 	void (*visit_read)(void*, uint64_t, size_t, buffer_u, size_t*, int*);
@@ -20,6 +19,6 @@ typedef struct read_op_visitor {
 	void (*visit_end)(void*);
 }* read_op_visitor_t;
 
-void execute_read_op_visitor(read_op_visitor_t visitor, mobject_store_read_op_t read_op);
+void execute_read_op_visitor(read_op_visitor_t visitor, mobject_store_read_op_t read_op, void* uarg);
 
 #endif

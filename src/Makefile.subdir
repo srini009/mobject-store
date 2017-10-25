@@ -8,7 +8,11 @@ src_libmobject_store_la_SOURCES = \
  src/prepare-write-op.c \
  src/prepare-read-op.c \
  src/write-op-visitor.c \
- src/read-op-visitor.c
+ src/read-op-visitor.c \
+ src/omap-iter-impl.c \
+ src/proc-omap-iter.c \
+ src/read-resp-impl.c \
+ src/proc-read-responses.c
 
 noinst_HEADERS += \
   src/log.h \
@@ -26,8 +30,13 @@ noinst_HEADERS += \
   src/buffer-union.h \
   src/args-write-actions.h \
   src/args-read-actions.h \
-  src/read-op-visitor.h
-
+  src/read-op-visitor.h \
+  src/buffer-union.h \
+  src/omap-iter-impl.h \
+  src/proc-omap-iter.h \
+  src/read-responses.h \
+  src/read-resp-impl.h \
+  src/proc-read-responses.h
 
 src_libmobject_store_server_la_SOURCES = \
 					 src/mobject-server.c

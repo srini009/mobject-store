@@ -6,6 +6,7 @@
 #ifndef __MOBJECT_BUFFER_UNION_H
 #define __MOBJECT_BUFFER_UNION_H
 
+#include <stdint.h>
 /**
  * This union is defined to be used in read and write actions
  * involving either a local pointer (const char*) or an offset

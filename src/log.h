@@ -6,6 +6,8 @@
 #ifndef __MOBJECT_LOG_H
 #define __MOBJECT_LOG_H
 
+#include <stdio.h>
+
 #define STRINGIZE(x) STRINGIZE2(x)
 #define STRINGIZE2(x) #x
 #define LINE_STRING STRINGIZE(__LINE__)

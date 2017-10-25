@@ -16,7 +16,10 @@ static void prepare_read(uint64_t* cur_offset,
 void prepare_read_op(margo_instance_id mid, mobject_store_read_op_t read_op) 
 {
 	if(read_op->ready == 1) return;
-	if(read_op->num_actions == 0) return;	
+	if(read_op->num_actions == 0) {
+		read_op->ready = 1;
+		return;
+	}
 
 	rd_action_base_t action;
 
