@@ -21,6 +21,14 @@ if test "x$PKG_CONFIG" == "x"; then
 	AC_MSG_ERROR([Could not find pkg-config utility!])
 fi
 
+# check for MPI -- currently required for SSG on server daemons
+AC_MSG_CHECKING([If MPI programs can be compiled])
+AC_LINK_IFELSE(
+    [AC_LANG_PROGRAM([[#include<mpi.h>]], [[MPI_Init(0,0);]])],
+    [AC_MSG_RESULT([yes])],
+    [AC_MSG_RESULT([no])]
+    [AC_MSG_ERROR([MPI compiler support currently required!])])
+
 dnl seems like this should be a function but my first stab at m4 exploded
 dnl mightily...
 dnl also, we need to separate client libraries from server libraries.  Just jam
@@ -56,7 +64,6 @@ LIBS="$SDSKEYVALCLIENT_LIBS $LIBS"
 CPPFLAGS="$SDSKEYVALCLIENT_CFLAGS $CPPFLAGS"
 CFLAGS="$SDSKEYVALCLIENT_CFLAGS $CFLAGS"
 
-
 PKG_CHECK_MODULES([PMEM],[libpmemobj],[],
 	AC_MSG_ERROR([Could not find working libpmemobj installation!]) )
 LIBS="$PMEM_LIBS $LIBS"
@@ -69,7 +76,10 @@ LIBS="$BAKE_LIBS $LIBS"
 CPPFLAGS="$BAKE_CFLAGS $CPPFLAGS"
 CFLAGS="$BAKE_CFLAGS $CFLAGS"
 
-
+# check that SSG was compiled with MPI support
+AC_CHECK_LIB([ssg], [ssg_group_create_mpi],
+    [],
+    [AC_MSG_ERROR([SSG must be built with MPI support!])])
 
 # check for RADOS
 AC_ARG_WITH([rados],
