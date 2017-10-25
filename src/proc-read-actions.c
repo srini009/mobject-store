@@ -190,7 +190,7 @@ static hg_return_t encode_read_action_read(hg_proc_t proc,
 	args_rd_action_read a;
 	a.offset      = action->offset;
 	a.len         = action->len;
-    a.bulk_offset = action->buffer.as_offset;
+	a.bulk_offset = action->buffer.as_offset;
 	*pos         += a.len;
 	return hg_proc_memcpy(proc, &a, sizeof(a));
 }

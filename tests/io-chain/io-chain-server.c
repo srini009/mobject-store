@@ -7,9 +7,8 @@
 #include "types.h"
 #include "src/write-op-visitor.h"
 #include "src/read-op-visitor.h"
-#include "src/read-op-impl.h"
 #include "src/omap-iter-impl.h"
-#include "src/read-responses.h"
+#include "src/read-resp-impl.h"
 
 /* after serving this number of rpcs, the server will shut down. */
 static const int TOTAL_RPCS = 16;
@@ -97,7 +96,7 @@ hg_return_t mobject_write_op_rpc(hg_handle_t h)
 	assert(ret == HG_SUCCESS);
 
 	/* Execute the operation chain */
-	execute_write_op_visitor(&write_op_printer, in.chain, in.object_name);
+	execute_write_op_visitor(&write_op_printer, in.write_op, in.object_name);
 
 	// set the return value of the RPC
 	out.ret = 0;
@@ -160,15 +159,17 @@ hg_return_t mobject_read_op_rpc(hg_handle_t h)
 	assert(ret == HG_SUCCESS);
 
 	/* Create a response list matching the input actions */
-	rd_response_base_t resp_chain = build_matching_read_responses(in.chain->actions);
+	read_response_t resp = build_matching_read_responses(in.read_op);
 
 	/* Compute the result. */
-	execute_read_op_visitor(&read_op_printer, in.chain, in.object_name);
+	execute_read_op_visitor(&read_op_printer, in.read_op, in.object_name);
+
+	out.responses = resp;
 
 	ret = margo_respond(h, &out);
 	assert(ret == HG_SUCCESS);
 
-	free_read_responses(resp_chain);
+	free_read_responses(resp);
 
 	/* Free the input data. */
 	ret = margo_free_input(h, &in);

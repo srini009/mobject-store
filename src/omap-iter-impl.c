@@ -13,11 +13,14 @@
 void omap_iter_create(mobject_store_omap_iter_t* iter)
 {
 	*iter = (mobject_store_omap_iter_t)calloc(1, sizeof(**iter));
+	(*iter)->ref_count = 1;
 }
 
 void omap_iter_free(mobject_store_omap_iter_t iter)
 {
 	if(!iter) return;
+	iter->ref_count -= 1;
+	if(iter->ref_count > 0) return;
 
 	omap_iter_node_t elt, tmp;
 
@@ -29,6 +32,12 @@ void omap_iter_free(mobject_store_omap_iter_t iter)
 	}
 
 	free(iter);
+}
+
+void omap_iter_incr_ref(mobject_store_omap_iter_t iter)
+{
+	if(!iter) return;
+	iter->ref_count += 1;
 }
 
 void omap_iter_append(mobject_store_omap_iter_t iter, 

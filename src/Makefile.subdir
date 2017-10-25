@@ -11,7 +11,8 @@ src_libmobject_store_la_SOURCES = \
  src/read-op-visitor.c \
  src/omap-iter-impl.c \
  src/proc-omap-iter.c \
- src/read-responses.c
+ src/read-resp-impl.c \
+ src/proc-read-responses.c
 
 noinst_HEADERS += \
   src/log.h \
@@ -30,4 +31,6 @@ noinst_HEADERS += \
   src/buffer-union.h \
   src/omap-iter-impl.h \
   src/proc-omap-iter.h \
-  src/read-responses.h
+  src/read-responses.h \
+  src/read-resp-impl.h \
+  src/proc-read-responses.h

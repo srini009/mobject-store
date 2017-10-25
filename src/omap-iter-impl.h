@@ -20,11 +20,14 @@ struct omap_iter_node {
 
 struct mobject_store_omap_iter {
 	size_t           num_items;
+	size_t           ref_count;
 	omap_iter_node_t head;
 	omap_iter_node_t current;
 };
 
 void omap_iter_create(mobject_store_omap_iter_t* iter);
+
+void omap_iter_incr_ref(mobject_store_omap_iter_t iter);
 
 void omap_iter_free(mobject_store_omap_iter_t iter);
 

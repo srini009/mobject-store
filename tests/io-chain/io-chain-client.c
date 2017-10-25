@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 
 		write_op_in_t in;
                 in.object_name = "test-object";
-		in.chain = write_op;
+		in.write_op = write_op;
 
 		prepare_write_op(mid, write_op);
 
@@ -78,6 +78,7 @@ int main(int argc, char** argv)
 		// END this is what write_op_operate should contain
 
 		mobject_store_release_write_op(write_op);
+
 	}
 
 	{ // READ OP TEST
@@ -106,13 +107,14 @@ int main(int argc, char** argv)
 		mobject_store_read_op_omap_get_vals(read_op, start_after, filter_prefix, 3, &iter4, &prval4);
 		// Add "omap_get_vals_by_keys" operation
 		const char* keys[] = {"matthieu", "shane"};
-		mobject_store_read_op_omap_get_vals_by_keys(read_op, keys, 2, &iter4, &prval4);
+		int prval5;
+		mobject_store_read_op_omap_get_vals_by_keys(read_op, keys, 2, &iter4, &prval5);
 
 		// BEGIN this is what read_op_operate should contain
 
 		read_op_in_t in;
 		in.object_name = "test-object";
-		in.chain = read_op;
+		in.read_op = read_op;
 
 		prepare_read_op(mid, read_op);
 
@@ -123,7 +125,7 @@ int main(int argc, char** argv)
 		read_op_out_t resp;
 		margo_get_output(h, &resp);
 
-		// print something
+		feed_read_op_pointers_from_response(read_op, resp.responses);
 
 		margo_free_output(h,&resp);
 		margo_destroy(h);
@@ -131,6 +133,14 @@ int main(int argc, char** argv)
 		// END this is what read_op_operate should contain
 
 		mobject_store_release_read_op(read_op);
+
+		// print the results of the read operations
+		printf("Client received the following results:\n");
+		printf("stat: psize=%ld pmtime=%lld prval=%d\n", psize, pmtime, prval1);
+		printf("read: bytes_read=%ld prval=%d\n", bytes_read, prval2);
+		printf("omap_get_keys: prval=%d\n", prval3);
+		printf("omap_get_vals: prval=%d\n", prval4);
+		printf("omap_get_vals_by_keys: prval=%d\n", prval5);
 	}
 
 	/* free the address */
