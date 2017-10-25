@@ -26,7 +26,7 @@ void omap_iter_free(mobject_store_omap_iter_t iter)
 		free((void*)(elt->key));
 		free((void*)(elt->value));
 		free((void*)(elt));
-    }
+	}
 
 	free(iter);
 }

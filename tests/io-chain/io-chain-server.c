@@ -7,6 +7,9 @@
 #include "types.h"
 #include "src/write-op-visitor.h"
 #include "src/read-op-visitor.h"
+#include "src/read-op-impl.h"
+#include "src/omap-iter-impl.h"
+#include "src/read-responses.h"
 
 /* after serving this number of rpcs, the server will shut down. */
 static const int TOTAL_RPCS = 16;
@@ -156,11 +159,16 @@ hg_return_t mobject_read_op_rpc(hg_handle_t h)
 	ret = margo_get_input(h, &in);
 	assert(ret == HG_SUCCESS);
 
+	/* Create a response list matching the input actions */
+	rd_response_base_t resp_chain = build_matching_read_responses(in.chain->actions);
+
 	/* Compute the result. */
 	execute_read_op_visitor(&read_op_printer, in.chain, in.object_name);
 
 	ret = margo_respond(h, &out);
 	assert(ret == HG_SUCCESS);
+
+	free_read_responses(resp_chain);
 
 	/* Free the input data. */
 	ret = margo_free_input(h, &in);
@@ -265,23 +273,34 @@ void read_op_printer_begin(void* u)
 void read_op_printer_stat(void* u, uint64_t* psize, time_t* pmtime, int* prval)
 {
 	printf("\t<stat/>\n");
+	*psize = 128;
+	time(pmtime);
+	*prval = 1234;
 }
 
 void read_op_printer_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_t* bytes_read, int* prval)
 {
 	printf("\t<read offset=%ld length=%ld to=%ld/>\n",offset, len, buf.as_offset);
+	*bytes_read = len;
+	*prval = 1235;
 }
 
 void read_op_printer_omap_get_keys(void* u, const char* start_after, uint64_t max_return, 
 				mobject_store_omap_iter_t* iter, int* prval)
 {
 	printf("\t<omap_get_keys start_after=\"%s\" max_return=%ld />\n", start_after, max_return);
+	omap_iter_create(iter);
+	// use omap_iter_append to add things to the iterator
+	*prval = 1236;
 }
 
 void read_op_printer_omap_get_vals(void* u, const char* start_after, const char* filter_prefix, uint64_t max_return, mobject_store_omap_iter_t* iter, int* prval)
 {
 	printf("\t<omap_get_vals start_after=\"%s\" filter_prefix=\"%s\" max_return=%ld />\n",
 		start_after, filter_prefix, max_return);
+
+	omap_iter_create(iter);
+	*prval = 1237;
 }
 
 void read_op_printer_omap_get_vals_by_keys(void* u, char const* const* keys, size_t num_keys, mobject_store_omap_iter_t* iter, int* prval)
@@ -291,6 +310,9 @@ void read_op_printer_omap_get_vals_by_keys(void* u, char const* const* keys, siz
 	for(i=0; i<num_keys; i++)
 		printf("\t\t<record key=\"%s\" />\n",  keys[i]);
 	printf("\t<omap_get_vals_by_keys/>\n");
+
+	omap_iter_create(iter);
+	*prval = 1238;
 }
 
 void read_op_printer_end(void* u)
