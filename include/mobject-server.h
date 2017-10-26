@@ -13,16 +13,20 @@
 
 #define MOBJECT_SERVER_GROUP_NAME "mobject-store-servers"
 
-int mobject_server_init(margo_instance_id mid, const char *cluster_file);
-
 /**
  * Start a mobject server instance
  *
- * @param[in] mid
- * @param[in poolname
- * @returns 0 on success, negative error code on failure */
-int mobject_server_register(margo_instance_id mid, const char *poolname);
+ * @param[in] mid           margo instance id
+ * @param[in] cluster_file  file name to write cluster connect info to
+ * @returns 0 on success, negative error code on failure
+ */
+int mobject_server_init(margo_instance_id mid, const char *cluster_file);
 
+/**
+ * Shutdown a mobject server instance
+ * 
+ * @param[in] mid   margo instance id
+ */
 void mobject_server_shutdown(margo_instance_id mid);
 
 #endif
