@@ -24,11 +24,6 @@ typedef struct mobject_server_context
 
 static int mobject_server_register(mobject_server_context_t *srv_ctx);
 
-DECLARE_MARGO_RPC_HANDLER(mobject_shutdown_ult)
-
-/* mobject RPC IDs */
-static hg_id_t mobject_shutdown_rpc_id;
-
 /* XXX one global mobject server state struct */
 static mobject_server_context_t *g_srv_ctx = NULL;
 
@@ -118,9 +113,6 @@ static int mobject_server_register(mobject_server_context_t *srv_ctx)
 {
     int ret=0;
 
-    mobject_shutdown_rpc_id = MARGO_REGISTER(srv_ctx->mid, "mobject_shutdown",
-        void, void, mobject_shutdown_ult);
-
 #if 0
     bake_server_register(mid, pool_info);
     metadata = kv_server_register(mid);
@@ -128,11 +120,3 @@ static int mobject_server_register(mobject_server_context_t *srv_ctx)
 
     return ret;
 }
-
-static void mobject_shutdown_ult(hg_handle_t handle)
-{
-
-    margo_destroy(handle);
-    return;
-}
-DEFINE_MARGO_RPC_HANDLER(mobject_shutdown_ult)
