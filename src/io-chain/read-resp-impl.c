@@ -4,13 +4,13 @@
  * See COPYRIGHT in top-level directory.
  */
 #include <stdlib.h>
-#include "read-op-impl.h"
-#include "read-responses.h"
-#include "read-resp-impl.h"
-#include "read-actions.h"
-#include "omap-iter-impl.h"
-#include "utlist.h"
-#include "log.h"
+#include "src/io-chain/read-op-impl.h"
+#include "src/io-chain/read-responses.h"
+#include "src/io-chain/read-resp-impl.h"
+#include "src/io-chain/read-actions.h"
+#include "src/omap-iter/omap-iter-impl.h"
+#include "src/util/utlist.h"
+#include "src/util/log.h"
 
 
 /**

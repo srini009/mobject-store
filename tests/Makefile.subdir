@@ -16,7 +16,7 @@ tests_mobject_connect_test_CPPFLAGS = -I${srcdir}/include
 tests_mobject_connect_test_LDADD = src/libmobject-store.la ${LIBS}
 
 tests_mobject_server_CPPFLAGS = -I${srcdir}/include
-tests_mobject_server_LDADD = src/libmobject-store-server.la ${LIBS}
+tests_mobject_server_LDADD = src/libmobject-server.la ${LIBS}
 
 
 if HAVE_RADOS

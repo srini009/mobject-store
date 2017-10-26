@@ -5,10 +5,10 @@
  */
 #include <stdlib.h>
 #include <string.h>
-#include "utlist.h"
 #include "libmobject-store.h"
-#include "omap-iter-impl.h"
-#include "log.h"
+#include "src/omap-iter/omap-iter-impl.h"
+#include "src/util/utlist.h"
+#include "src/util/log.h"
 
 void omap_iter_create(mobject_store_omap_iter_t* iter)
 {

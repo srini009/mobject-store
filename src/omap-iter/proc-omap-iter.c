@@ -4,8 +4,8 @@
  * See COPYRIGHT in top-level directory.
  */
 #include <margo.h>
-#include "utlist.h"
-#include "proc-omap-iter.h"
+#include "src/omap-iter/proc-omap-iter.h"
+#include "src/util/utlist.h"
 
 hg_return_t hg_proc_mobject_store_omap_iter_t(hg_proc_t proc, mobject_store_omap_iter_t* iter)
 {

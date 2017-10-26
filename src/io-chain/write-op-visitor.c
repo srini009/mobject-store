@@ -4,10 +4,10 @@
  * See COPYRIGHT in top-level directory.
  */
 #include "libmobject-store.h"
-#include "write-op-visitor.h"
-#include "write-op-impl.h"
-#include "utlist.h"
-#include "log.h"
+#include "src/io-chain/write-op-visitor.h"
+#include "src/io-chain/write-op-impl.h"
+#include "src/util/utlist.h"
+#include "src/util/log.h"
 
 static void execute_write_op_visitor_on_create(write_op_visitor_t visitor, wr_action_create_t a, void* uargs);
 static void execute_write_op_visitor_on_write(write_op_visitor_t visitor, wr_action_write_t a, void* uargs);

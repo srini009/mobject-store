@@ -7,7 +7,7 @@
 #define __MOBJECT_WRITE_OPCODES_H
 
 #include "mobject-store-config.h"
-#include "buffer-union.h"
+#include "src/util/buffer-union.h"
 
 typedef enum {
 	WRITE_OPCODE_BASE = 0,

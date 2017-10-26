@@ -9,7 +9,7 @@
 #include <margo.h>
 #include "mobject-store-config.h"
 #include "libmobject-store.h"
-#include "read-actions.h"
+#include "src/io-chain/read-actions.h"
 
 /**
  * This object represents a handler for a list of actions

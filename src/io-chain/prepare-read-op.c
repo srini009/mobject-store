@@ -3,10 +3,10 @@
  * 
  * See COPYRIGHT in top-level directory.
  */
-#include "prepare-read-op.h"
-#include "read-op-impl.h"
-#include "utlist.h"
-#include "log.h"
+#include "src/io-chain/prepare-read-op.h"
+#include "src/io-chain/read-op-impl.h"
+#include "src/util/utlist.h"
+#include "src/util/log.h"
 
 static void prepare_read(uint64_t* cur_offset,
                           rd_action_read_t action,

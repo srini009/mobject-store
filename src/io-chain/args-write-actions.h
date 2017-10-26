@@ -7,7 +7,7 @@
 #define __MOBJECT_PI_WRITE_ACTION_H
 
 #include "mobject-store-config.h"
-#include "write-actions.h"
+#include "src/io-chain/write-actions.h"
 
 /**
  * This file contains a set of structures meant

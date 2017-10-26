@@ -8,7 +8,7 @@
 
 #include "mobject-store-config.h"
 #include "libmobject-store.h"
-#include "buffer-union.h"
+#include "src/util/buffer-union.h"
 
 typedef enum {
 	READ_OPCODE_BASE = 0,

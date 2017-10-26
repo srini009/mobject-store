@@ -7,7 +7,7 @@
 #define __MOBJECT_READ_OP_VISITOR_H
 
 #include "libmobject-store.h"
-#include "buffer-union.h"
+#include "src/util/buffer-union.h"
 
 typedef struct read_op_visitor {
 	void (*visit_begin)(void*);

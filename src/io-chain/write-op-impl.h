@@ -9,7 +9,7 @@
 #include <margo.h>
 #include "mobject-store-config.h"
 #include "libmobject-store.h"
-#include "write-actions.h"
+#include "src/io-chain/write-actions.h"
 
 /**
  * The mobject_store_write_op structure is what a

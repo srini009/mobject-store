@@ -4,9 +4,9 @@
  * See COPYRIGHT in top-level directory.
  */
 #include "libmobject-store.h"
-#include "read-op-visitor.h"
-#include "read-op-impl.h"
-#include "utlist.h"
+#include "src/io-chain/read-op-visitor.h"
+#include "src/io-chain/read-op-impl.h"
+#include "src/util/utlist.h"
 
 static void execute_read_op_visitor_on_stat(read_op_visitor_t visitor, rd_action_stat_t a, void* uargs);
 static void execute_read_op_visitor_on_read(read_op_visitor_t visitor, rd_action_read_t a, void* uargs);

@@ -2,9 +2,10 @@
 #include <stdio.h>
 #include <margo.h>
 #include <libmobject-store.h>
-#include "types.h"
-#include "src/prepare-write-op.h"
-#include "src/prepare-read-op.h"
+#include "src/rpc-types/write-op.h"
+#include "src/rpc-types/read-op.h"
+#include "src/io-chain/prepare-write-op.h"
+#include "src/io-chain/prepare-read-op.h"
 
 /* Main function. */
 int main(int argc, char** argv)

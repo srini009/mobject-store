@@ -3,11 +3,11 @@
  * 
  * See COPYRIGHT in top-level directory.
  */
-#include "proc-read-actions.h"
-#include "args-read-actions.h"
-#include "read-op-impl.h"
-#include "utlist.h"
-#include "log.h"
+#include "src/io-chain/proc-read-actions.h"
+#include "src/io-chain/args-read-actions.h"
+#include "src/io-chain/read-op-impl.h"
+#include "src/util/utlist.h"
+#include "src/util/log.h"
 
 /**
  * This file contains the main hg_proc_mobject_store_read_op_t 

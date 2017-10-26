@@ -4,11 +4,12 @@
 #include <abt-snoozer.h>
 #include <margo.h>
 #include <mercury.h>
-#include "types.h"
-#include "src/write-op-visitor.h"
-#include "src/read-op-visitor.h"
-#include "src/omap-iter-impl.h"
-#include "src/read-resp-impl.h"
+#include "src/rpc-types/write-op.h"
+#include "src/rpc-types/read-op.h"
+#include "src/io-chain/write-op-visitor.h"
+#include "src/io-chain/read-op-visitor.h"
+#include "src/omap-iter/omap-iter-impl.h"
+#include "src/io-chain/read-resp-impl.h"
 
 /* after serving this number of rpcs, the server will shut down. */
 static const int TOTAL_RPCS = 16;

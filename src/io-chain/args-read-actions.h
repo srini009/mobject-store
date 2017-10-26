@@ -7,7 +7,7 @@
 #define __MOBJECT_ARGS_READ_ACTION_H
 
 #include "mobject-store-config.h"
-#include "read-actions.h"
+#include "src/io-chain/read-actions.h"
 
 /**
  * This file contains a set of structures meant

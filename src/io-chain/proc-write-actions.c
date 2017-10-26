@@ -3,11 +3,11 @@
  * 
  * See COPYRIGHT in top-level directory.
  */
-#include "proc-write-actions.h"
-#include "args-write-actions.h"
-#include "write-op-impl.h"
-#include "utlist.h"
-#include "log.h"
+#include "src/io-chain/proc-write-actions.h"
+#include "src/io-chain/args-write-actions.h"
+#include "src/io-chain/write-op-impl.h"
+#include "src/util/utlist.h"
+#include "src/util/log.h"
 
 /**
  * This file contains the main hg_proc_mobject_store_write_op_t 

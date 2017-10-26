@@ -7,11 +7,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "mobject-store-config.h"
-#include "utlist.h"
 #include "libmobject-store.h"
-#include "log.h"
-#include "read-op-impl.h"
-#include "completion.h"
+#include "src/io-chain/read-op-impl.h"
+#include "src/aio/completion.h"
+#include "src/util/utlist.h"
+#include "src/util/log.h"
 
 mobject_store_read_op_t mobject_store_create_read_op(void)
 {

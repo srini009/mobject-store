@@ -4,12 +4,12 @@
  * See COPYRIGHT in top-level directory.
  */
 #include <mercury_proc.h>
-#include "proc-read-responses.h"
-#include "read-responses.h"
-#include "read-resp-impl.h"
-#include "proc-omap-iter.h"
-#include "utlist.h"
-#include "log.h"
+#include "src/io-chain/proc-read-responses.h"
+#include "src/io-chain/read-responses.h"
+#include "src/io-chain/read-resp-impl.h"
+#include "src/omap-iter/proc-omap-iter.h"
+#include "src/util/utlist.h"
+#include "src/util/log.h"
 
 typedef hg_return_t (*encode_fn)(hg_proc_t, void*);
 typedef hg_return_t (*decode_fn)(hg_proc_t, void*);

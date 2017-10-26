@@ -32,10 +32,9 @@ int mobject_store_create(mobject_store_t *cluster, const char * const id)
     (void)id; /* XXX: id unused in mobject */
 
     /* allocate a new cluster handle and set some fields */
-    cluster_handle = malloc(sizeof(*cluster_handle));
+    cluster_handle = (mobject_store_handle_t*)calloc(1,sizeof(*cluster_handle));
     if (!cluster_handle)
         return -1;
-    memset(cluster_handle, 0, sizeof(cluster_handle));
 
     /* use env variable to determine how to connect to the cluster */
     /* NOTE: this is the _only_ method for specifying a cluster for now... */

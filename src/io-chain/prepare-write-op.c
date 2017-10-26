@@ -3,10 +3,10 @@
  * 
  * See COPYRIGHT in top-level directory.
  */
-#include "prepare-write-op.h"
-#include "write-op-impl.h"
-#include "utlist.h"
-#include "log.h"
+#include "src/io-chain/prepare-write-op.h"
+#include "src/io-chain/write-op-impl.h"
+#include "src/util/utlist.h"
+#include "src/util/log.h"
 
 static void convert_write(uint64_t* cur_offset,
                           wr_action_write_t action,

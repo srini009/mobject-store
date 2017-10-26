@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include "mobject-store-config.h"
 #include "libmobject-store.h"
-#include "completion.h"
-#include "log.h"
+#include "src/aio/completion.h"
+#include "src/util/log.h"
 
 int mobject_store_aio_create_completion(void *cb_arg,
                                 mobject_store_callback_t cb_complete,
