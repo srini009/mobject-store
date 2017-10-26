@@ -12,16 +12,16 @@
 
 void usage(void)
 {
-    fprintf(stderr, "Usage: mobject-server-daemon <listen_addr> <gid_file>\n");
+    fprintf(stderr, "Usage: mobject-server-daemon <listen_addr> <cluster_file>\n");
     fprintf(stderr, "  <listen_addr>    the Mercury address to listen on\n");
-    fprintf(stderr, "  <gid_file>       the file to write the server SSG group ID to\n");
+    fprintf(stderr, "  <cluster_file>   the file to write mobject cluster connect info to\n");
     exit(-1);
 }
 
 int main(int argc, char *argv[])
 {
     char *listen_addr;
-    char *gid_file;
+    char *cluster_file;
     margo_instance_id mid;
     int ret;
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     if (argc != 3)
         usage();
     listen_addr = argv[1];
-    gid_file = argv[2];
+    cluster_file = argv[2];
 
     /* XXX: MPI required for SSG bootstrapping */
     MPI_Init(&argc, &argv);
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    ret = mobject_server_init(mid);
+    ret = mobject_server_init(mid, cluster_file);
     if (ret != 0)
     {
         fprintf(stderr, "Error: Unable to initialize mobject server\n");
@@ -49,12 +49,10 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    /* XXX write GID to file... where does gid come from? */
-
     /* shutdown */
+    //margo_wait_for_finalize(mid); /* XXX: probably need a conditional here, so we can cleanup after blocking */
     mobject_server_shutdown(mid);
     margo_finalize(mid);
-    //margo_wait_for_finalize(mid);
     MPI_Finalize();
 
     return 0;

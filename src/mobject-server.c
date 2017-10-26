@@ -14,16 +14,19 @@
 
 #include "mobject-server.h"
 
+
 typedef struct mobject_server_context
 {
     /* XXX bake, sds-keyval stuff */
     ssg_group_id_t gid;
 } mobject_server_context_t;
 
+static int mobject_server_store_cluster_info(const char *file_name);
+
 /* XXX one global mobject server state struct */
 mobject_server_context_t *g_srv_ctx = NULL;
 
-int mobject_server_init(margo_instance_id mid)
+int mobject_server_init(margo_instance_id mid, const char *cluster_file)
 {
     int ret;
 
@@ -58,12 +61,25 @@ int mobject_server_init(margo_instance_id mid)
         return -1;
     }
 
+    /* write cluster connect info to file for clients to find later */
+    ret = mobject_server_store_cluster_info(cluster_file);
+    if (ret != 0)
+    {
+        fprintf(stderr, "Error: unable to store mobject cluster info to file %s\n",
+            cluster_file);
+        /* XXX: this call is performed by one process under the covers, and we
+         * don't currently have a way to propagate this error to the entire cluster
+         */
+        ssg_group_destroy(g_srv_ctx->gid);
+        ssg_finalize();
+        return -1;
+    }
+
     /* XXX cleanup? */
 
     return 0;
 }
 
-#if 0
 int mobject_server_register(margo_instance_id mid, const char *poolname)
 {
     int ret=0;
@@ -89,4 +105,20 @@ void mobject_server_shutdown(margo_instance_id mid)
     //pmemobj_close(NULL);
 
     return;
+}
+
+static int mobject_server_store_cluster_info(const char *file_name)
+{
+    int my_id;
+    int ret;
+
+    assert(g_srv_ctx);
+
+    /* only have one group member do this */
+    my_id = ssg_get_group_self_id(g_srv_ctx->gid);
+    if (my_id != 0)
+        return 0;
+
+    ret = ssg_group_id_store(file_name, g_srv_ctx->gid);
+    return ret;
 }

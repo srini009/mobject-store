@@ -13,7 +13,7 @@
 
 #define MOBJECT_SERVER_GROUP_NAME "mobject-store-servers"
 
-int mobject_server_init(margo_instance_id mid);
+int mobject_server_init(margo_instance_id mid, const char *cluster_file);
 
 /**
  * Start a mobject server instance
