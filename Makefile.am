@@ -21,6 +21,7 @@ include_HEADERS = \
 
 # setting this to empty so subdir makefiles can use +=
 noinst_HEADERS =
+noinst_LTLIBRARIES =
 
 include Make.rules
 
