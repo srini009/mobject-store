@@ -79,6 +79,9 @@ enum {
 };
 /** @} */
 
+#define LIBMOBJECT_CREATE_EXCLUSIVE 1
+#define LIBMOBJECT_CREATE_IDEMPOTENT 0
+
 /**
  * @typedef mobject_store_ioctx_t
  *
@@ -108,7 +111,7 @@ typedef void *mobject_store_ioctx_t;
  * mobject_store_read_op_omap_get_vals_by_keys(), mobject_store_omap_get_next(), and
  * mobject_store_omap_get_end().
  */
-typedef void *mobject_store_omap_iter_t;
+typedef struct mobject_store_omap_iter *mobject_store_omap_iter_t;
 
 /**
  * @typedef mobject_store_write_op_t
@@ -294,9 +297,9 @@ void mobject_store_write_op_write_full(mobject_store_write_op_t write_op,
  */
 void mobject_store_write_op_writesame(mobject_store_write_op_t write_op,
                                       const char *buffer,
-									  size_t data_len,
-									  size_t write_len,
-									  uint64_t offset);
+				      size_t data_len,
+				      size_t write_len,
+				      uint64_t offset);
 
 /**
  * Append to end of object.
@@ -305,8 +308,8 @@ void mobject_store_write_op_writesame(mobject_store_write_op_t write_op,
  * @param len length of buffer
  */
 void mobject_store_write_op_append(mobject_store_write_op_t write_op,
-		                           const char *buffer,
-								   size_t len);
+		                   const char *buffer,
+				   size_t len);
 /**
  * Remove object
  * @param write_op operation to add this action to
@@ -450,8 +453,8 @@ void mobject_store_read_op_read(mobject_store_read_op_t read_op,
  */
 void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
                                          const char *start_after,
-				                         uint64_t max_return,
-				                         mobject_store_omap_iter_t *iter,
+					 uint64_t max_return,
+					 mobject_store_omap_iter_t *iter,
                                          int *prval);
 
 /**

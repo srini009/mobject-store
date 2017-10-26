@@ -31,7 +31,10 @@ static void convert_append(uint64_t* cur_offset,
 void prepare_write_op(margo_instance_id mid, mobject_store_write_op_t write_op) 
 {
 	if(write_op->ready == 1) return;
-	if(write_op->num_actions == 0) return;	
+	if(write_op->num_actions == 0) {
+		write_op->ready = 1;
+		return;
+	}	
 
 	wr_action_base_t action;
 

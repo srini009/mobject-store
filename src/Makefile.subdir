@@ -38,3 +38,4 @@ src_mobject_server_daemon_LDADD = \
 
 bin_PROGRAMS += \
   src/mobject-server-daemon
+

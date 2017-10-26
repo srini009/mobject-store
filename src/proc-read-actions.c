@@ -113,7 +113,7 @@ hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_o
 		// for each action ...
 		DL_FOREACH((*read_op)->actions,elem) {
 			read_op_code_t opcode = elem->type;
-			MOBJECT_ASSERT((opcode <= 0 || opcode >= _READ_OPCODE_END_ENUM_),
+			MOBJECT_ASSERT((opcode > 0 || opcode < _READ_OPCODE_END_ENUM_),
 				"Invalid read_op opcode");
 			// encode the type of action
 			ret = hg_proc_memcpy(proc, &opcode, sizeof(opcode));
@@ -143,11 +143,12 @@ hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_o
 			read_op_code_t opcode;
 			ret = hg_proc_memcpy(proc, &opcode, sizeof(opcode));
 			if(ret != HG_SUCCESS) return ret;
-			MOBJECT_ASSERT((opcode <= 0 || opcode >= _READ_OPCODE_END_ENUM_),
+			MOBJECT_ASSERT((opcode > 0 || opcode < _READ_OPCODE_END_ENUM_),
 				"Invalid write_op opcode");
 			// decode the action's arguments
 			ret = decode_read_action[opcode](proc, &position, &next_action);
 			if(ret != HG_SUCCESS) return ret;
+			next_action->type = opcode;
 			// append to the list
 			DL_APPEND((*read_op)->actions, next_action);
 		}
@@ -189,7 +190,7 @@ static hg_return_t encode_read_action_read(hg_proc_t proc,
 	args_rd_action_read a;
 	a.offset      = action->offset;
 	a.len         = action->len;
-    a.bulk_offset = action->buffer.as_offset;
+	a.bulk_offset = action->buffer.as_offset;
 	*pos         += a.len;
 	return hg_proc_memcpy(proc, &a, sizeof(a));
 }
@@ -276,10 +277,10 @@ static hg_return_t decode_read_action_omap_get_vals(hg_proc_t proc,
 	(*action)->max_return  = a.max_return;
 	(*action)->data_size   = a.data_size;
 	(*action)->start_after = (*action)->data;
-	size_t s = strlen((*action)->start_after);
-	(*action)->filter_prefix = (*action)->data + s + 1;
 
 	ret = hg_proc_memcpy(proc, (*action)->data, (*action)->data_size);
+	size_t s = strlen((*action)->start_after);
+	(*action)->filter_prefix = (*action)->data + s + 1;
 
 	return ret;
 }

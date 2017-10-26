@@ -195,6 +195,7 @@ void mobject_store_write_op_truncate(mobject_store_write_op_t write_op,
 
 	wr_action_truncate_t action = (wr_action_truncate_t)calloc(1, sizeof(*action));
 	action->base.type           = WRITE_OPCODE_TRUNCATE;
+	action->offset              = offset;
 	
 	WRITE_ACTION_UPCAST(base, action);
 	DL_APPEND(write_op->actions, base);

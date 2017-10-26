@@ -11,8 +11,8 @@
 
 /**
  * This file contains a set of structures meant
- * to store arguments for write_op operations in
- * a buffer. Some of these structures are self-sufficiant.
+ * to store arguments for read_op operations in
+ * a buffer. Some of these structures are self-sufficient.
  * Some other are meant to be used as headers, and the
  * the serialized buffer actually contains additional
  * data after them.

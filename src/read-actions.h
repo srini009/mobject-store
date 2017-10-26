@@ -7,6 +7,7 @@
 #define __MOBJECT_READ_OPCODES_H
 
 #include "mobject-store-config.h"
+#include "libmobject-store.h"
 #include "buffer-union.h"
 
 typedef enum {
@@ -65,9 +66,9 @@ typedef struct rd_action_OMAP_GET_VALS {
 	struct rd_action_BASE base;
 	const char*           start_after;
 	const char*           filter_prefix;
-    uint64_t              max_return;
-    mobject_store_omap_iter_t* iter;
-    int*                  prval;
+	uint64_t              max_return;
+	mobject_store_omap_iter_t* iter;
+	int*                  prval;
 	size_t                data_size;
 	char                  data[1];
 }* rd_action_omap_get_vals_t;
