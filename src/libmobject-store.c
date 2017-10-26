@@ -76,7 +76,7 @@ int mobject_store_connect(mobject_store_t cluster)
     if (cluster_handle->connected)
         return 0;
 
-    /* figure out transport to connect with using address information 
+    /* figure out protocol to connect with using address information 
      * associated with the SSG group ID
      */
     srv_addr = ssg_group_id_get_addr_str(cluster_handle->gid);
@@ -87,7 +87,7 @@ int mobject_store_connect(mobject_store_t cluster)
         free(cluster_handle);
         return -1;
     }
-    /*  */
+    /* we only need to the proto portion of the address to initialize */
     for(i=0; i<24 && srv_addr[i] != '\0' && srv_addr[i] != ':'; i++)
         proto[i] = srv_addr[i];
 
