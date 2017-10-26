@@ -23,6 +23,9 @@ int main(int argc, char *argv[])
     ret = rados_create(&cluster, "admin");
     assert(ret == 0);
 
+    ret = rados_connect(cluster);
+    assert(ret == 0);
+
     rados_shutdown(cluster);
 
     return(0);
