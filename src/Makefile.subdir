@@ -15,12 +15,15 @@ noinst_HEADERS += \
   src/io-chain/read-op-impl.h \
   src/io-chain/read-op-visitor.h \
   src/io-chain/read-resp-impl.h \
+  src/io-chain/read-responses.h \
   src/util/utlist.h \
   src/io-chain/write-actions.h \
   src/io-chain/write-op-impl.h \
   src/io-chain/write-op-visitor.h \
   src/server/exec-write-op.h \
-  src/server/exec-read-op.h
+  src/server/exec-read-op.h\
+  src/rpc-types/write-op.h \
+  src/rpc-types/read-op.h
 
 src_libmobject_store_la_SOURCES = \
   src/aio/completion.c \
