@@ -49,10 +49,9 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    /* shutdown */
-    margo_wait_for_finalize(mid); /* XXX: probably need a conditional here, so we can cleanup after blocking */
-    mobject_server_shutdown(mid);
-    //margo_finalize(mid);
+    /* wait for shutdown signal, then clean up */
+    mobject_server_wait_for_shutdown();
+    margo_finalize(mid);
     MPI_Finalize();
 
     return 0;

@@ -29,4 +29,9 @@ int mobject_server_init(margo_instance_id mid, const char *cluster_file);
  */
 void mobject_server_shutdown(margo_instance_id mid);
 
+/**
+ * Wait for a mobject server instance to get a shutdown request.
+ */
+void mobject_server_wait_for_shutdown(void);
+
 #endif
