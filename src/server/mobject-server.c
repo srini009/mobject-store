@@ -27,14 +27,14 @@ typedef struct mobject_server_context
 
 static int mobject_server_register(mobject_server_context_t *srv_ctx);
 
-DECLARE_MARGO_RPC_HANDLER(mobject_shutdown_ult)
 DECLARE_MARGO_RPC_HANDLER(mobject_write_op_ult)
 DECLARE_MARGO_RPC_HANDLER(mobject_read_op_ult)
+DECLARE_MARGO_RPC_HANDLER(mobject_shutdown_ult)
 
 /* mobject RPC IDs */
-static hg_id_t mobject_shutdown_rpc_id;
 static hg_id_t mobject_write_op_rpc_id;
 static hg_id_t mobject_read_op_rpc_id;
+static hg_id_t mobject_shutdown_rpc_id;
 
 /* XXX one global mobject server state struct */
 static mobject_server_context_t *g_srv_ctx = NULL;
@@ -124,17 +124,16 @@ void mobject_server_shutdown(margo_instance_id mid)
 static int mobject_server_register(mobject_server_context_t *srv_ctx)
 {
     int ret=0;
-
     margo_instance_id mid = srv_ctx->mid;
-
-    mobject_shutdown_rpc_id = MARGO_REGISTER(mid, "mobject_shutdown",
-        void, void, mobject_shutdown_ult);
 
     mobject_write_op_rpc_id = MARGO_REGISTER(mid, "mobject_write_op", 
 	write_op_in_t, write_op_out_t, mobject_write_op_ult);
 
     mobject_read_op_rpc_id  = MARGO_REGISTER(mid, "mobject_read_op",
         read_op_in_t, read_op_out_t, mobject_read_op_ult)
+
+    mobject_shutdown_rpc_id = MARGO_REGISTER(mid, "mobject_shutdown",
+        void, void, mobject_shutdown_ult);
 
 #if 0
     bake_server_register(mid, pool_info);
@@ -143,14 +142,6 @@ static int mobject_server_register(mobject_server_context_t *srv_ctx)
 
     return ret;
 }
-
-static void mobject_shutdown_ult(hg_handle_t handle)
-{
-
-    margo_destroy(handle);
-    return;
-}
-DEFINE_MARGO_RPC_HANDLER(mobject_shutdown_ult)
 
 static hg_return_t mobject_write_op_ult(hg_handle_t h)
 {
@@ -223,3 +214,11 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
     return ret;
 }
 DEFINE_MARGO_RPC_HANDLER(mobject_read_op_ult)
+
+static void mobject_shutdown_ult(hg_handle_t handle)
+{
+
+    margo_destroy(handle);
+    return;
+}
+DEFINE_MARGO_RPC_HANDLER(mobject_shutdown_ult)
