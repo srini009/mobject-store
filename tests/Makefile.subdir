@@ -1,7 +1,8 @@
 check_PROGRAMS += \
  tests/mobject-connect-test \
  tests/mobject-server \
- tests/test-sds-keyval-client
+ tests/test-sds-keyval-client \
+ tests/mobject-client-test
 
 if HAVE_RADOS
 check_PROGRAMS += \
@@ -14,6 +15,10 @@ endif
 tests_mobject_connect_test_SOURCES = tests/mobject-connect-test.c
 tests_mobject_connect_test_CPPFLAGS = -I${srcdir}/include
 tests_mobject_connect_test_LDADD = src/libmobject-store.la ${LIBS}
+
+tests_mobject_client_test_SOURCES = tests/mobject-client-test.c
+tests_mobject_client_test_CPPFLAGS = -I${srcdir}/include
+tests_mobject_client_test_LDADD = src/libmobject-store.la ${LIBS}
 
 tests_mobject_server_CPPFLAGS = -I${srcdir}/include
 tests_mobject_server_LDADD = src/libmobject-server.la ${LIBS}

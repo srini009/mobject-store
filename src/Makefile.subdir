@@ -1,13 +1,10 @@
 noinst_HEADERS += \
+  src/aio/completion.h \
+  src/client/io-context.h \
   src/io-chain/args-read-actions.h \
   src/io-chain/args-write-actions.h \
-  src/util/buffer-union.h \
-  src/aio/completion.h \
-  src/util/log.h \
-  src/omap-iter/omap-iter-impl.h \
   src/io-chain/prepare-read-op.h \
   src/io-chain/prepare-write-op.h \
-  src/omap-iter/proc-omap-iter.h \
   src/io-chain/proc-read-actions.h \
   src/io-chain/proc-read-responses.h \
   src/io-chain/proc-write-actions.h \
@@ -16,14 +13,18 @@ noinst_HEADERS += \
   src/io-chain/read-op-visitor.h \
   src/io-chain/read-resp-impl.h \
   src/io-chain/read-responses.h \
-  src/util/utlist.h \
   src/io-chain/write-actions.h \
   src/io-chain/write-op-impl.h \
   src/io-chain/write-op-visitor.h \
-  src/server/exec-write-op.h \
-  src/server/exec-read-op.h\
+  src/omap-iter/omap-iter-impl.h \
+  src/omap-iter/proc-omap-iter.h \
+  src/rpc-types/read-op.h \
   src/rpc-types/write-op.h \
-  src/rpc-types/read-op.h
+  src/server/exec-read-op.h\
+  src/server/exec-write-op.h \
+  src/util/buffer-union.h \
+  src/util/log.h \
+  src/util/utlist.h
 
 noinst_LTLIBRARIES += src/libomap-iter.la \
 		      src/libiochain.la
@@ -44,6 +45,7 @@ src_libiochain_la_SOURCES = src/io-chain/prepare-read-op.c \
 
 
 src_libmobject_store_la_SOURCES = \
+  src/client/io-context.c \
   src/aio/completion.c \
   src/client/libmobject-store.c
 

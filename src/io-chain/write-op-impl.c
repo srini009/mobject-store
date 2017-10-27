@@ -293,7 +293,7 @@ void mobject_store_write_op_omap_rm_keys(mobject_store_write_op_t write_op,
 
 	write_op->num_actions += 1;
 }
-
+/*
 int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
                                    mobject_store_ioctx_t io,
                                    const char *oid,
@@ -324,3 +324,4 @@ int mobject_store_aio_write_op_operate(mobject_store_write_op_t write_op,
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
 	// TODO
 }
+*/

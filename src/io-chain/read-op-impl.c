@@ -9,7 +9,6 @@
 #include "mobject-store-config.h"
 #include "libmobject-store.h"
 #include "src/io-chain/read-op-impl.h"
-#include "src/aio/completion.h"
 #include "src/util/utlist.h"
 #include "src/util/log.h"
 
@@ -175,32 +174,75 @@ void mobject_store_read_op_omap_get_vals_by_keys(mobject_store_read_op_t read_op
 	read_op->num_actions += 1;
 }
 
-int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
-                                  mobject_store_ioctx_t io,
-                                  const char *oid,
-                                  int flags)
-{
-	int r;
-	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
-	mobject_store_completion_t completion = MOBJECT_COMPLETION_NULL;
-	r = mobject_store_aio_create_completion(NULL, NULL, NULL, &completion);
-	MOBJECT_ASSERT(0 == r, "Could not create completion object");
-	r = mobject_store_aio_read_op_operate(read_op, io, completion, oid, flags);
-	MOBJECT_ASSERT(0 == r, "Call to mobject_store_aio_read_op_operate failed");
-	r = mobject_store_aio_wait_for_complete(completion);
-	MOBJECT_ASSERT(0 == r, "Could not wait for completion");
-	int ret = mobject_store_aio_get_return_value(completion);
-	mobject_store_aio_release(completion);
-	return ret;
-}
+/*
+typedef struct read_op_ult_args {
+    mobject_store_read_op_t    read_op;
+    mobject_store_ioctx_t      ioctx;
+    mobject_store_completion_t completion
+    char*                      oid;
+    int                        flags;
+} read_op_ult_args;
 
+static void aio_read_op_operate_ult(read_op_ult_args* args) {
+
+    read_op_in_t in;
+    in.object_name = args->oid;
+    in.pool_name   = args->ioctx->pool_name;
+    in.read_op     = args->read_op;
+
+    prepare_read_op(io->mid, read_op);
+
+    // TODO: svr_addr should be computed based on the pool name, object name,
+    // and SSG structures accessible via the io context
+    hg_handle_t h;
+    margo_create(io->mid, io->svr_addr, mobject_read_op_rpc_id, &h);
+    margo_forward(h, &in);
+
+    read_op_out_t resp;
+    margo_get_output(h, &resp);
+
+    feed_read_op_pointers_from_response(read_op, resp.responses);
+
+    margo_free_output(h,&resp);
+    margo_destroy(h);
+
+    free(args->oid);
+    
+    ABT_rwlock_wrlock(args->completion->lock);
+    int ret = 0; // TODO change that depending on results of the read_op
+    ABT_eventual_set (args->completion->eventual, &ret, sizeof(int));
+    mobject_store_callback_t cb_complete = args->completion->cb_complete;
+    void* cb_arg = args->completion->cb_arg;
+    ABT_rwlock_unlock(args->completion->lock);
+
+    if(complete_cb)
+        complete_cb(args->completion, cb_arg);
+
+    free(args);
+
+    return 0;
+}
+*/
 int mobject_store_aio_read_op_operate(mobject_store_read_op_t read_op,
                                       mobject_store_ioctx_t io,
                                       mobject_store_completion_t completion,
                                       const char *oid,
                                       int flags)
 {
-	MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t obect");
-	// TODO
+/*    MOBJECT_ASSERT(read_op != MOBJECT_READ_OP_NULL, "invalid mobject_store_read_op_t object");
+    // TODO this is not great, we should use the margo non-blocking API instead
+    ABT_xstream self_es;
+    ABT_xstream_self(&self_es);
+    ABT_pool pool;
+    ABT_xstream_get_main_pools(self_es, 1, &pool);
+    ABT_thread ult;
+    read_op_ult_args* args = (read_op_ult_args*)calloc(1, sizeof(*args);
+    args->read_op          = read_op;
+    args->ioctx            = io;
+    args->completion       = completion;
+    args->oid              = strdup(oid);
+    args->flags            = flags;
+    ABT_thread_create(pool, aio_read_op_operate_ult, args, ABT_THREAD_ATTR_NULL, &ult);
+    completion->ult        = ult;
+*/
 }
-

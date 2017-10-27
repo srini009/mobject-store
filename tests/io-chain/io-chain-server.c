@@ -97,7 +97,7 @@ hg_return_t mobject_write_op_rpc(hg_handle_t h)
 	assert(ret == HG_SUCCESS);
 
 	/* Execute the operation chain */
-	execute_write_op_visitor(&write_op_printer, in.write_op, in.object_name);
+	execute_write_op_visitor(&write_op_printer, in.write_op, (void*)in.object_name);
 
 	// set the return value of the RPC
 	out.ret = 0;
@@ -163,7 +163,7 @@ hg_return_t mobject_read_op_rpc(hg_handle_t h)
 	read_response_t resp = build_matching_read_responses(in.read_op);
 
 	/* Compute the result. */
-	execute_read_op_visitor(&read_op_printer, in.read_op, in.object_name);
+	execute_read_op_visitor(&read_op_printer, in.read_op, (void*)in.object_name);
 
 	out.responses = resp;
 

@@ -102,7 +102,7 @@ enum {
  * libmobject_store users must synchronize any of these changes on their own,
  * or use separate io contexts for each thread
  */
-typedef void *mobject_store_ioctx_t;
+typedef struct mobject_ioctx *mobject_store_ioctx_t;
 
 /**
  * @typedef mobject_store_omap_iter_t
@@ -370,9 +370,9 @@ void mobject_store_write_op_omap_rm_keys(mobject_store_write_op_t write_op,
  */
 int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
                                    mobject_store_ioctx_t io,
-								   const char *oid,
-								   time_t *mtime,
-								   int flags);
+				   const char *oid,
+				   time_t *mtime,
+				   int flags);
 
 /**
  * Perform a write operation asynchronously
