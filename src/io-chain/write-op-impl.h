@@ -40,5 +40,8 @@ struct mobject_store_write_op {
 	wr_action_base_t actions;      // list of actions
 };
 
+mobject_store_write_op_t create_write_op(void);
+void release_write_op(mobject_store_write_op_t write_op);
+
 #endif
 

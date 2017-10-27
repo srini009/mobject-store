@@ -126,7 +126,7 @@ hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_o
 
 	case HG_DECODE:
 	
-		*read_op = mobject_store_create_read_op();
+		*read_op = create_read_op();
 		(*read_op)->ready = 1;
 		// decode the bulk handle
 		ret = hg_proc_hg_bulk_t(proc, &((*read_op)->bulk_handle));
@@ -156,7 +156,7 @@ hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_o
 	
 	case HG_FREE:
 
-		mobject_store_release_read_op(*read_op);
+		release_read_op(*read_op);
 		return HG_SUCCESS;
 	}
 

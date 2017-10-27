@@ -8,4 +8,4 @@ tests_io_chain_io_chain_client_LDADD    = src/libmobject-store.la
 
 tests_io_chain_io_chain_server_SOURCES  = tests/io-chain/io-chain-server.c
 tests_io_chain_io_chain_server_CPPFLAGS = -I${srcdir}/include -I${srcdir}/test/io-chain
-tests_io_chain_io_chain_server_LDADD    = src/libmobject-store.la
+tests_io_chain_io_chain_server_LDADD    = src/libmobject-server.la

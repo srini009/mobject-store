@@ -176,7 +176,7 @@ hg_return_t hg_proc_mobject_store_write_op_t(hg_proc_t proc, mobject_store_write
 
 	case HG_DECODE:
 
-		*write_op = mobject_store_create_write_op();
+		*write_op = create_write_op();
 		(*write_op)->ready = 1;
 
 		// decode the bulk handle
@@ -206,7 +206,7 @@ hg_return_t hg_proc_mobject_store_write_op_t(hg_proc_t proc, mobject_store_write
 		break;
 	
 	case HG_FREE:
-		mobject_store_release_write_op(*write_op);
+		release_write_op(*write_op);
 		return HG_SUCCESS;
 	}
 

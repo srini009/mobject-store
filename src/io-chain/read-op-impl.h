@@ -26,4 +26,7 @@ struct mobject_store_read_op {
 	rd_action_base_t actions;
 };
 
+mobject_store_read_op_t create_read_op(void);
+void release_read_op(mobject_store_read_op_t read_op);
+
 #endif
