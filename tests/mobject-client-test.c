@@ -5,6 +5,7 @@
 
 #include "src/client/io-context.h" // XXX included because we modify manually the ioctx
 
+// XXX prototype here even though we shouldn't see this function
 void mobject_store_register(margo_instance_id mid);
 
 /* Main function. */
@@ -18,17 +19,18 @@ int main(int argc, char** argv)
     /* Start Margo */
     margo_instance_id mid = margo_init("bmi+tcp", MARGO_CLIENT_MODE, 0, 0);
 
+    // XXX this should be called with mobject_store_create
     mobject_store_register(mid);
 
-    /* Lookup the address of the server */
+    // XXX this should be handled by SSG in mobject_store_connect
     hg_addr_t svr_addr;
     margo_addr_lookup(mid, argv[1], &svr_addr);
 
     mobject_store_ioctx_t ioctx;
 
     mobject_store_ioctx_create(NULL, "my-object-pool", &ioctx);
-    // XXX the bellow modifications of ioctx should be done inside mobject_store_ioctx_create
-    // once we have the rest of the API
+    // XXX the bellow modifications of ioctx should be done inside 
+    // mobject_store_ioctx_create once we have the rest of the API
     ioctx->svr_addr = svr_addr;
     ioctx->mid = mid; 
 
@@ -66,26 +68,6 @@ int main(int argc, char** argv)
 
         mobject_store_write_op_operate(write_op, ioctx, "test-object", NULL, LIBMOBJECT_OPERATION_NOFLAG);
 
-        // BEGIN this is what write_op_operate should contain
-/*
-        write_op_in_t in;
-        in.object_name = "test-object";
-        in.write_op = write_op;
-
-        prepare_write_op(mid, write_op);
-
-        hg_handle_t h;
-        margo_create(mid, svr_addr, write_op_rpc_id, &h);
-        margo_forward(h, &in);
-
-        write_op_out_t resp;
-        margo_get_output(h, &resp);
-
-        margo_free_output(h,&resp);
-        margo_destroy(h);
-*/
-        // END this is what write_op_operate should contain
-
         mobject_store_release_write_op(write_op);
 
     }
@@ -120,26 +102,6 @@ int main(int argc, char** argv)
         mobject_store_read_op_omap_get_vals_by_keys(read_op, keys, 2, &iter4, &prval5);
 
         mobject_store_read_op_operate(read_op, ioctx, "test-object",LIBMOBJECT_OPERATION_NOFLAG);
-/*
-        read_op_in_t in;
-        in.object_name = "test-object";
-        in.read_op = read_op;
-
-        prepare_read_op(mid, read_op);
-
-        hg_handle_t h;
-        margo_create(mid, svr_addr, read_op_rpc_id, &h);
-        margo_forward(h, &in);
-
-        read_op_out_t resp;
-        margo_get_output(h, &resp);
-
-        feed_read_op_pointers_from_response(read_op, resp.responses);
-
-        margo_free_output(h,&resp);
-        margo_destroy(h);
-*/
-        // END this is what read_op_operate should contain
 
         mobject_store_release_read_op(read_op);
 
@@ -154,7 +116,7 @@ int main(int argc, char** argv)
 
     mobject_store_ioctx_destroy(ioctx);
 
-    /* free the address */
+    // XXX this should be done through SSG inside mobject_store_shutdown
     margo_addr_free(mid, svr_addr);
 
     /* shut down Margo */
