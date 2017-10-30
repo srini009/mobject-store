@@ -200,6 +200,7 @@ int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
 
     margo_free_output(h,&resp);
     margo_destroy(h);
+    return 0;
 }
 
 int mobject_store_read_op_operate(mobject_store_read_op_t read_op,

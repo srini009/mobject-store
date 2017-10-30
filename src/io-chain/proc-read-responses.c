@@ -146,16 +146,16 @@ hg_return_t encode_omap_response(hg_proc_t proc, rd_response_omap_t  r)
 	ret = hg_proc_memcpy(proc, &(r->prval), sizeof(r->prval));
 	if(ret != HG_SUCCESS) return ret;
 	ret = hg_proc_mobject_store_omap_iter_t(proc, &(r->iter));
-	if(ret != HG_SUCCESS) return ret;
+	return ret;
 }
 
 hg_return_t decode_omap_response(hg_proc_t proc, rd_response_omap_t* r)
 {
 	*r = (rd_response_omap_t)calloc(1, sizeof(**r));
 
-	hg_return_t ret;
+	hg_return_t ret = HG_SUCCESS;
 	ret = hg_proc_memcpy(proc, &((*r)->prval), sizeof((*r)->prval));
 	if(ret != HG_SUCCESS) return ret;
 	ret = hg_proc_mobject_store_omap_iter_t(proc, &((*r)->iter));
-	if(ret != HG_SUCCESS) return ret;
+	return ret;
 }

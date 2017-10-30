@@ -92,7 +92,7 @@ static decode_fn decode_read_action[_READ_OPCODE_END_ENUM_] = {
  */
 hg_return_t hg_proc_mobject_store_read_op_t(hg_proc_t proc, mobject_store_read_op_t* read_op)
 {
-	rd_action_base_t elem, tmp;
+	rd_action_base_t elem;
 	hg_return_t ret = HG_SUCCESS;
 	uintptr_t position = 0;
 

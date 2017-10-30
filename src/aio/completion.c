@@ -35,7 +35,6 @@ int mobject_store_aio_create_completion(void *cb_arg,
 
 int mobject_store_aio_wait_for_complete(mobject_store_completion_t c)
 {
-	int r;
 	if(c == MOBJECT_COMPLETION_NULL) {
 		MOBJECT_LOG("Warning: passing NULL to mobject_store_aio_wait_for_complete");
 		return -1;
@@ -48,6 +47,7 @@ int mobject_store_aio_wait_for_complete(mobject_store_completion_t c)
         c->state = COMPLETION_JOINED;
     }
 
+//	int r;
 //	int* val_ptr = (int*)0;
 //	r = ABT_eventual_wait(c->eventual, (void**)(&val_ptr));
 //	MOBJECT_ASSERT(r == ABT_SUCCESS, "ABT_eventual_wait failed");
@@ -104,7 +104,7 @@ void mobject_store_aio_release(mobject_store_completion_t c)
 	int r;
 	if(c == MOBJECT_COMPLETION_NULL) return;
 	//r = ABT_eventual_free(c->eventual);
-	MOBJECT_ASSERT(r == ABT_SUCCESS, "ABT_eventual_free failed");
+	//MOBJECT_ASSERT(r == ABT_SUCCESS, "ABT_eventual_free failed");
 	r = ABT_rwlock_free(c->lock);
 	MOBJECT_ASSERT(r == ABT_SUCCESS, "ABT_rwlock_free failed");
 	free(c);

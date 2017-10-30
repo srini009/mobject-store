@@ -197,8 +197,6 @@ static hg_return_t mobject_write_op_ult(hg_handle_t h)
     write_op_in_t in;
     write_op_out_t out;
 
-    margo_instance_id mid = margo_hg_handle_get_instance(h);
-
     /* Deserialize the input from the received handle. */
     ret = margo_get_input(h, &in);
     assert(ret == HG_SUCCESS);
@@ -230,8 +228,6 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
 
     read_op_in_t in;
     read_op_out_t out;
-
-    margo_instance_id mid = margo_hg_handle_get_instance(h);
 
     /* Deserialize the input from the received handle. */
     ret = margo_get_input(h, &in);

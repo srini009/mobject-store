@@ -142,7 +142,7 @@ static decode_fn decode_write_action[_WRITE_OPCODE_END_ENUM_] = {
  */
 hg_return_t hg_proc_mobject_store_write_op_t(hg_proc_t proc, mobject_store_write_op_t* write_op)
 {
-	wr_action_base_t elem, tmp;
+	wr_action_base_t elem;
 	hg_return_t ret = HG_SUCCESS;
 	uintptr_t position = 0;
 

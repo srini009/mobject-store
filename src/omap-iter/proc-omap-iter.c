@@ -49,7 +49,7 @@ hg_return_t hg_proc_mobject_store_omap_iter_t(hg_proc_t proc, mobject_store_omap
 			if(ret != HG_SUCCESS) return ret;
 			ret = hg_proc_hg_size_t(proc, &val_size);
 			if(ret != HG_SUCCESS) return ret;
-			val - (char*)malloc(val_size);
+			val = (char*)malloc(val_size);
 			ret = hg_proc_memcpy(proc, val, val_size);
 			omap_iter_append(*iter, key, val, val_size);
 		}

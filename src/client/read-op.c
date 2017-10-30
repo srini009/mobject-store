@@ -230,4 +230,5 @@ int mobject_store_aio_read_op_operate(mobject_store_read_op_t read_op,
     ABT_thread_create(pool, aio_read_op_operate_ult, args, ABT_THREAD_ATTR_NULL, &ult);
     completion->ult        = ult;
 */
+    return 0;
 }

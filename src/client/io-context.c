@@ -14,6 +14,7 @@ int mobject_store_ioctx_create(
     // TODO take mid from cluster parameter
     *ioctx = (mobject_store_ioctx_t)calloc(1, sizeof(**ioctx));
     (*ioctx)->pool_name = strdup(pool_name);
+    return 0;
 }
 
 void mobject_store_ioctx_destroy(mobject_store_ioctx_t ioctx)
