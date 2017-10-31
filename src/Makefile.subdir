@@ -26,13 +26,13 @@ noinst_HEADERS += \
   src/util/log.h \
   src/util/utlist.h
 
-noinst_LTLIBRARIES += src/libomap-iter.la \
-		      src/libiochain.la
+noinst_LTLIBRARIES += src/omap-iter/libomap-iter.la \
+		      src/io-chain/libio-chain.la
 
-src_libomap_iter_la_SOURCES = src/omap-iter/proc-omap-iter.c \
+src_omap_iter_libomap_iter_la_SOURCES = src/omap-iter/proc-omap-iter.c \
 			      src/omap-iter/omap-iter-impl.c
 
-src_libiochain_la_SOURCES = src/io-chain/prepare-read-op.c \
+src_io_chain_libio_chain_la_SOURCES = src/io-chain/prepare-read-op.c \
 			    src/io-chain/prepare-write-op.c \
 			    src/io-chain/read-op-impl.c \
 			    src/io-chain/read-op-visitor.c \
@@ -44,30 +44,30 @@ src_libiochain_la_SOURCES = src/io-chain/prepare-read-op.c \
 			    src/io-chain/proc-write-actions.c
 
 
-src_libmobject_store_la_SOURCES = \
+src_client_libmobject_store_la_SOURCES = \
   src/client/io-context.c \
   src/aio/completion.c \
   src/client/read-op.c \
   src/client/write-op.c \
   src/client/libmobject-store.c
 
-src_libmobject_store_la_LIBADD = src/libomap-iter.la\
-				 src/libiochain.la
+src_client_libmobject_store_la_LIBADD = src/omap-iter/libomap-iter.la\
+				 src/io-chain/libio-chain.la
 
-src_libmobject_server_la_SOURCES = \
+src_server_libmobject_server_la_SOURCES = \
   src/aio/completion.c \
   src/server/mobject-server.c \
   src/server/exec-write-op.c \
   src/server/exec-read-op.c
 
-src_libmobject_server_la_LIBADD = src/libomap-iter.la \
-				  src/libiochain.la
+src_server_libmobject_server_la_LIBADD = src/omap-iter/libomap-iter.la \
+				  src/io-chain/libio-chain.la
 
-src_mobject_server_daemon_SOURCES = \
+src_server_mobject_server_daemon_SOURCES = \
   src/server/mobject-server-daemon.c
-src_mobject_server_daemon_LDADD = \
-  src/libmobject-server.la 
+src_server_mobject_server_daemon_LDADD = \
+  src/server/libmobject-server.la 
 
 bin_PROGRAMS += \
-  src/mobject-server-daemon
+  src/server/mobject-server-daemon
 

@@ -15,8 +15,8 @@ AM_CFLAGS   =
 AM_CXXFLAGS = $(AM_CFLAGS)
 
 lib_LTLIBRARIES = \
-  src/libmobject-store.la \
-  src/libmobject-server.la
+  src/client/libmobject-store.la \
+  src/server/libmobject-server.la
 
 include_HEADERS = \
   include/libmobject-store.h \
