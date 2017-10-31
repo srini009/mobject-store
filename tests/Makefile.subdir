@@ -4,17 +4,23 @@ check_PROGRAMS += \
  tests/test-sds-keyval-client \
  tests/mobject-client-test
 
+# don't include rados programs in make check
 if HAVE_RADOS
-check_PROGRAMS += \
+noinst_PROGRAMS += \
  tests/rados-mobject-connect-test
 endif
 
-#TESTS += \
-# tests/connect-test.sh
+TESTS += \
+ tests/mobject-connect-test.sh
 
 tests_mobject_connect_test_SOURCES = tests/mobject-connect-test.c
 tests_mobject_connect_test_CPPFLAGS = -I${srcdir}/include
 tests_mobject_connect_test_LDADD = src/libmobject-store.la ${LIBS}
+if HAVE_RADOS
+tests_rados_mobject_connect_test_SOURCES = tests/mobject-connect-test.c
+tests_rados_mobject_connect_test_CFLAGS = -DUSE_RADOS
+tests_rados_mobject_connect_test_LDADD = -lrados ${LIBS}
+endif
 
 tests_mobject_client_test_SOURCES = tests/mobject-client-test.c
 tests_mobject_client_test_CPPFLAGS = -I${srcdir}/include
@@ -23,9 +29,3 @@ tests_mobject_client_test_LDADD = src/libmobject-store.la ${LIBS}
 tests_mobject_server_CPPFLAGS = -I${srcdir}/include
 tests_mobject_server_LDADD = src/libmobject-server.la ${LIBS}
 
-
-if HAVE_RADOS
-tests_rados_mobject_connect_test_SOURCES = tests/mobject-connect-test.c
-tests_rados_mobject_connect_test_CFLAGS = -DUSE_RADOS
-tests_rados_mobject_connect_test_LDADD = -lrados ${LIBS}
-endif

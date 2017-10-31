@@ -1,6 +1,10 @@
 AUTOMAKE_OPTIONS = foreign
 ACLOCAL_AMFLAGS="-Im4"
 
+# setting this to empty so subdir makefiles can use +=
+noinst_HEADERS =
+noinst_LTLIBRARIES =
+noinst_PROGRAMS =
 bin_PROGRAMS =
 check_PROGRAMS =
 TESTS =
@@ -18,10 +22,6 @@ include_HEADERS = \
   include/libmobject-store.h \
   include/librados-mobject-store.h \
   include/mobject-server.h
-
-# setting this to empty so subdir makefiles can use +=
-noinst_HEADERS =
-noinst_LTLIBRARIES =
 
 include Make.rules
 
