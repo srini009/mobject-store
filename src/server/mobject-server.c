@@ -177,7 +177,7 @@ static int mobject_server_register(mobject_server_context_t *srv_ctx)
 	write_op_in_t, write_op_out_t, mobject_write_op_ult);
 
     mobject_read_op_rpc_id  = MARGO_REGISTER(mid, "mobject_read_op",
-        read_op_in_t, read_op_out_t, mobject_read_op_ult)
+        read_op_in_t, read_op_out_t, mobject_read_op_ult);
 
     mobject_shutdown_rpc_id = MARGO_REGISTER(mid, "mobject_shutdown",
         void, void, mobject_shutdown_ult);
