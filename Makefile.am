@@ -8,6 +8,7 @@ noinst_PROGRAMS =
 bin_PROGRAMS =
 check_PROGRAMS =
 TESTS =
+TESTS_ENVIRONMENT=
 EXTRA_DIST = prepare.sh
 
 AM_CPPFLAGS = -I$(top_srcdir)/include
