@@ -20,8 +20,11 @@ mobject_test_start_servers 1 2 20 $MOBJECT_CLUSTER_FILE
 
 ##############
 
-# run 1 connect test client
+# export some mobject client env variables
 export MOBJECT_CLUSTER_FILE
+export MOBJECT_SHUTDOWN_KILL_SERVERS=true
+
+# run a connect test client
 run_to 10 tests/mobject-connect-test
 if [ $? -ne 0 ]; then
     wait
@@ -34,4 +37,5 @@ wait
 
 # cleanup
 rm -rf $TEST_DIR
+
 exit 0
