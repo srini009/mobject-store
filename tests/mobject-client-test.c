@@ -19,9 +19,6 @@ int main(int argc, char** argv)
     /* Start Margo */
     margo_instance_id mid = margo_init("bmi+tcp", MARGO_CLIENT_MODE, 0, 0);
 
-    // XXX this should be called with mobject_store_create
-    mobject_store_register(mid);
-
     // XXX this should be handled by SSG in mobject_store_connect
     hg_addr_t svr_addr;
     margo_addr_lookup(mid, argv[1], &svr_addr);
