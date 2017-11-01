@@ -264,14 +264,13 @@ static void mobject_shutdown_ult(hg_handle_t h)
 
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
-    printf("Got shutdown signal!\n");
-
     ret = margo_respond(h, NULL);
     assert(ret == HG_SUCCESS);
 
     ret = margo_destroy(h);
     assert(ret == HG_SUCCESS);
 
+    /* TODO: propagate shutdown to other servers */
     mobject_server_shutdown(mid);
 
     return;
