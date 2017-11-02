@@ -25,5 +25,5 @@ endif
 
 tests_mobject_client_test_LDADD = src/client/libmobject-store.la ${CLIENT_LIBS}
 
-tests_sds_keyval_client_test_LDADD = ${CLIENT_LIBS}
+tests_sds_keyval_client_test_LDADD = ${SERVER_LIBS}
 
