@@ -53,8 +53,6 @@ AC_LINK_IFELSE(
 
 dnl seems like this should be a function but my first stab at m4 exploded
 dnl mightily...
-dnl also, we need to separate client libraries from server libraries.  Just jam
-dnl it all into one set of flags for now
 
 PKG_CHECK_MODULES([MARGO],[margo],[],
 	AC_MSG_ERROR([Could not find working margo installation!]) )
@@ -82,9 +80,9 @@ SERVER_CFLAGS="$SDSKEYVALSERVER_CFLAGS $SERVER_CFLAGS"
 
 PKG_CHECK_MODULES([SDSKEYVALCLIENT],[kv-client],[],
 	AC_MSG_ERROR([Could not find working sds-keyval client installation!]) )
-CLIENT_LIBS="$SDSKEYVALCLIENT_LIBS $CLIENT_LIBS"
-CLIENT_CPPFLAGS="$SDSKEYVALCLIENT_CFLAGS $CLIENT_CPPFLAGS"
-CLIENT_CFLAGS="$SDSKEYVALCLIENT_CFLAGS $CLIENT_CFLAGS"
+SERVER_LIBS="$SDSKEYVALCLIENT_LIBS $CLIENT_LIBS"
+SERVER_CPPFLAGS="$SDSKEYVALCLIENT_CFLAGS $CLIENT_CPPFLAGS"
+SERVER_CFLAGS="$SDSKEYVALCLIENT_CFLAGS $CLIENT_CFLAGS"
 
 PKG_CHECK_MODULES([PMEM],[libpmemobj],[],
 	AC_MSG_ERROR([Could not find working libpmemobj installation!]) )
