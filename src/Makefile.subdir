@@ -45,23 +45,22 @@ src_io_chain_libio_chain_la_SOURCES = src/io-chain/prepare-read-op.c \
 
 
 src_client_libmobject_store_la_SOURCES = \
-  src/client/io-context.c \
   src/aio/completion.c \
+  src/client/io-context.c \
   src/client/read-op.c \
   src/client/write-op.c \
   src/client/libmobject-store.c
 
-src_client_libmobject_store_la_LIBADD = src/omap-iter/libomap-iter.la\
-				 src/io-chain/libio-chain.la
+src_client_libmobject_store_la_LIBADD = src/omap-iter/libomap-iter.la \
+				 src/io-chain/libio-chain.la ${CLIENT_LIBS}
 
 src_server_libmobject_server_la_SOURCES = \
-  src/aio/completion.c \
   src/server/mobject-server.c \
   src/server/exec-write-op.c \
   src/server/exec-read-op.c
 
 src_server_libmobject_server_la_LIBADD = src/omap-iter/libomap-iter.la \
-				  src/io-chain/libio-chain.la
+				  src/io-chain/libio-chain.la ${SERVER_LIBS}
 
 src_server_mobject_server_daemon_SOURCES = \
   src/server/mobject-server-daemon.c
