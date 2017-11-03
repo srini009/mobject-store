@@ -14,6 +14,7 @@
 #include <ssg.h>
 
 #include "libmobject-store.h"
+#include "src/util/log.h"
 #include "src/rpc-types/write-op.h"
 #include "src/rpc-types/read-op.h"
 #include "src/rpc-types/read-op.h"
@@ -184,6 +185,8 @@ int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
                                    time_t *mtime,
                                    int flags) 
 {
+    hg_return_t ret;
+
     write_op_in_t in;
     in.object_name = oid;
     in.pool_name   = io->pool_name;
@@ -192,16 +195,24 @@ int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
     prepare_write_op(io->cluster->mid, write_op);
 
     hg_addr_t svr_addr = ssg_get_addr(io->cluster->gid, 0); // XXX pick other servers using ch-placement
+    MOBJECT_ASSERT(svr_addr != HG_ADDR_NULL, "NULL server address");
 
     hg_handle_t h;
-    margo_create(io->cluster->mid, svr_addr, mobject_write_op_rpc_id, &h);
-    margo_forward(h, &in);
+    ret = margo_create(io->cluster->mid, svr_addr, mobject_write_op_rpc_id, &h);
+    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not create RPC handle");
+
+    ret = margo_forward(h, &in);
+    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not forward RPC");
 
     write_op_out_t resp;
-    margo_get_output(h, &resp);
+    ret = margo_get_output(h, &resp);
+    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not get RPC output");
 
-    margo_free_output(h,&resp);
-    margo_destroy(h);
+    ret = margo_free_output(h,&resp);
+    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not free RPC output");
+
+    ret = margo_destroy(h);
+    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not destroy RPC handle");
     return 0;
 }
 
@@ -209,7 +220,9 @@ int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
                                   mobject_store_ioctx_t ioctx,
                                   const char *oid,
                                   int flags)
-{   
+{ 
+    hg_return_t ret;  
+
     read_op_in_t in; 
     in.object_name = oid;
     in.pool_name   = ioctx->pool_name;
@@ -218,18 +231,24 @@ int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
     prepare_read_op(ioctx->cluster->mid, read_op);
     
     hg_addr_t svr_addr = ssg_get_addr(ioctx->cluster->gid, 0); // XXX pick other servers using ch-placement
+    MOBJECT_ASSERT(svr_addr != HG_ADDR_NULL, "NULL server address");
 
     hg_handle_t h;
-    margo_create(ioctx->cluster->mid, svr_addr, mobject_read_op_rpc_id, &h);
-    margo_forward(h, &in);
+    ret = margo_create(ioctx->cluster->mid, svr_addr, mobject_read_op_rpc_id, &h);
+    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not create RPC handle");
+    ret = margo_forward(h, &in);
+    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not forward RPC");
     
     read_op_out_t resp; 
-    margo_get_output(h, &resp);
+    ret = margo_get_output(h, &resp);
+    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not get RPC output");
     
     feed_read_op_pointers_from_response(read_op, resp.responses);
     
-    margo_free_output(h,&resp);
-    margo_destroy(h);
+    ret = margo_free_output(h,&resp);
+    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not free RPC output");
+    ret = margo_destroy(h);
+    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not destroy RPC handle");
     
     return 0;
 }
