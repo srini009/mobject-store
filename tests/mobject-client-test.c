@@ -8,13 +8,9 @@ int main(int argc, char** argv)
 {
     mobject_store_t cluster;
     mobject_store_create(&cluster, "admin");
-
     mobject_store_connect(cluster);
-
     mobject_store_ioctx_t ioctx;
-
     mobject_store_ioctx_create(cluster, "my-object-pool", &ioctx);
-
     char buffer[256];
     unsigned i;
     for(i=0; i<256; i++) buffer[i] = 'A'+(i % 26);
@@ -46,9 +42,9 @@ int main(int argc, char** argv)
         mobject_store_write_op_omap_set(write_op, keys, values, val_sizes, 5);
         // Add a omap_rm_keys" operation
         mobject_store_write_op_omap_rm_keys(write_op, keys, 5);
-
+        fprintf(stderr,"FFF\n");
         mobject_store_write_op_operate(write_op, ioctx, "test-object", NULL, LIBMOBJECT_OPERATION_NOFLAG);
-
+        fprintf(stderr,"GGG\n");
         mobject_store_release_write_op(write_op);
 
     }

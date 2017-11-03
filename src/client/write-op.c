@@ -9,7 +9,7 @@
 #include "mobject-store-config.h"
 #include "libmobject-store.h"
 #include "src/io-chain/write-op-impl.h"
-#include "src/aio/completion.h"
+#include "src/client/aio/completion.h"
 #include "src/util/utlist.h"
 #include "src/util/log.h"
 
