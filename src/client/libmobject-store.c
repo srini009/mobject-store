@@ -191,6 +191,7 @@ int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
     in.object_name = oid;
     in.pool_name   = io->pool_name;
     in.write_op    = write_op;
+    // TODO take mtime into account
 
     prepare_write_op(io->cluster->mid, write_op);
 
