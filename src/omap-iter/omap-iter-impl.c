@@ -60,24 +60,3 @@ void omap_iter_append(mobject_store_omap_iter_t iter,
 
 	iter->num_items += 1;
 }
-
-int mobject_store_omap_get_next(mobject_store_omap_iter_t iter,
-                                char **key,
-                                char **val,
-                                size_t *len)
-{
-	if(iter->current == NULL) return -1;
-
-	*key = iter->current->key;
-	*val = iter->current->value;
-	*len = iter->current->value_size;
-
-	iter->current = iter->current->next;
-
-	return 0;
-}
-
-void mobject_store_omap_get_end(mobject_store_omap_iter_t iter)
-{
-	omap_iter_free(iter);	
-}
