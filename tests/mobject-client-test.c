@@ -3,33 +3,17 @@
 #include <margo.h>
 #include <libmobject-store.h>
 
-#include "src/client/io-context.h" // XXX included because we modify manually the ioctx
-
-// XXX prototype here even though we shouldn't see this function
-void mobject_store_register(margo_instance_id mid);
-
 /* Main function. */
 int main(int argc, char** argv)
 {
-    if(argc != 2) {
-        fprintf(stderr,"Usage: %s <server address>\n", argv[0]);
-        exit(0);
-    }
+    mobject_store_t cluster;
+    mobject_store_create(&cluster, "admin");
 
-    /* Start Margo */
-    margo_instance_id mid = margo_init("bmi+tcp", MARGO_CLIENT_MODE, 0, 0);
-
-    // XXX this should be handled by SSG in mobject_store_connect
-    hg_addr_t svr_addr;
-    margo_addr_lookup(mid, argv[1], &svr_addr);
+    mobject_store_connect(cluster);
 
     mobject_store_ioctx_t ioctx;
 
-    mobject_store_ioctx_create(NULL, "my-object-pool", &ioctx);
-    // XXX the bellow modifications of ioctx should be done inside 
-    // mobject_store_ioctx_create once we have the rest of the API
-    ioctx->svr_addr = svr_addr;
-    ioctx->mid = mid; 
+    mobject_store_ioctx_create(cluster, "my-object-pool", &ioctx);
 
     char buffer[256];
     unsigned i;
@@ -113,11 +97,7 @@ int main(int argc, char** argv)
 
     mobject_store_ioctx_destroy(ioctx);
 
-    // XXX this should be done through SSG inside mobject_store_shutdown
-    margo_addr_free(mid, svr_addr);
-
-    /* shut down Margo */
-    margo_finalize(mid);
+    mobject_store_shutdown(cluster);
 
     return 0;
 }

@@ -1,6 +1,7 @@
 noinst_HEADERS += \
   src/aio/completion.h \
   src/client/io-context.h \
+  src/client/cluster-handle.h \
   src/io-chain/args-read-actions.h \
   src/io-chain/args-write-actions.h \
   src/io-chain/prepare-read-op.h \

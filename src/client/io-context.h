@@ -11,8 +11,7 @@
 #include "libmobject-store.h"
 
 typedef struct mobject_ioctx {
-	margo_instance_id mid;
-	hg_addr_t svr_addr; // TODO change this to an SSG thingy
+	mobject_store_t cluster;
 	char* pool_name;
 }* mobject_store_ioctx_t;
 

@@ -20,6 +20,7 @@
 #include "src/client/io-context.h"
 #include "src/io-chain/prepare-read-op.h"
 #include "src/io-chain/prepare-write-op.h"
+#include "src/client/cluster-handle.h"
 
 #define MOBJECT_CLUSTER_FILE_ENV "MOBJECT_CLUSTER_FILE"
 
@@ -28,13 +29,6 @@
 hg_id_t mobject_write_op_rpc_id;
 hg_id_t mobject_read_op_rpc_id;
 hg_id_t mobject_shutdown_rpc_id;
-
-typedef struct mobject_store_handle
-{
-    margo_instance_id mid;
-    ssg_group_id_t gid;
-    int connected;
-} mobject_store_handle_t;
 
 static void mobject_store_register(margo_instance_id mid);
 static int mobject_store_shutdown_servers(mobject_store_handle_t *cluster_handle);
@@ -195,10 +189,12 @@ int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
     in.pool_name   = io->pool_name;
     in.write_op    = write_op;
 
-    prepare_write_op(io->mid, write_op);
+    prepare_write_op(io->cluster->mid, write_op);
+
+    hg_addr_t svr_addr = ssg_get_addr(io->cluster->gid, 0); // XXX pick other servers using ch-placement
 
     hg_handle_t h;
-    margo_create(io->mid, io->svr_addr, mobject_write_op_rpc_id, &h);
+    margo_create(io->cluster->mid, svr_addr, mobject_write_op_rpc_id, &h);
     margo_forward(h, &in);
 
     write_op_out_t resp;
@@ -219,12 +215,12 @@ int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
     in.pool_name   = ioctx->pool_name;
     in.read_op     = read_op;
     
-    prepare_read_op(ioctx->mid, read_op);
+    prepare_read_op(ioctx->cluster->mid, read_op);
     
-    // TODO: svr_addr should be computed based on the pool name, object name,
-    // and SSG structures accessible via the io context
+    hg_addr_t svr_addr = ssg_get_addr(ioctx->cluster->gid, 0); // XXX pick other servers using ch-placement
+
     hg_handle_t h;
-    margo_create(ioctx->mid, ioctx->svr_addr, mobject_read_op_rpc_id, &h);
+    margo_create(ioctx->cluster->mid, svr_addr, mobject_read_op_rpc_id, &h);
     margo_forward(h, &in);
     
     read_op_out_t resp; 

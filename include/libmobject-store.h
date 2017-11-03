@@ -50,7 +50,7 @@ extern "C" {
  */
 
 /* opaque type for a handle for interacting with a mobject store cluster */
-typedef void *mobject_store_t;
+typedef struct mobject_store_handle *mobject_store_t;
 
 /**
  * @name Operation Flags

@@ -5,15 +5,16 @@
  */
 #include "libmobject-store.h"
 #include "src/client/io-context.h"
+#include "src/client/cluster-handle.h"
 
 int mobject_store_ioctx_create(
     mobject_store_t cluster,
     const char * pool_name,
     mobject_store_ioctx_t *ioctx)
 {
-    // TODO take mid from cluster parameter
     *ioctx = (mobject_store_ioctx_t)calloc(1, sizeof(**ioctx));
     (*ioctx)->pool_name = strdup(pool_name);
+    (*ioctx)->cluster   = cluster;
     return 0;
 }
 
