@@ -8,7 +8,7 @@
 
 #include <margo.h>
 #include "mobject-store-config.h"
-
+#if 0
 /**
  * The mobject_store_completion object is used for asynchronous
  * functions. It contains the callbacks to call when the data is
@@ -25,6 +25,7 @@ struct mobject_store_completion {
 	margo_request            request;        // margo request to wait on
 	int                      ret_value;      // return value of the operation
 };
+#endif
 
 #endif
 

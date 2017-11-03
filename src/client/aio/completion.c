@@ -9,7 +9,7 @@
 #include "libmobject-store.h"
 #include "src/client/aio/completion.h"
 #include "src/util/log.h"
-
+#if 0
 int mobject_store_aio_create_completion(void *cb_arg,
                                 mobject_store_callback_t cb_complete,
                                 mobject_store_callback_t cb_safe,
@@ -75,3 +75,4 @@ void mobject_store_aio_release(mobject_store_completion_t c)
         "Trying to release a completion handle before operation completed");
 	free(c);
 }
+#endif
