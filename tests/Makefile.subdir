@@ -4,7 +4,6 @@ TESTS_ENVIRONMENT += \
 
 check_PROGRAMS += \
  tests/mobject-connect-test \
- tests/sds-keyval-client-test \
  tests/mobject-client-test
 
 # don't include rados programs in make check
@@ -30,6 +29,4 @@ tests_rados_mobject_connect_test_LDADD = -lrados
 endif
 
 tests_mobject_client_test_LDADD = src/client/libmobject-store.la ${CLIENT_LIBS}
-
-tests_sds_keyval_client_test_LDADD = ${SERVER_LIBS}
 
