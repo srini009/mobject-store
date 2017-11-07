@@ -14,7 +14,13 @@ noinst_PROGRAMS += \
 endif
 
 TESTS += \
- tests/mobject-connect-test.sh
+ tests/mobject-connect-test.sh \
+ tests/mobject-client-test.sh
+
+EXTRA_DIST += \
+ tests/mobject-connect-test.sh \
+ tests/mobject-client-test.sh \
+ tests/mobject-test-util.sh
 
 tests_mobject_connect_test_LDADD = src/client/libmobject-store.la ${CLIENT_LIBS}
 if HAVE_RADOS
