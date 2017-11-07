@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 
 		// print the results of the read operations
 		printf("Client received the following results:\n");
-		printf("stat: psize=%ld pmtime=%lld prval=%d\n", psize, pmtime, prval1);
+		printf("stat: psize=%ld pmtime=%lld prval=%d\n", psize, (long long)pmtime, prval1);
 		printf("read: bytes_read=%ld prval=%d\n", bytes_read, prval2);
 		printf("omap_get_keys: prval=%d\n", prval3);
 		printf("omap_get_vals: prval=%d\n", prval4);
