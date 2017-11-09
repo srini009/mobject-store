@@ -13,7 +13,7 @@ EXTRA_DIST = prepare.sh
 
 AM_CPPFLAGS = -I$(top_srcdir)/include
 AM_CFLAGS   = 
-AM_CXXFLAGS = $(AM_CFLAGS)
+AM_CXXFLAGS = -std=c++14 $(AM_CFLAGS)
 
 SERVER_LIBS = @SERVER_LIBS@
 CLIENT_LIBS = @CLIENT_LIBS@
