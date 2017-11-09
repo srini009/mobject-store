@@ -157,7 +157,7 @@ void mobject_store_shutdown(mobject_store_t cluster)
     if (!cluster_handle->connected)
         return;
 
-    svr_kill_env_str = getenv("MOBJECT_SHUTDOWN_KILL_SERVERS");
+    svr_kill_env_str = getenv(MOBJECT_CLUSTER_SHUTDOWN_KILL_ENV);
     if (svr_kill_env_str && !strcmp(svr_kill_env_str, "true"))
     {
         /* kill server cluster if requested */

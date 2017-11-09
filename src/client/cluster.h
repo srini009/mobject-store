@@ -11,6 +11,7 @@
 #include "libmobject-store.h"
 
 #define MOBJECT_CLUSTER_FILE_ENV "MOBJECT_CLUSTER_FILE"
+#define MOBJECT_CLUSTER_SHUTDOWN_KILL_ENV "MOBJECT_SHUTDOWN_KILL_SERVERS"
 
 struct mobject_store_handle
 {
