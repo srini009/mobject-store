@@ -12,6 +12,8 @@ int mobject_store_ioctx_create(
     const char * pool_name,
     mobject_store_ioctx_t *ioctx)
 {
+    (void)pool_name; /* XXX pool is ignored for now and instead use one global "pool" */
+
     *ioctx = (mobject_store_ioctx_t)calloc(1, sizeof(**ioctx));
     (*ioctx)->pool_name = strdup(pool_name);
     (*ioctx)->cluster   = cluster;
