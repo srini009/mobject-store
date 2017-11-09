@@ -102,7 +102,7 @@ enum {
  * libmobject_store users must synchronize any of these changes on their own,
  * or use separate io contexts for each thread
  */
-typedef struct mobject_ioctx *mobject_store_ioctx_t;
+typedef struct mobject_store_ioctx *mobject_store_ioctx_t;
 
 /**
  * @typedef mobject_store_omap_iter_t
