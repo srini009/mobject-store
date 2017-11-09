@@ -178,6 +178,22 @@ void mobject_store_shutdown(mobject_store_t cluster)
     return;
 }
 
+int mobject_store_pool_create(mobject_store_t cluster, const char * pool_name)
+{
+    /* XXX: this is a NOOP -- we don't implement pools currently */
+    (void)cluster;
+    (void)pool_name;
+    return 0;
+}
+
+int mobject_store_pool_delete(mobject_store_t cluster, const char * pool_name)
+{
+    /* XXX: this is a NOOP -- we don't implement pools currently */
+    (void)cluster;
+    (void)pool_name;
+    return 0;
+}
+
 int mobject_store_ioctx_create(
     mobject_store_t cluster,
     const char * pool_name,

@@ -36,6 +36,8 @@ typedef mobject_store_callback_t   rados_callback_t;
 #define rados_create                        mobject_store_create
 #define rados_connect                       mobject_store_connect
 #define rados_shutdown                      mobject_store_shutdown
+#define rados_pool_create                   mobject_store_pool_create
+#define rados_pool_delete                   mobject_store_pool_delete
 #define rados_ioctx_create                  mobject_store_ioctx_create
 #define rados_ioctx_destroy                 mobject_store_ioctx_destroy
 #define rados_create_write_op               mobject_store_create_write_op

@@ -207,6 +207,33 @@ int mobject_store_connect(mobject_store_t cluster);
  */
 void mobject_store_shutdown(mobject_store_t cluster);
 
+/**********************************************
+ * mobject store pool setup/teardown routines *
+ **********************************************/
+
+/**
+ * Creates a new storage pool.
+ *
+ * @param[in] cluster       handle to mobject cluster
+ * @param[in] pool_name     the name of the pool
+ * @returns 0 on success, negative error code on failure
+ */
+int mobject_store_pool_create(
+    mobject_store_t cluster,
+    const char * pool_name);
+
+/**
+ * Deletes a storage pool and all data stored in it.
+ *
+ * @param[in] cluster       handle to mobject cluster
+ * @param[in] pool_name     the name of the pool
+ * @returns 0 on success, negative error code on failure
+ */
+int mobject_store_pool_delete(
+    mobject_store_t cluster,
+    const char * pool_name);
+
+
 /*****************************************************
  * mobject store i/o context setup/teardown routines *
  *****************************************************/
