@@ -26,8 +26,8 @@ void omap_iter_free(mobject_store_omap_iter_t iter)
 
 	DL_FOREACH_SAFE(iter->head, elt, tmp) {
 		DL_DELETE(iter->head, elt);
-		free((void*)(elt->key));
-		free((void*)(elt->value));
+		if(elt->key)   free((void*)(elt->key));
+		if(elt->value) free((void*)(elt->value));
 		free((void*)(elt));
 	}
 
@@ -47,11 +47,11 @@ void omap_iter_append(mobject_store_omap_iter_t iter,
 	MOBJECT_ASSERT(iter, "trying to append to a NULL iterator");
 
 	omap_iter_node_t item = (omap_iter_node_t)calloc(1, sizeof(*item));
-	item->key             = strdup(key);
-	item->key_size        = strlen(key)+1;
+	item->key             = key ? strdup(key) : NULL;
+	item->key_size        = key ? strlen(key)+1 : 0;
 	item->value_size      = val_size;
-	item->value           = (char*)malloc(val_size);
-	memcpy(item->value, val, val_size);
+	item->value           = val_size ? (char*)malloc(val_size) : NULL;
+	if(val) memcpy(item->value, val, val_size);
 
 	DL_APPEND(iter->head, item);
 

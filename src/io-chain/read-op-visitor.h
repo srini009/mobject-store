@@ -9,6 +9,10 @@
 #include "libmobject-store.h"
 #include "src/util/buffer-union.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct read_op_visitor {
 	void (*visit_begin)(void*);
 	void (*visit_stat)(void*, uint64_t*, time_t*, int*);
@@ -20,5 +24,9 @@ typedef struct read_op_visitor {
 }* read_op_visitor_t;
 
 void execute_read_op_visitor(read_op_visitor_t visitor, mobject_store_read_op_t read_op, void* uarg);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

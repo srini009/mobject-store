@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "src/server/exec-write-op.h"
+#include "src/server/print-write-op.h"
 #include "src/io-chain/write-op-visitor.h"
 
 static void write_op_printer_begin(void*);
@@ -30,7 +30,7 @@ struct write_op_visitor write_op_printer = {
 	.visit_end          = write_op_printer_end
 };
 
-void execute_write_op(mobject_store_write_op_t write_op, const char* object_name)
+void print_write_op(mobject_store_write_op_t write_op, const char* object_name)
 {
 	/* Execute the operation chain */
 	execute_write_op_visitor(&write_op_printer, write_op, (void*)object_name);

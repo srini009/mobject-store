@@ -2,7 +2,7 @@
 #include "src/io-chain/read-op-visitor.h"
 #include "src/io-chain/read-resp-impl.h"
 #include "src/omap-iter/omap-iter-impl.h"
-#include "src/server/exec-read-op.h"
+#include "src/server/print-read-op.h"
 
 static void read_op_printer_begin(void*);
 static void read_op_printer_stat(void*, uint64_t*, time_t*, int*);
@@ -22,7 +22,7 @@ struct read_op_visitor read_op_printer = {
 	.visit_omap_get_vals_by_keys   = read_op_printer_omap_get_vals_by_keys
 };
 
-void execute_read_op(mobject_store_read_op_t read_op, const char* object_name)
+void print_read_op(mobject_store_read_op_t read_op, const char* object_name)
 {
 	execute_read_op_visitor(&read_op_printer, read_op, (void*)object_name);
 }

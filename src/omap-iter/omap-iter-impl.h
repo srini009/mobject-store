@@ -8,6 +8,10 @@
 
 #include "libmobject-store.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct omap_iter_node* omap_iter_node_t;
 
 struct omap_iter_node {
@@ -34,5 +38,9 @@ void omap_iter_free(mobject_store_omap_iter_t iter);
 void omap_iter_append(mobject_store_omap_iter_t iter, 
                       const char* key, const char* val, 
                       size_t val_size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

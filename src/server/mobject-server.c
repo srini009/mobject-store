@@ -16,8 +16,13 @@
 #include "mobject-server.h"
 #include "src/rpc-types/write-op.h"
 #include "src/rpc-types/read-op.h"
-#include "src/server/exec-write-op.h"
-#include "src/server/exec-read-op.h"
+//#include "src/server/print-write-op.h"
+//#include "src/server/print-read-op.h"
+#include "src/io-chain/write-op-impl.h"
+#include "src/io-chain/read-op-impl.h"
+#include "src/server/visitor-args.h"
+#include "src/server/fake/fake-write-op.h"
+#include "src/server/fake/fake-read-op.h"
 
 typedef struct mobject_server_context
 {
@@ -201,8 +206,18 @@ static hg_return_t mobject_write_op_ult(hg_handle_t h)
     ret = margo_get_input(h, &in);
     assert(ret == HG_SUCCESS);
 
+    const struct hg_info* info = margo_get_info(h);
+
+    server_visitor_args vargs;
+    vargs.object_name = in.object_name;
+    vargs.pool_name   = in.pool_name;
+    vargs.mid         = margo_hg_handle_get_instance(h);
+    vargs.client_addr = info->addr;
+    vargs.bulk_handle = in.write_op->bulk_handle;
+
     /* Execute the operation chain */
-    execute_write_op(in.write_op, in.object_name);
+    //print_write_op(in.write_op, in.object_name);
+    fake_write_op(in.write_op, &vargs);
 
     // set the return value of the RPC
     out.ret = 0;
@@ -236,8 +251,18 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
     /* Create a response list matching the input actions */
     read_response_t resp = build_matching_read_responses(in.read_op);
 
+    const struct hg_info* info = margo_get_info(h);
+
+    server_visitor_args vargs;
+    vargs.object_name = in.object_name;
+    vargs.pool_name   = in.pool_name;
+    vargs.mid         = margo_hg_handle_get_instance(h);
+    vargs.client_addr = info->addr;
+    vargs.bulk_handle = in.read_op->bulk_handle;
+
     /* Compute the result. */
-    execute_read_op(in.read_op, in.object_name);
+    //print_read_op(in.read_op, in.object_name);
+    fake_read_op(in.read_op, &vargs);
 
     out.responses = resp;
 

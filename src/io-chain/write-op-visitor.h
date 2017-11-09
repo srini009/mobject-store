@@ -9,6 +9,10 @@
 #include "libmobject-store.h"
 #include "src/util/buffer-union.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct write_op_visitor {
 	void (*visit_begin)(void*);
 	void (*visit_create)(void*, int);
@@ -25,5 +29,9 @@ typedef struct write_op_visitor {
 }* write_op_visitor_t;
 
 void execute_write_op_visitor(write_op_visitor_t visitor, mobject_store_write_op_t write_op, void* uargs);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
