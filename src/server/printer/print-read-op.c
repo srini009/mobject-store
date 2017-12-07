@@ -2,7 +2,7 @@
 #include "src/io-chain/read-op-visitor.h"
 #include "src/io-chain/read-resp-impl.h"
 #include "src/omap-iter/omap-iter-impl.h"
-#include "src/server/print-read-op.h"
+#include "src/server/printer/print-read-op.h"
 
 static void read_op_printer_begin(void*);
 static void read_op_printer_stat(void*, uint64_t*, time_t*, int*);

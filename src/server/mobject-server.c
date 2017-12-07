@@ -4,6 +4,8 @@
  * See COPYRIGHT in top-level directory.
  */
 
+//#define FAKE_CPP_SERVER
+
 #include <assert.h>
 #include <mpi.h>
 #include <abt.h>
@@ -22,10 +24,13 @@
 #include "src/io-chain/write-op-impl.h"
 #include "src/io-chain/read-op-impl.h"
 #include "src/server/visitor-args.h"
-//#include "src/server/fake/fake-write-op.h"
-//#include "src/server/fake/fake-write-op.h"
+#ifdef FAKE_CPP_SERVER
+#include "src/server/fake/fake-read-op.h"
+#include "src/server/fake/fake-write-op.h"
+#else
 #include "src/server/core/core-read-op.h"
 #include "src/server/core/core-write-op.h"
+#endif
 
 struct mobject_server_context
 {
@@ -74,13 +79,6 @@ mobject_server_context_t* mobject_server_init(margo_instance_id mid, const char 
     srv_ctx->ref_count = 1;
     ABT_mutex_create(&srv_ctx->shutdown_mutex);
     ABT_cond_create(&srv_ctx->shutdown_cond);
-
-    /* TODO sds-keyval */
-# if 0
-    kv_context *metadata;
-    struct bake_pool_info *pool_info;
-    pool_info = bake_server_makepool(poolname);
-#endif
 
     ret = ssg_init(mid);
     if (ret != SSG_SUCCESS)
@@ -132,6 +130,8 @@ mobject_server_context_t* mobject_server_init(margo_instance_id mid, const char 
     hg_addr_t self_addr = ssg_get_addr(srv_ctx->gid, my_id);
     bake_probe_instance(mid, self_addr, &(srv_ctx->bake_id));
     // XXX: check return value of the above calls
+
+    /* TODO setup sds-keyval */
 
     mobject_server_is_initialized = 1;
 
@@ -231,8 +231,11 @@ static hg_return_t mobject_write_op_ult(hg_handle_t h)
 
     /* Execute the operation chain */
     //print_write_op(in.write_op, in.object_name);
-    //fake_write_op(in.write_op, &vargs);
+#ifdef FAKE_CPP_SERVER
+    fake_write_op(in.write_op, &vargs);
+#else
     core_write_op(in.write_op, &vargs);
+#endif
 
     // set the return value of the RPC
     out.ret = 0;
@@ -277,8 +280,11 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
 
     /* Compute the result. */
     //print_read_op(in.read_op, in.object_name);
-    //fake_read_op(in.read_op, &vargs);
+#ifdef FAKE_CPP_SERVER
+    fake_read_op(in.read_op, &vargs);
+#else
     core_read_op(in.read_op, &vargs);
+#endif
 
     out.responses = resp;
 
