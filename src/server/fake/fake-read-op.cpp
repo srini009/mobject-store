@@ -59,7 +59,8 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
         *prval = -1;
         return;
     }
-    fake_db[name].read(vargs->mid, vargs->client_addr, vargs->bulk_handle, 
+    margo_instance_id mid = vargs->srv_ctx->mid;
+    fake_db[name].read(mid, vargs->client_addr, vargs->bulk_handle, 
                         buf.as_offset, offset, len, bytes_read);
 	*prval = 0;
 }

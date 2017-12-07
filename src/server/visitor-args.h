@@ -3,17 +3,18 @@
 
 #include <margo.h>
 #include "libmobject-store.h"
+#include "src/server/mobject-server-context.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct {
-	const char* object_name;
-	const char* pool_name;
-    margo_instance_id mid;
-    hg_addr_t   client_addr;
-	hg_bulk_t   bulk_handle;
+	const char*                    object_name;
+	const char*                    pool_name;
+    struct mobject_server_context* srv_ctx;
+    hg_addr_t                      client_addr;
+	hg_bulk_t                      bulk_handle;
 } server_visitor_args;
 
 typedef server_visitor_args* server_visitor_args_t;
