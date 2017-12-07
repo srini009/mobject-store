@@ -100,7 +100,7 @@ int mobject_store_connect(mobject_store_t cluster)
 
     /* intialize margo */
     /* XXX: probably want to expose some way of tweaking threading parameters */
-    cluster_handle->mid = margo_init(proto, MARGO_CLIENT_MODE, 0, -1);
+    cluster_handle->mid = margo_init(proto, MARGO_SERVER_MODE, 0, -1);
     if (cluster_handle->mid == MARGO_INSTANCE_NULL)
     {
         fprintf(stderr, "Error: Unable to initialize margo\n");

@@ -1,6 +1,7 @@
 #include <map>
 #include <string>
 #include <iostream>
+#include <bake-bulk-client.h>
 #include "src/server/visitor-args.h"
 #include "src/io-chain/write-op-visitor.h"
 
@@ -56,21 +57,69 @@ void write_op_exec_create(void* u, int exclusive)
 void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
 {
 	auto vargs = static_cast<server_visitor_args_t>(u);
+    bake_target_id_t bti = vargs->srv_ctx->bake_id;
+    bake_bulk_region_id_t rid;
+    hg_bulk_t remote_bulk = vargs->bulk_handle;
+    hg_addr_t remote_addr = vargs->client_addr;
+    int ret;
+
+    // TODO: check return values of those calls
+    ret = bake_bulk_create(bti, len, &rid);
+    ret = bake_bulk_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr, len);
+    ret = bake_bulk_persist(bti, rid);
+   
+    // TODO: write [offset,len,rid] in sds-keyval for the specified object
 }
 
 void write_op_exec_write_full(void* u, buffer_u buf, size_t len)
 {
 	auto vargs = static_cast<server_visitor_args_t>(u);
+    bake_target_id_t bti = vargs->srv_ctx->bake_id;
+    bake_bulk_region_id_t rid;
+    hg_bulk_t remote_bulk = vargs->bulk_handle;
+    hg_addr_t remote_addr = vargs->client_addr;
+    int ret;
+
+    // TODO: check return values of those calls
+    ret = bake_bulk_create(bti, len, &rid);
+    ret = bake_bulk_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr, len);
+    ret = bake_bulk_persist(bti, rid);
+
+    // TODO: write [offset,len,rid] in sds-keyval for the specified object
 }
 
 void write_op_exec_writesame(void* u, buffer_u buf, size_t data_len, size_t write_len, uint64_t offset)
 {
 	auto vargs = static_cast<server_visitor_args_t>(u);
+    bake_target_id_t bti = vargs->srv_ctx->bake_id;
+    bake_bulk_region_id_t rid;
+    hg_bulk_t remote_bulk = vargs->bulk_handle;
+    hg_addr_t remote_addr = vargs->client_addr;
+    int ret;
+
+    // TODO: check return values of those calls
+    ret = bake_bulk_create(bti, data_len, &rid);
+    ret = bake_bulk_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr, data_len);
+    ret = bake_bulk_persist(bti, rid);
+
+    // TODO: write [offset,len,rid] in sds-keyval for the specified object
 }
 
 void write_op_exec_append(void* u, buffer_u buf, size_t len)
 {
 	auto vargs = static_cast<server_visitor_args_t>(u);
+    bake_target_id_t bti = vargs->srv_ctx->bake_id;
+    bake_bulk_region_id_t rid;
+    hg_bulk_t remote_bulk = vargs->bulk_handle;
+    hg_addr_t remote_addr = vargs->client_addr;
+    int ret;
+
+    // TODO: check return values of those calls
+    ret = bake_bulk_create(bti, len, &rid);
+    ret = bake_bulk_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr, len);
+    ret = bake_bulk_persist(bti, rid);
+
+    // TODO: write [offset,len,rid] in sds-keyval for the specified object
 }
 
 void write_op_exec_remove(void* u)
