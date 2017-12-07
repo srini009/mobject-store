@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "src/server/print-write-op.h"
+#include "src/server/printer/print-write-op.h"
 #include "src/io-chain/write-op-visitor.h"
 
 static void write_op_printer_begin(void*);

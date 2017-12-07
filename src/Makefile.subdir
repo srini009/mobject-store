@@ -20,8 +20,8 @@ noinst_HEADERS += \
   src/omap-iter/proc-omap-iter.h \
   src/rpc-types/read-op.h \
   src/rpc-types/write-op.h \
-  src/server/print-read-op.h\
-  src/server/print-write-op.h \
+  src/server/printer/print-read-op.h\
+  src/server/printer/print-write-op.h \
   src/util/buffer-union.h \
   src/util/log.h \
   src/util/utlist.h
@@ -61,8 +61,8 @@ src_server_libmobject_server_la_SOURCES = \
   src/server/fake/fake-db.cpp \
   src/server/core/core-write-op.cpp \
   src/server/core/core-read-op.cpp \
-  src/server/print-write-op.c \
-  src/server/print-read-op.c
+  src/server/printer/print-write-op.c \
+  src/server/printer/print-read-op.c
 src_server_libmobject_server_la_CPPFLAGS = ${AM_CPPFLAGS} ${SERVER_CPPFLAGS}
 src_server_libmobject_server_la_CFLAGS   = ${AM_CFLAGS} ${SERVER_CFLAGS}
 src_server_libmobject_server_la_LIBADD = src/omap-iter/libomap-iter.la \
