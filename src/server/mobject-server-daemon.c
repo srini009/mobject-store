@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
     char *cluster_file;
     margo_instance_id mid;
     int ret;
+    mobject_server_context_t* mobject_svr_ctx;
 
     /* check args */
     if (argc != 3)
@@ -41,8 +42,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    ret = mobject_server_init(mid, cluster_file);
-    if (ret != 0)
+    mobject_svr_ctx = mobject_server_init(mid, cluster_file);
+    if (mobject_svr_ctx == NULL)
     {
         fprintf(stderr, "Error: Unable to initialize mobject server\n");
         margo_finalize(mid);
@@ -50,7 +51,7 @@ int main(int argc, char *argv[])
     }
 
     /* wait for shutdown signal, then clean up */
-    mobject_server_wait_for_shutdown();
+    mobject_server_wait_for_shutdown(mobject_svr_ctx);
     margo_finalize(mid);
     MPI_Finalize();
 
