@@ -17,6 +17,7 @@ struct mobject_store_handle
 {
     margo_instance_id mid;
     ssg_group_id_t gid;
+    const char* my_address;
     int connected;
 };
 
