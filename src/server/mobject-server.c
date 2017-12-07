@@ -9,7 +9,8 @@
 #include <abt.h>
 #include <margo.h>
 //#include <sds-keyval.h>
-//#include <bake-bulk-server.h>
+#include <bake-bulk-server.h>
+#include <bake-bulk-client.h>
 //#include <libpmemobj.h>
 #include <ssg-mpi.h>
 
@@ -21,8 +22,10 @@
 #include "src/io-chain/write-op-impl.h"
 #include "src/io-chain/read-op-impl.h"
 #include "src/server/visitor-args.h"
-#include "src/server/fake/fake-write-op.h"
-#include "src/server/fake/fake-read-op.h"
+//#include "src/server/fake/fake-write-op.h"
+//#include "src/server/fake/fake-write-op.h"
+#include "src/server/core/core-read-op.h"
+#include "src/server/core/core-write-op.h"
 
 typedef struct mobject_server_context
 {
@@ -30,7 +33,7 @@ typedef struct mobject_server_context
     margo_instance_id mid;
     /* TODO bake, sds-keyval stuff */
     ssg_group_id_t gid;
-
+    bake_target_id_t bake_id;
     /* server shutdown conditional logic */
     ABT_mutex shutdown_mutex;
     ABT_cond shutdown_cond;
@@ -74,7 +77,6 @@ int mobject_server_init(margo_instance_id mid, const char *cluster_file)
     ABT_mutex_create(&srv_ctx->shutdown_mutex);
     ABT_cond_create(&srv_ctx->shutdown_cond);
 
-    /* TODO bake-bulk */
     /* TODO sds-keyval */
 # if 0
     kv_context *metadata;
@@ -122,6 +124,16 @@ int mobject_server_init(margo_instance_id mid, const char *cluster_file)
             return -1;
         }
     }
+
+    /* initialize bake-bulk */
+    /* server part */
+    struct bake_pool_info* pool_info = bake_server_makepool("/dev/shm/mobject.dat");
+    bake_server_register(mid, pool_info);
+    // XXX: check return values for the above two calls
+    /* client part */
+    hg_addr_t self_addr = ssg_get_addr(srv_ctx->gid, my_id);
+    bake_probe_instance(mid, self_addr, &(srv_ctx->bake_id));
+    // XXX: check return value of the above calls
 
     g_srv_ctx = srv_ctx;
 
@@ -217,7 +229,8 @@ static hg_return_t mobject_write_op_ult(hg_handle_t h)
 
     /* Execute the operation chain */
     //print_write_op(in.write_op, in.object_name);
-    fake_write_op(in.write_op, &vargs);
+    //fake_write_op(in.write_op, &vargs);
+    core_write_op(in.write_op, &vargs);
 
     // set the return value of the RPC
     out.ret = 0;
@@ -262,7 +275,8 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
 
     /* Compute the result. */
     //print_read_op(in.read_op, in.object_name);
-    fake_read_op(in.read_op, &vargs);
+    //fake_read_op(in.read_op, &vargs);
+    core_read_op(in.read_op, &vargs);
 
     out.responses = resp;
 
@@ -304,6 +318,11 @@ DEFINE_MARGO_RPC_HANDLER(mobject_shutdown_ult)
 
 static void mobject_server_cleanup(mobject_server_context_t *srv_ctx)
 {
+    // cleanup bake-bulk
+    bake_shutdown_service(srv_ctx->bake_id);
+    bake_release_instance(srv_ctx->bake_id);
+    // XXX: check the return value of these calls
+
     ssg_group_destroy(srv_ctx->gid);
     ssg_finalize();
 
