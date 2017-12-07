@@ -10,7 +10,8 @@
 #include "src/io-chain/proc-read-responses.h"
 
 MERCURY_GEN_PROC(write_op_in_t,
-        ((hg_const_string_t)(pool_name))\
+    ((hg_const_string_t)(client_addr))\
+    ((hg_const_string_t)(pool_name))\
 	((hg_const_string_t)(object_name))\
 	((mobject_store_write_op_t)(write_op)))
 

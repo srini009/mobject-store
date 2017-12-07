@@ -60,7 +60,7 @@ void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
     bake_target_id_t bti = vargs->srv_ctx->bake_id;
     bake_bulk_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
-    hg_addr_t remote_addr = vargs->client_addr;
+    const char* remote_addr = vargs->client_addr.as_string;
     int ret;
 
     // TODO: check return values of those calls
@@ -77,7 +77,7 @@ void write_op_exec_write_full(void* u, buffer_u buf, size_t len)
     bake_target_id_t bti = vargs->srv_ctx->bake_id;
     bake_bulk_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
-    hg_addr_t remote_addr = vargs->client_addr;
+    const char* remote_addr = vargs->client_addr.as_string;
     int ret;
 
     // TODO: check return values of those calls
@@ -94,7 +94,7 @@ void write_op_exec_writesame(void* u, buffer_u buf, size_t data_len, size_t writ
     bake_target_id_t bti = vargs->srv_ctx->bake_id;
     bake_bulk_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
-    hg_addr_t remote_addr = vargs->client_addr;
+    const char* remote_addr = vargs->client_addr.as_string;
     int ret;
 
     // TODO: check return values of those calls
@@ -111,7 +111,7 @@ void write_op_exec_append(void* u, buffer_u buf, size_t len)
     bake_target_id_t bti = vargs->srv_ctx->bake_id;
     bake_bulk_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
-    hg_addr_t remote_addr = vargs->client_addr;
+    const char* remote_addr = vargs->client_addr.as_string;
     int ret;
 
     // TODO: check return values of those calls

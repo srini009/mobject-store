@@ -62,6 +62,7 @@ int mobject_store_create(mobject_store_t *cluster, const char * const id)
         free(cluster_handle);
         return -1;
     }
+    (*cluster)->my_address = NULL;
 
     /* set the returned cluster handle */
     *cluster = cluster_handle;
@@ -99,6 +100,7 @@ int mobject_store_connect(mobject_store_t cluster)
         proto[i] = svr_addr_str[i];
 
     /* intialize margo */
+    fprintf(stderr,"Client initialized with proto = %s\n",proto);
     /* XXX: probably want to expose some way of tweaking threading parameters */
     cluster_handle->mid = margo_init(proto, MARGO_SERVER_MODE, 0, -1);
     if (cluster_handle->mid == MARGO_INSTANCE_NULL)
@@ -140,6 +142,17 @@ int mobject_store_connect(mobject_store_t cluster)
     }
     cluster_handle->connected = 1;
 
+    /* get client's address */
+    {
+        hg_addr_t my_addr;
+        margo_addr_self(cluster_handle->mid, &my_addr);
+        hg_size_t addr_str_size;
+        margo_addr_to_string(cluster_handle->mid, NULL, &addr_str_size, my_addr);
+        cluster_handle->my_address = calloc(1,addr_str_size+1);
+        margo_addr_to_string(cluster_handle->mid, (char*)(cluster_handle->my_address), &addr_str_size, my_addr);
+        margo_addr_free(cluster_handle->mid, my_addr);
+    }
+
     free(svr_addr_str);
 
     return 0;
@@ -173,6 +186,7 @@ void mobject_store_shutdown(mobject_store_t cluster)
     ssg_finalize();
     margo_finalize(cluster_handle->mid);
     ssg_group_id_free(cluster_handle->gid);
+    free((char*)cluster_handle->my_address);
     free(cluster_handle);
 
     return;
@@ -223,6 +237,7 @@ int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
     in.object_name = oid;
     in.pool_name   = io->pool_name;
     in.write_op    = write_op;
+    in.client_addr = io->cluster->my_address;
     // TODO take mtime into account
 
     prepare_write_op(io->cluster->mid, write_op);
@@ -260,6 +275,7 @@ int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
     in.object_name = oid;
     in.pool_name   = ioctx->pool_name;
     in.read_op     = read_op;
+    in.client_addr = ioctx->cluster->my_address;
 
     prepare_read_op(ioctx->cluster->mid, read_op);
 
