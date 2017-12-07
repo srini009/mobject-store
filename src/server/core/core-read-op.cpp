@@ -49,16 +49,19 @@ void read_op_exec_omap_get_keys(void* u, const char* start_after, uint64_t max_r
 				mobject_store_omap_iter_t* iter, int* prval)
 {
     auto vargs = static_cast<server_visitor_args_t>(u);
+    omap_iter_create(iter);
 }
 
 void read_op_exec_omap_get_vals(void* u, const char* start_after, const char* filter_prefix, uint64_t max_return, mobject_store_omap_iter_t* iter, int* prval)
 {
     auto vargs = static_cast<server_visitor_args_t>(u);
+    omap_iter_create(iter);
 }
 
 void read_op_exec_omap_get_vals_by_keys(void* u, char const* const* keys, size_t num_keys, mobject_store_omap_iter_t* iter, int* prval)
 {
     auto vargs = static_cast<server_visitor_args_t>(u);
+    omap_iter_create(iter);
 }
 
 void read_op_exec_end(void* u)

@@ -4,7 +4,7 @@
  * See COPYRIGHT in top-level directory.
  */
 
-//#define FAKE_CPP_SERVER
+#define FAKE_CPP_SERVER
 
 #include <assert.h>
 #include <mpi.h>
@@ -17,6 +17,7 @@
 #include <ssg-mpi.h>
 
 #include "mobject-server.h"
+#include "src/server/mobject-server-context.h"
 #include "src/rpc-types/write-op.h"
 #include "src/rpc-types/read-op.h"
 //#include "src/server/print-write-op.h"
@@ -31,20 +32,6 @@
 #include "src/server/core/core-read-op.h"
 #include "src/server/core/core-write-op.h"
 #endif
-
-struct mobject_server_context
-{
-    /* margo, bake, sds-keyval, ssg state */
-    margo_instance_id mid;
-    /* TODO bake, sds-keyval stuff */
-    ssg_group_id_t gid;
-    bake_target_id_t bake_id;
-    /* server shutdown conditional logic */
-    ABT_mutex shutdown_mutex;
-    ABT_cond shutdown_cond;
-    int shutdown_flag;
-    int ref_count;
-} ;
 
 static int mobject_server_register(mobject_server_context_t *srv_ctx);
 static void mobject_server_cleanup(mobject_server_context_t *srv_ctx);
@@ -221,11 +208,12 @@ static hg_return_t mobject_write_op_ult(hg_handle_t h)
     assert(ret == HG_SUCCESS);
 
     const struct hg_info* info = margo_get_info(h);
+    margo_instance_id mid = margo_hg_handle_get_instance(h);
 
     server_visitor_args vargs;
     vargs.object_name = in.object_name;
     vargs.pool_name   = in.pool_name;
-    vargs.mid         = margo_hg_handle_get_instance(h);
+    vargs.srv_ctx     = margo_registered_data(mid, info->id);
     vargs.client_addr = info->addr;
     vargs.bulk_handle = in.write_op->bulk_handle;
 
@@ -270,11 +258,12 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
     read_response_t resp = build_matching_read_responses(in.read_op);
 
     const struct hg_info* info = margo_get_info(h);
+    margo_instance_id mid = margo_hg_handle_get_instance(h);
 
     server_visitor_args vargs;
     vargs.object_name = in.object_name;
     vargs.pool_name   = in.pool_name;
-    vargs.mid         = margo_hg_handle_get_instance(h);
+    vargs.srv_ctx     = margo_registered_data(mid,info->id);
     vargs.client_addr = info->addr;
     vargs.bulk_handle = in.read_op->bulk_handle;
 

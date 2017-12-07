@@ -73,7 +73,6 @@ int main(int argc, char** argv)
         mobject_store_omap_iter_t iter4;
         int prval4;
         mobject_store_read_op_omap_get_vals(read_op, start_after2, filter_prefix2, 3, &iter4, &prval4);
-
         // Add "omap_get_vals_by_keys" operation
         const char* keys[] = {"matthieu", "robl"};
         mobject_store_omap_iter_t iter5;
