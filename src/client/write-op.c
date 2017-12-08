@@ -274,35 +274,3 @@ void mobject_store_write_op_omap_rm_keys(mobject_store_write_op_t write_op,
 
 	write_op->num_actions += 1;
 }
-/*
-int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
-                                   mobject_store_ioctx_t io,
-                                   const char *oid,
-                                   time_t *mtime,
-                                   int flags)
-{
-	int r;
-	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	mobject_store_completion_t completion = MOBJECT_COMPLETION_NULL;
-	r = mobject_store_aio_create_completion(NULL, NULL, NULL, &completion);
-	MOBJECT_ASSERT(0 == r, "Could not create completion object");
-	r = mobject_store_aio_write_op_operate(write_op, io, completion, oid, mtime, flags);
-	MOBJECT_ASSERT(0 == r, "Call to mobject_store_aio_write_op_operate failed");
-	r = mobject_store_aio_wait_for_complete(completion);
-	MOBJECT_ASSERT(0 == r, "Could not wait for completion");
-	int ret = mobject_store_aio_get_return_value(completion);
-	mobject_store_aio_release(completion);
-	return ret;
-}
-
-int mobject_store_aio_write_op_operate(mobject_store_write_op_t write_op,
-                                       mobject_store_ioctx_t io,
-                                       mobject_store_completion_t completion,
-                                       const char *oid,
-                                       time_t *mtime,
-                                       int flags)
-{
-	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
-	// TODO
-}
-*/
