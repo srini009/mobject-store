@@ -49,7 +49,8 @@ src_client_libmobject_store_la_SOURCES = \
   src/client/read-op.c \
   src/client/write-op.c \
   src/client/omap-iter.c \
-  src/client/aio/completion.c
+  src/client/aio/completion.c \
+  src/client/aio/aio-operate.c
 src_client_libmobject_store_la_CPPFLAGS = ${AM_CPPFLAGS} ${CLIENT_CPPFLAGS}
 src_client_libmobject_store_la_LIBADD = src/omap-iter/libomap-iter.la \
 				 src/io-chain/libio-chain.la ${CLIENT_LIBS}
