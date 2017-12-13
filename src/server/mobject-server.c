@@ -110,9 +110,9 @@ mobject_server_context_t* mobject_server_init(margo_instance_id mid, const char 
 
     /* initialize bake-bulk */
     /* server part */
-    struct bake_pool_info* pool_info = bake_server_makepool("/dev/shm/mobject.dat");
-    bake_server_register(mid, pool_info);
-    // XXX: check return values for the above two calls
+    bake_server_init(mid, "/dev/shm/mobject.dat");
+    // XXX: check return values for the above call
+
     /* client part */
     hg_addr_t self_addr = ssg_get_addr(srv_ctx->gid, my_id);
     bake_probe_instance(mid, self_addr, &(srv_ctx->bake_id));
