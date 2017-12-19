@@ -3,7 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <list>
-#include <bake-bulk-client.h>
+#include <bake-client.h>
 #include "src/server/core/core-read-op.h"
 #include "src/server/visitor-args.h"
 #include "src/io-chain/read-op-visitor.h"
@@ -27,7 +27,7 @@ struct read_request_t {
     uint64_t region_start_index;   // where to start within the region
     uint64_t region_end_index;     // where to end within the region
     uint64_t client_offset;        // offset within the client's buffer
-    bake_bulk_region_id_t region;  // region id
+    bake_region_id_t region;  // region id
 };
 
 static struct read_op_visitor read_op_exec = {
@@ -59,7 +59,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
 {
     auto vargs = static_cast<server_visitor_args_t>(u);
     bake_target_id_t bti = vargs->srv_ctx->bake_id;
-    bake_bulk_region_id_t rid;
+    bake_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
     const char* object_name = vargs->object_name;
     const char* remote_addr_str = vargs->client_addr_str;
@@ -86,7 +86,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
 
     while(!coverage.full() && it != segment_map.end() && it->first.oid == oid) {
         const segment_key_t& seg = it->first;
-        const bake_bulk_region_id_t& region = it->second;
+        const bake_region_id_t& region = it->second;
         
         switch(seg.type) {
         case seg_type_t::ZERO:
@@ -103,7 +103,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
                 uint64_t segment_size  = r.end - r.start;
                 uint64_t region_offset = r.start - seg.start_index;
                 uint64_t remote_offset = r.start - offset;
-                bake_bulk_proxy_read(bti, region, region_offset, remote_bulk,
+                bake_proxy_read(bti, region, region_offset, remote_bulk,
                         remote_offset, remote_addr_str, segment_size);
                 if(*bytes_read < r.end) *bytes_read = r.end;
             }

@@ -3,7 +3,7 @@
 #include <string>
 #include <iostream>
 #include <limits>
-#include <bake-bulk-client.h>
+#include <bake-client.h>
 #include "src/server/visitor-args.h"
 #include "src/io-chain/write-op-visitor.h"
 #include "src/server/core/fake-kv.hpp"
@@ -22,7 +22,7 @@ static void write_op_exec_omap_set(void*, char const* const*, char const* const*
 static void write_op_exec_omap_rm_keys(void*, char const* const*, size_t);
 
 static oid_t get_or_create_oid(const char* name);
-static void insert_region_log_entry(oid_t oid, uint64_t offset, uint64_t len, bake_bulk_region_id_t* region, double ts = -1.0);
+static void insert_region_log_entry(oid_t oid, uint64_t offset, uint64_t len, bake_region_id_t* region, double ts = -1.0);
 static void insert_small_region_log_entry(oid_t oid, uint64_t offset, uint64_t len, const char* data, double ts = -1.0);
 static void insert_zero_log_entry(oid_t oid, uint64_t offset, uint64_t len, double ts=-1.0);
 static void insert_punch_log_entry(oid_t oid, uint64_t offset, double ts=-1.0);
@@ -71,7 +71,7 @@ void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
     oid_t oid = get_or_create_oid(vargs->object_name);
 
     bake_target_id_t bti = vargs->srv_ctx->bake_id;
-    bake_bulk_region_id_t rid;
+    bake_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
     const char* remote_addr_str = vargs->client_addr_str;
     hg_addr_t   remote_addr     = vargs->client_addr;
@@ -79,9 +79,9 @@ void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
 
     if(len > SMALL_REGION_THRESHOLD) {
         // TODO: check return values of those calls
-        ret = bake_bulk_create(bti, len, &rid);
-        ret = bake_bulk_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
-        ret = bake_bulk_persist(bti, rid);
+        ret = bake_create(bti, len, &rid);
+        ret = bake_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
+        ret = bake_persist(bti, rid);
    
         insert_region_log_entry(oid, offset, len, &rid);
     } else {
@@ -108,16 +108,16 @@ void write_op_exec_write_full(void* u, buffer_u buf, size_t len)
     oid_t oid = get_or_create_oid(vargs->object_name);
 
     bake_target_id_t bti = vargs->srv_ctx->bake_id;
-    bake_bulk_region_id_t rid;
+    bake_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
     const char* remote_addr_str = vargs->client_addr_str;
     hg_addr_t   remote_addr     = vargs->client_addr;
     int ret;
 
     // TODO: check return values of those calls
-    ret = bake_bulk_create(bti, len, &rid);
-    ret = bake_bulk_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
-    ret = bake_bulk_persist(bti, rid);
+    ret = bake_create(bti, len, &rid);
+    ret = bake_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
+    ret = bake_persist(bti, rid);
     insert_region_log_entry(oid, 0, len, &rid);
 }
 
@@ -127,16 +127,16 @@ void write_op_exec_writesame(void* u, buffer_u buf, size_t data_len, size_t writ
     oid_t oid = get_or_create_oid(vargs->object_name);
 
     bake_target_id_t bti = vargs->srv_ctx->bake_id;
-    bake_bulk_region_id_t rid;
+    bake_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
     const char* remote_addr_str = vargs->client_addr_str;
     hg_addr_t   remote_addr     = vargs->client_addr;
     int ret;
 
     // TODO: check return values of those calls
-    ret = bake_bulk_create(bti, data_len, &rid);
-    ret = bake_bulk_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, data_len);
-    ret = bake_bulk_persist(bti, rid);
+    ret = bake_create(bti, data_len, &rid);
+    ret = bake_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, data_len);
+    ret = bake_persist(bti, rid);
 
     size_t i;
 
@@ -154,15 +154,15 @@ void write_op_exec_append(void* u, buffer_u buf, size_t len)
     oid_t oid = get_or_create_oid(vargs->object_name);
 
     bake_target_id_t bti = vargs->srv_ctx->bake_id;
-    bake_bulk_region_id_t rid;
+    bake_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
     const char* remote_addr_str = vargs->client_addr_str;
     hg_addr_t   remote_addr     = vargs->client_addr;
     int ret;
 
-    ret = bake_bulk_create(bti, len, &rid);
-    ret = bake_bulk_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
-    ret = bake_bulk_persist(bti, rid);
+    ret = bake_create(bti, len, &rid);
+    ret = bake_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
+    ret = bake_persist(bti, rid);
 
     // find out the current length of the object
     double ts = ABT_get_wtime();
@@ -243,7 +243,7 @@ oid_t get_or_create_oid(const char* object_name)
     return oid;
 }
 
-static void insert_region_log_entry(oid_t oid, uint64_t offset, uint64_t len, bake_bulk_region_id_t* region, double ts)
+static void insert_region_log_entry(oid_t oid, uint64_t offset, uint64_t len, bake_region_id_t* region, double ts)
 {
     segment_key_t seg;
     seg.oid       = oid;
@@ -274,7 +274,7 @@ static void insert_zero_log_entry(oid_t oid, uint64_t offset, uint64_t len, doub
     seg.start_index    = offset;
     seg.end_index      = offset+len;
     seg.type      = seg_type_t::ZERO;
-    segment_map[seg] = bake_bulk_region_id_t();
+    segment_map[seg] = bake_region_id_t();
 }
 
 static void insert_punch_log_entry(oid_t oid, uint64_t offset, double ts)
@@ -285,7 +285,7 @@ static void insert_punch_log_entry(oid_t oid, uint64_t offset, double ts)
     seg.start_index = offset;
     seg.end_index  = std::numeric_limits<uint64_t>::max();
     seg.type      = seg_type_t::TOMBSTONE;
-    segment_map[seg] = bake_bulk_region_id_t();
+    segment_map[seg] = bake_region_id_t();
 }
 
 uint64_t compute_size(oid_t oid, double ts)

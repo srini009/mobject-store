@@ -11,8 +11,8 @@
 #include <abt.h>
 #include <margo.h>
 //#include <sds-keyval.h>
-#include <bake-bulk-server.h>
-#include <bake-bulk-client.h>
+#include <bake-server.h>
+#include <bake-client.h>
 //#include <libpmemobj.h>
 #include <ssg-mpi.h>
 

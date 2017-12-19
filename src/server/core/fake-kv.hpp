@@ -1,7 +1,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <bake-bulk-client.h>
+#include <bake-client.h>
 
 typedef uint64_t oid_t;
 
@@ -25,13 +25,13 @@ struct omap_key_t {
     std::string key;
 };
 
-#define SMALL_REGION_THRESHOLD (sizeof(bake_bulk_region_id_t))
+#define SMALL_REGION_THRESHOLD (sizeof(bake_region_id_t))
 
 bool operator<(const segment_key_t& s1, const segment_key_t& s2);
 bool operator<(const omap_key_t& k1, const omap_key_t& k2);
 
 extern std::map<oid_t, std::string> oid_map;
 extern std::map<std::string, oid_t> name_map;
-extern std::map<segment_key_t, bake_bulk_region_id_t> segment_map;
+extern std::map<segment_key_t, bake_region_id_t> segment_map;
 extern std::map<omap_key_t, std::vector<char>> omap_map;
 //extern std::map<oid_t, std::size_t> size_map;
