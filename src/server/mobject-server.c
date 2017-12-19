@@ -214,15 +214,13 @@ static hg_return_t mobject_write_op_ult(hg_handle_t h)
     vargs.object_name = in.object_name;
     vargs.pool_name   = in.pool_name;
     vargs.srv_ctx     = margo_registered_data(mid, info->id);
-    vargs.client_addr_type = MOBJECT_ADDR_STRING;
-    vargs.client_addr.as_string = in.client_addr;
+    vargs.client_addr_str = in.client_addr;
+    vargs.client_addr = info->addr;
     vargs.bulk_handle = in.write_op->bulk_handle;
 
     /* Execute the operation chain */
     //print_write_op(in.write_op, in.object_name);
 #ifdef FAKE_CPP_SERVER
-    vargs.client_addr_type = MOBJECT_ADDR_HANDLE;
-    vargs.client_addr.as_handle = info->addr;
     fake_write_op(in.write_op, &vargs);
 #else
     core_write_op(in.write_op, &vargs);
@@ -267,15 +265,13 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
     vargs.object_name = in.object_name;
     vargs.pool_name   = in.pool_name;
     vargs.srv_ctx     = margo_registered_data(mid,info->id);
-    vargs.client_addr_type = MOBJECT_ADDR_STRING;
-    vargs.client_addr.as_string = in.client_addr;
+    vargs.client_addr_str = in.client_addr;
+    vargs.client_addr = info->addr;
     vargs.bulk_handle = in.read_op->bulk_handle;
 
     /* Compute the result. */
     //print_read_op(in.read_op, in.object_name);
 #ifdef FAKE_CPP_SERVER
-    vargs.client_addr_type = MOBJECT_ADDR_HANDLE;
-    vargs.client_addr.as_handle = info->addr;
     fake_read_op(in.read_op, &vargs);
 #else
     core_read_op(in.read_op, &vargs);

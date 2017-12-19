@@ -64,6 +64,8 @@ void mobject_store_read_op_read(mobject_store_read_op_t read_op,
 	DL_APPEND(read_op->actions, base);
 
 	read_op->num_actions += 1;
+
+    memset(buffer, 0, len);
 }
 
 void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
