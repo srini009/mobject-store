@@ -9,6 +9,7 @@
 #include <margo.h>
 #include <ssg.h>
 #include "libmobject-store.h"
+#include "mobject-client.h"
 
 #define MOBJECT_CLUSTER_FILE_ENV "MOBJECT_CLUSTER_FILE"
 #define MOBJECT_CLUSTER_SHUTDOWN_KILL_ENV "MOBJECT_SHUTDOWN_KILL_SERVERS"
@@ -16,8 +17,8 @@
 struct mobject_store_handle
 {
     margo_instance_id mid;
+    mobject_client_t mobject_clt;
     ssg_group_id_t gid;
-    const char* my_address;
     int connected;
 };
 

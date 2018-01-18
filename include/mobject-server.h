@@ -8,32 +8,33 @@
 #define MOBJECT_SERVER_H
 
 #include <margo.h>
+#include <bake-client.h>
 /* server-side utilities and routines.  Clients are looking for either
  * libmobject-store.h or librados-mobject-store.h */
 
 #define MOBJECT_SERVER_GROUP_NAME "mobject-store-servers"
+#define MOBJECT_ABT_POOL_DEFAULT ABT_POOL_NULL
 
-typedef struct mobject_server_context mobject_server_context_t;
+typedef struct mobject_server_context* mobject_provider_t;
 
 /**
  * Start a mobject server instance
  *
  * @param[in] mid           margo instance id
+ * @param[in] mplex_id      multiplex id of the provider
+ * @param[in] pool          Argobots pool for the provider
+ * @param[in] bake_ph       Bake provider handle to use to write/read data
  * @param[in] cluster_file  file name to write cluster connect info to
+ * @param[out] provider     resulting provider
+ * 
  * @returns 0 on success, negative error code on failure
  */
-mobject_server_context_t* mobject_server_init(margo_instance_id mid, const char *cluster_file);
-
-/**
- * Shutdown a mobject server instance
- * 
- * @param[in] mid   margo instance id
- */
-void mobject_server_shutdown(mobject_server_context_t* svr_ctx);
-
-/**
- * Wait for a mobject server instance to get a shutdown request.
- */
-void mobject_server_wait_for_shutdown(mobject_server_context_t* srv_ctx);
+int mobject_provider_register(
+        margo_instance_id mid,
+        uint8_t mplex_id,
+        ABT_pool pool,
+        bake_provider_handle_t bake_ph,
+        const char *cluster_file,
+        mobject_provider_t* provider);
 
 #endif

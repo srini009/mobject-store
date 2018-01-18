@@ -14,6 +14,7 @@ extern "C" {
 #include <inttypes.h>
 #include <time.h>
 
+#include <mobject-client.h>
 // derived from: http://docs.ceph.com/docs/master/mobject_store/api/libmobject_store/
 
 
@@ -110,8 +111,9 @@ typedef struct mobject_store_ioctx *mobject_store_ioctx_t;
  * Used with mobject_store_read_op_omap_get_keys(), mobject_store_read_op_omap_get_vals(),
  * mobject_store_read_op_omap_get_vals_by_keys(), mobject_store_omap_get_next(), and
  * mobject_store_omap_get_end().
+ * 
+ * NOW DECLARED in mobject-client.h
  */
-typedef struct mobject_store_omap_iter *mobject_store_omap_iter_t;
 
 /**
  * @typedef mobject_store_write_op_t
@@ -133,10 +135,9 @@ typedef struct mobject_store_omap_iter *mobject_store_omap_iter_t;
  *   mobject_store_write_op_truncate(), mobject_store_write_op_zero(), mobject_store_write_op_cmpext()
  * - Hints: mobject_store_write_op_set_alloc_hint()
  * - Performing the operation: mobject_store_write_op_operate(), mobject_store_aio_write_op_operate()
+ *
+ * NOW DECLARED in mobject-client.h
  */
-typedef struct mobject_store_write_op *mobject_store_write_op_t;
-
-#define MOBJECT_WRITE_OP_NULL ((mobject_store_write_op_t)0)
 
 /**
  * @typedef mobject_store_read_op_t
@@ -157,10 +158,8 @@ typedef struct mobject_store_write_op *mobject_store_write_op_t;
  * - Request properties: mobject_store_read_op_set_flags()
  * - Performing the operation: mobject_store_read_op_operate(),
  *   mobject_store_aio_read_op_operate()
+ * NOW DECLARED in mobject-client.h
  */
-typedef struct mobject_store_read_op *mobject_store_read_op_t;
-
-#define MOBJECT_READ_OP_NULL ((mobject_store_read_op_t)0)
 
 /**
  * @typedef mobject_store_completion_t
@@ -479,10 +478,10 @@ void mobject_store_read_op_read(mobject_store_read_op_t read_op,
  * @param prval where to store the return value from this action
  */
 void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
-                                         const char *start_after,
-					 uint64_t max_return,
-					 mobject_store_omap_iter_t *iter,
-                                         int *prval);
+        const char *start_after,
+        uint64_t max_return,
+        mobject_store_omap_iter_t *iter,
+        int *prval);
 
 /**
  * Start iterating over key/value pairs on an object.

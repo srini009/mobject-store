@@ -10,7 +10,6 @@
 //#include <sds-keyval.h>
 #include <bake-server.h>
 #include <bake-client.h>
-//#include <libpmemobj.h>
 #include <ssg-mpi.h>
 
 #ifdef __cplusplus
@@ -21,13 +20,14 @@ struct mobject_server_context
 {
     /* margo, bake, sds-keyval, ssg state */
     margo_instance_id mid;
-    /* TODO bake, sds-keyval stuff */
+    uint8_t mplex_id;
+    ABT_pool pool;
+    /* ssg-related data */
     ssg_group_id_t gid;
-    bake_target_id_t bake_id;
-    /* server shutdown conditional logic */
-    ABT_mutex shutdown_mutex;
-    ABT_cond shutdown_cond;
-    int shutdown_flag;
+    /* bake-related data */
+    bake_provider_handle_t bake_ph;
+    bake_target_id_t bake_tid;
+    /* other data */
     int ref_count;
 };
 
