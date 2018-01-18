@@ -34,7 +34,6 @@
 
 DECLARE_MARGO_RPC_HANDLER(mobject_write_op_ult)
 DECLARE_MARGO_RPC_HANDLER(mobject_read_op_ult)
-DECLARE_MARGO_RPC_HANDLER(mobject_shutdown_ult)
 
 static void mobject_finalize_cb(void* data);
 
@@ -124,11 +123,6 @@ int mobject_provider_register(
 
     rpc_id = MARGO_REGISTER_MPLEX(mid, "mobject_read_op",
             read_op_in_t, read_op_out_t, mobject_read_op_ult,
-            mplex_id, pool);
-    margo_register_data_mplex(mid, rpc_id, mplex_id, srv_ctx, NULL);
-
-    rpc_id = MARGO_REGISTER_MPLEX(mid, "mobject_shutdown",
-            void, void, mobject_shutdown_ult,
             mplex_id, pool);
     margo_register_data_mplex(mid, rpc_id, mplex_id, srv_ctx, NULL);
 
@@ -240,25 +234,6 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
     return ret;
 }
 DEFINE_MARGO_RPC_HANDLER(mobject_read_op_ult)
-
-static void mobject_shutdown_ult(hg_handle_t h)
-{
-    hg_return_t ret;
-
-    const struct hg_info *info = margo_get_info(h);
-    margo_instance_id mid = margo_hg_handle_get_instance(h);
-
-    ret = margo_respond(h, NULL);
-    assert(ret == HG_SUCCESS);
-
-    ret = margo_destroy(h);
-    assert(ret == HG_SUCCESS);
-
-    margo_finalize(mid);
-
-    return;
-}
-DEFINE_MARGO_RPC_HANDLER(mobject_shutdown_ult)
 
 static void mobject_finalize_cb(void* data)
 {

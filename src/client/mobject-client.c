@@ -28,7 +28,6 @@ struct mobject_client {
 
     hg_id_t mobject_write_op_rpc_id;
     hg_id_t mobject_read_op_rpc_id;
-    hg_id_t mobject_shutdown_rpc_id;
 
     uint64_t num_provider_handles;
 };
@@ -70,7 +69,6 @@ static int mobject_client_register(mobject_client_t client, margo_instance_id mi
 
         margo_registered_name(mid, "mobject_write_op", &client->mobject_write_op_rpc_id, &flag);
         margo_registered_name(mid, "mobject_read_op",  &client->mobject_read_op_rpc_id,  &flag);
-        margo_registered_name(mid, "mobject_shutdown", &client->mobject_shutdown_rpc_id, &flag);
 
     } else {
         
@@ -78,8 +76,6 @@ static int mobject_client_register(mobject_client_t client, margo_instance_id mi
             MARGO_REGISTER(mid, "mobject_write_op", write_op_in_t, write_op_out_t, NULL);
         client->mobject_read_op_rpc_id = 
             MARGO_REGISTER(mid, "mobject_read_op",  read_op_in_t,  read_op_out_t, NULL);
-        client->mobject_shutdown_rpc_id =
-            MARGO_REGISTER(mid, "mobject_shutdown", void, void, NULL);
     }
 
     return 0;
@@ -161,27 +157,7 @@ int mobject_provider_handle_release(mobject_provider_handle_t handle)
 
 int mobject_shutdown(mobject_client_t client, hg_addr_t addr)
 {
-    hg_return_t hret;
-    hg_handle_t handle;
-
-    hret = margo_create(client->mid, addr,
-            client->mobject_shutdown_rpc_id, &handle);
-
-    if(hret != HG_SUCCESS) {
-        fprintf(stderr, "[MOBJECT] margo_create() failed in mobject_shutdown()\n");
-        return -1;
-    }
-
-    hret = margo_forward(handle, NULL);
-    if(hret != HG_SUCCESS)
-    {
-        fprintf(stderr, "[MOBJECT] margo_forward() failed in mobject_shutdown()\n");
-        margo_destroy(handle);
-        return -1;
-    }
-
-    margo_destroy(handle);
-    return 0;
+    return margo_shutdown_remote_instance(client->mid, addr);
 }
 
 int mobject_write_op_operate(

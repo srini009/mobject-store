@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Error: Unable to initialize margo\n");
         return -1;
     }
+    margo_enable_remote_shutdown(mid);
 
     /* SSG initialization */
     ret = ssg_init(mid);
