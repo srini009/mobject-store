@@ -33,7 +33,6 @@ int mobject_store_aio_write_op_operate(
     mobject_provider_handle_release(mph);
 
     completion->request = req;
-    completion->type = AIO_WRITE_COMPLETION;
 
     return 0;
 }
@@ -56,7 +55,6 @@ int mobject_store_aio_read_op_operate(mobject_store_read_op_t read_op,
     mobject_provider_handle_release(mph);
 
     completion->request = req;
-    completion->type = AIO_READ_COMPLETION;
 
     return 0;
 }
