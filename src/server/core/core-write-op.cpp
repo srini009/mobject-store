@@ -70,7 +70,8 @@ void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
 	auto vargs = static_cast<server_visitor_args_t>(u);
     oid_t oid = get_or_create_oid(vargs->object_name);
 
-    bake_target_id_t bti = vargs->srv_ctx->bake_id;
+    bake_provider_handle_t bake_ph = vargs->srv_ctx->bake_ph;
+    bake_target_id_t bti = vargs->srv_ctx->bake_tid;
     bake_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
     const char* remote_addr_str = vargs->client_addr_str;
@@ -79,9 +80,9 @@ void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
 
     if(len > SMALL_REGION_THRESHOLD) {
         // TODO: check return values of those calls
-        ret = bake_create(bti, len, &rid);
-        ret = bake_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
-        ret = bake_persist(bti, rid);
+        ret = bake_create(bake_ph, bti, len, &rid);
+        ret = bake_proxy_write(bake_ph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
+        ret = bake_persist(bake_ph, rid);
    
         insert_region_log_entry(oid, offset, len, &rid);
     } else {
@@ -107,17 +108,22 @@ void write_op_exec_write_full(void* u, buffer_u buf, size_t len)
 	auto vargs = static_cast<server_visitor_args_t>(u);
     oid_t oid = get_or_create_oid(vargs->object_name);
 
-    bake_target_id_t bti = vargs->srv_ctx->bake_id;
+    bake_provider_handle_t bph = vargs->srv_ctx->bake_ph;
+    bake_target_id_t bti = vargs->srv_ctx->bake_tid;
     bake_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
     const char* remote_addr_str = vargs->client_addr_str;
     hg_addr_t   remote_addr     = vargs->client_addr;
     int ret;
 
+    unsigned i;
+    fprintf(stderr, "In Mobject, input bti is ");
+    for(i=0; i<16; i++) fprintf(stderr, "%d ", bti.id[i]);
+    fprintf(stderr, "\n");
     // TODO: check return values of those calls
-    ret = bake_create(bti, len, &rid);
-    ret = bake_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
-    ret = bake_persist(bti, rid);
+    ret = bake_create(bph, bti, len, &rid);
+    ret = bake_proxy_write(bph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
+    ret = bake_persist(bph, rid);
     insert_region_log_entry(oid, 0, len, &rid);
 }
 
@@ -126,17 +132,23 @@ void write_op_exec_writesame(void* u, buffer_u buf, size_t data_len, size_t writ
     auto vargs = static_cast<server_visitor_args_t>(u);
     oid_t oid = get_or_create_oid(vargs->object_name);
 
-    bake_target_id_t bti = vargs->srv_ctx->bake_id;
+    bake_provider_handle_t bph = vargs->srv_ctx->bake_ph;
+    bake_target_id_t bti = vargs->srv_ctx->bake_tid;
     bake_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
     const char* remote_addr_str = vargs->client_addr_str;
     hg_addr_t   remote_addr     = vargs->client_addr;
     int ret;
 
+    unsigned ii;
+    fprintf(stderr, "In Mobject, input bti is ");
+    for(ii=0; ii<16; ii++) fprintf(stderr, "%d ", bti.id[ii]);
+    fprintf(stderr, "\n");
+
     // TODO: check return values of those calls
-    ret = bake_create(bti, data_len, &rid);
-    ret = bake_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, data_len);
-    ret = bake_persist(bti, rid);
+    ret = bake_create(bph, bti, data_len, &rid);
+    ret = bake_proxy_write(bph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, data_len);
+    ret = bake_persist(bph, rid);
 
     size_t i;
 
@@ -153,16 +165,22 @@ void write_op_exec_append(void* u, buffer_u buf, size_t len)
 	auto vargs = static_cast<server_visitor_args_t>(u);
     oid_t oid = get_or_create_oid(vargs->object_name);
 
-    bake_target_id_t bti = vargs->srv_ctx->bake_id;
+    bake_provider_handle_t bph = vargs->srv_ctx->bake_ph;
+    bake_target_id_t bti = vargs->srv_ctx->bake_tid;
     bake_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
     const char* remote_addr_str = vargs->client_addr_str;
     hg_addr_t   remote_addr     = vargs->client_addr;
     int ret;
 
-    ret = bake_create(bti, len, &rid);
-    ret = bake_proxy_write(bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
-    ret = bake_persist(bti, rid);
+    unsigned i;
+    fprintf(stderr, "In Mobject, input bti is ");
+    for(i=0; i<16; i++) fprintf(stderr, "%d ", bti.id[i]);
+    fprintf(stderr, "\n");
+
+    ret = bake_create(bph, bti, len, &rid);
+    ret = bake_proxy_write(bph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
+    ret = bake_persist(bph, rid);
 
     // find out the current length of the object
     double ts = ABT_get_wtime();

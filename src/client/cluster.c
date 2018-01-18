@@ -21,13 +21,6 @@
 #include "src/rpc-types/read-op.h"
 #include "src/util/log.h"
 
-
-// global variables for RPC ids
-hg_id_t mobject_write_op_rpc_id;
-hg_id_t mobject_read_op_rpc_id;
-hg_id_t mobject_shutdown_rpc_id;
-
-static void mobject_store_register(margo_instance_id mid);
 static int mobject_store_shutdown_servers(struct mobject_store_handle *cluster_handle);
 
 int mobject_store_create(mobject_store_t *cluster, const char * const id)
@@ -62,7 +55,7 @@ int mobject_store_create(mobject_store_t *cluster, const char * const id)
         free(cluster_handle);
         return -1;
     }
-    (*cluster)->my_address = NULL;
+
 
     /* set the returned cluster handle */
     *cluster = cluster_handle;
@@ -102,8 +95,8 @@ int mobject_store_connect(mobject_store_t cluster)
     /* intialize margo */
     fprintf(stderr,"Client initialized with proto = %s\n",proto);
     /* XXX: probably want to expose some way of tweaking threading parameters */
-    cluster_handle->mid = margo_init(proto, MARGO_SERVER_MODE, 0, -1);
-    if (cluster_handle->mid == MARGO_INSTANCE_NULL)
+    margo_instance_id mid = margo_init(proto, MARGO_SERVER_MODE, 0, -1);
+    if (mid == MARGO_INSTANCE_NULL)
     {
         fprintf(stderr, "Error: Unable to initialize margo\n");
         free(svr_addr_str);
@@ -111,9 +104,7 @@ int mobject_store_connect(mobject_store_t cluster)
         free(cluster_handle);
         return -1;
     }
-
-    /* register mobject RPCs for this cluster */
-    mobject_store_register(cluster_handle->mid);
+    cluster_handle->mid = mid;
 
     /* initialize ssg */
     /* XXX: we need to think about how to do this once per-client... clients could connect to mult. clusters */
@@ -142,15 +133,12 @@ int mobject_store_connect(mobject_store_t cluster)
     }
     cluster_handle->connected = 1;
 
-    /* get client's address */
+    ret = mobject_client_init(mid, &(cluster_handle->mobject_clt));
+    if(ret != 0)
     {
-        hg_addr_t my_addr;
-        margo_addr_self(cluster_handle->mid, &my_addr);
-        hg_size_t addr_str_size;
-        margo_addr_to_string(cluster_handle->mid, NULL, &addr_str_size, my_addr);
-        cluster_handle->my_address = calloc(1,addr_str_size+1);
-        margo_addr_to_string(cluster_handle->mid, (char*)(cluster_handle->my_address), &addr_str_size, my_addr);
-        margo_addr_free(cluster_handle->mid, my_addr);
+        fprintf(stderr, "Error: Unable to create a mobject client\n");
+        free(cluster_handle);
+        return -1;
     }
 
     free(svr_addr_str);
@@ -182,11 +170,11 @@ void mobject_store_shutdown(mobject_store_t cluster)
         }
     }
 
+    mobject_client_finalize(cluster_handle->mobject_clt);
     ssg_group_detach(cluster_handle->gid);
     ssg_finalize();
     margo_finalize(cluster_handle->mid);
     ssg_group_id_free(cluster_handle->gid);
-    free((char*)cluster_handle->my_address);
     free(cluster_handle);
 
     return;
@@ -225,43 +213,163 @@ void mobject_store_ioctx_destroy(mobject_store_ioctx_t ioctx)
     free(ioctx);
 }
 
+mobject_store_write_op_t mobject_store_create_write_op(void)
+{
+    return mobject_create_write_op();
+}
+
+void mobject_store_release_write_op(mobject_store_write_op_t write_op)
+{
+    mobject_release_write_op(write_op);
+}
+
+void mobject_store_write_op_create(mobject_store_write_op_t write_op,
+        int exclusive,
+        const char* category)
+{
+    mobject_write_op_create(write_op, exclusive, category);
+}
+
+void mobject_store_write_op_write(mobject_store_write_op_t write_op,
+        const char *buffer,
+        size_t len,
+        uint64_t offset)
+{
+    // fields are exchanged in the mobject-client API, it's normal
+    mobject_write_op_write(write_op, buffer, offset, len);
+}
+
+void mobject_store_write_op_write_full(mobject_store_write_op_t write_op,
+        const char *buffer,
+        size_t len)
+{
+    return mobject_write_op_write_full(write_op, buffer, len);
+}
+
+void mobject_store_write_op_writesame(mobject_store_write_op_t write_op,
+        const char *buffer,
+        size_t data_len,
+        size_t write_len,
+        uint64_t offset)
+{
+    // fields are exchanged in the mobject-client API, it's normal
+    mobject_write_op_write_same(write_op, buffer, offset, data_len, write_len);
+}
+
+void mobject_store_write_op_append(mobject_store_write_op_t write_op,
+        const char *buffer,
+        size_t len)
+{
+    mobject_write_op_append(write_op, buffer, len);
+}
+
+void mobject_store_write_op_remove(mobject_store_write_op_t write_op)
+{
+    mobject_write_op_remove(write_op);
+}
+
+void mobject_store_write_op_truncate(mobject_store_write_op_t write_op,
+        uint64_t offset)
+{
+    mobject_write_op_truncate(write_op, offset);
+}
+
+void mobject_store_write_op_zero(mobject_store_write_op_t write_op,
+        uint64_t offset,
+        uint64_t len)
+{
+    mobject_write_op_zero(write_op, offset, len);
+}
+
+void mobject_store_write_op_omap_set(mobject_store_write_op_t write_op,
+        char const* const* keys,
+        char const* const* vals,
+        const size_t *lens,
+        size_t num)
+{
+    mobject_write_op_omap_set(write_op, keys, vals, lens, num);
+}
+
+void mobject_store_write_op_omap_rm_keys(mobject_store_write_op_t write_op,
+        char const* const* keys,
+        size_t keys_len)
+{
+    mobject_write_op_omap_rm_keys(write_op, keys, keys_len);
+}
+
 int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
                                    mobject_store_ioctx_t io,
                                    const char *oid,
                                    time_t *mtime,
                                    int flags)
 {
-    hg_return_t ret;
+    mobject_provider_handle_t mph;
+    // TODO chose the target server based on ch-placement
+    // remember that multiple providers may be in the same node (with distinct mplex ids)
+    hg_addr_t svr_addr = ssg_get_addr(io->cluster->gid, 0);
+    // TODO for now multiplex id is hard-coded as 1
+    int r = mobject_provider_handle_create(io->cluster->mobject_clt, svr_addr, 1, &mph);
+    if(r != 0) return r;
 
-    write_op_in_t in;
-    in.object_name = oid;
-    in.pool_name   = io->pool_name;
-    in.write_op    = write_op;
-    in.client_addr = io->cluster->my_address;
-    // TODO take mtime into account
+    r = mobject_write_op_operate(mph, write_op, io->pool_name, oid, mtime, flags);
+    mobject_provider_handle_release(mph);
+    return r;
+}
 
-    prepare_write_op(io->cluster->mid, write_op);
+mobject_store_read_op_t mobject_store_create_read_op(void)
+{
+    return mobject_create_read_op();
+}
 
-    hg_addr_t svr_addr = ssg_get_addr(io->cluster->gid, 0); // XXX pick other servers using ch-placement
-    MOBJECT_ASSERT(svr_addr != HG_ADDR_NULL, "NULL server address");
+void mobject_store_release_read_op(mobject_store_read_op_t read_op)
+{
+    mobject_release_read_op(read_op);
+}
 
-    hg_handle_t h;
-    ret = margo_create(io->cluster->mid, svr_addr, mobject_write_op_rpc_id, &h);
-    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not create RPC handle");
+void mobject_store_read_op_stat(mobject_store_read_op_t read_op,
+        uint64_t *psize,
+        time_t *pmtime,
+        int *prval)
+{
+    mobject_read_op_stat(read_op, psize, pmtime, prval);
+}
 
-    ret = margo_forward(h, &in);
-    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not forward RPC");
+void mobject_store_read_op_read(mobject_store_read_op_t read_op,
+        uint64_t offset,
+        size_t len,
+        char *buffer,
+        size_t *bytes_read,
+        int *prval)
+{
+    mobject_read_op_read(read_op, buffer, offset, len, bytes_read, prval);
+}
 
-    write_op_out_t resp;
-    ret = margo_get_output(h, &resp); 
-    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not get RPC output");
+void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
+        const char *start_after,
+        uint64_t max_return,
+        mobject_store_omap_iter_t *iter,
+        int *prval)
+{
+    mobject_read_op_omap_get_keys(read_op, start_after, max_return, iter, prval);
+}
 
-    ret = margo_free_output(h,&resp); 
-    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not free RPC output");
+void mobject_store_read_op_omap_get_vals(mobject_store_read_op_t read_op,
+        const char *start_after,
+        const char *filter_prefix,
+        uint64_t max_return,
+        mobject_store_omap_iter_t *iter,
+        int *prval)
+{
+    mobject_read_op_omap_get_vals(read_op, start_after, filter_prefix, max_return, iter, prval);
+}
 
-    ret = margo_destroy(h);
-    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not destroy RPC handle");
-    return 0;
+void mobject_store_read_op_omap_get_vals_by_keys(mobject_store_read_op_t read_op,
+        char const* const* keys,
+        size_t keys_len,
+        mobject_store_omap_iter_t *iter,
+        int *prval)
+{
+    mobject_read_op_omap_get_vals_by_keys(read_op, keys, keys_len, iter, prval);
 }
 
 int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
@@ -269,59 +377,22 @@ int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
                                   const char *oid,
                                   int flags)
 {
-    hg_return_t ret;
-
-    read_op_in_t in; 
-    in.object_name = oid;
-    in.pool_name   = ioctx->pool_name;
-    in.read_op     = read_op;
-    in.client_addr = ioctx->cluster->my_address;
-
-    prepare_read_op(ioctx->cluster->mid, read_op);
-
-    hg_addr_t svr_addr = ssg_get_addr(ioctx->cluster->gid, 0); // XXX pick other servers using ch-placement
-    MOBJECT_ASSERT(svr_addr != HG_ADDR_NULL, "NULL server address");
-
-    hg_handle_t h;
-    ret = margo_create(ioctx->cluster->mid, svr_addr, mobject_read_op_rpc_id, &h);
-    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not create RPC handle");
-    ret = margo_forward(h, &in);
-    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not forward RPC");
-
-    read_op_out_t resp; 
-    ret = margo_get_output(h, &resp); 
-    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not get RPC output");
-
-    feed_read_op_pointers_from_response(read_op, resp.responses);
-
-    ret = margo_free_output(h,&resp); 
-    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not free RPC output");
-    ret = margo_destroy(h);
-    MOBJECT_ASSERT(ret == HG_SUCCESS, "Could not destroy RPC handle");
-
+    mobject_provider_handle_t mph;
+    // TODO chose the target server based on ch-placement
+    // remember that multiple providers may be in the same node (with distinct mplex ids)
+    hg_addr_t svr_addr = ssg_get_addr(ioctx->cluster->gid, 0);
+    // TODO for now multiplex id is hard-coded as 1
+    int r = mobject_provider_handle_create(ioctx->cluster->mobject_clt, svr_addr, 1, &mph);
+    if(r != 0) return r;
+    
+    r = mobject_read_op_operate(mph,read_op, ioctx->pool_name, oid, flags);
     return 0;
-}
-
-/* internal helper routines */
-
-// register mobject RPCs
-static void mobject_store_register(margo_instance_id mid)
-{
-    /* XXX i think ultimately these need to be stored in per-mid containers instead of global... */
-    mobject_write_op_rpc_id = 
-    MARGO_REGISTER(mid, "mobject_write_op", write_op_in_t, write_op_out_t, NULL);
-    mobject_read_op_rpc_id = 
-    MARGO_REGISTER(mid, "mobject_read_op",  read_op_in_t,  read_op_out_t, NULL);
-    mobject_shutdown_rpc_id =
-    MARGO_REGISTER(mid, "mobject_shutdown", void, void, NULL);
 }
 
 // send a shutdown signal to a server cluster
 static int mobject_store_shutdown_servers(struct mobject_store_handle *cluster_handle)
 {
     hg_addr_t svr_addr;
-    hg_handle_t h;
-    hg_return_t ret;
 
     /* get the address of the first server */
     svr_addr = ssg_get_addr(cluster_handle->gid, 0);
@@ -330,25 +401,7 @@ static int mobject_store_shutdown_servers(struct mobject_store_handle *cluster_h
         fprintf(stderr, "Error: Unable to obtain address for mobject server\n");
         return -1;
     }
-
-    ret = margo_create(cluster_handle->mid, svr_addr, mobject_shutdown_rpc_id, &h);
-    if (ret != HG_SUCCESS)
-    {
-        fprintf(stderr, "Error: Unable to create margo handle\n");
-        return -1;
-    }
-
-    /* send shutdown signal */
-    ret = margo_forward(h, NULL);
-    if (ret != HG_SUCCESS)
-    {
-        fprintf(stderr, "Error: Unable to forward margo handle\n");
-        margo_destroy(h);
-        return -1;
-    }
-
-    margo_destroy(h);
-
-    return 0;
+    // TODO we should actually call that for all the members of the group
+    return mobject_shutdown(cluster_handle->mobject_clt, svr_addr);
 }
 

@@ -12,17 +12,17 @@
 #include "src/util/utlist.h"
 #include "src/util/log.h"
 
-mobject_store_read_op_t mobject_store_create_read_op(void)
+mobject_store_read_op_t mobject_create_read_op(void)
 {
 	return create_read_op();
 }
 
-void mobject_store_release_read_op(mobject_store_read_op_t read_op)
+void mobject_release_read_op(mobject_store_read_op_t read_op)
 {
     release_read_op(read_op);
 }
 
-void mobject_store_read_op_stat(mobject_store_read_op_t read_op,
+void mobject_read_op_stat(mobject_store_read_op_t read_op,
                                 uint64_t *psize,
                                 time_t *pmtime,
                                 int *prval)
@@ -42,10 +42,10 @@ void mobject_store_read_op_stat(mobject_store_read_op_t read_op,
 	read_op->num_actions += 1;
 }
 
-void mobject_store_read_op_read(mobject_store_read_op_t read_op,
+void mobject_read_op_read(mobject_store_read_op_t read_op,
+                                char *buffer,
                                 uint64_t offset,
                                 size_t len,
-                                char *buffer,
                                 size_t *bytes_read,
                                 int *prval)
 {
@@ -68,7 +68,7 @@ void mobject_store_read_op_read(mobject_store_read_op_t read_op,
     memset(buffer, 0, len);
 }
 
-void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
+void mobject_read_op_omap_get_keys(mobject_store_read_op_t read_op,
 				                         const char *start_after,
 				                         uint64_t max_return,
 				                         mobject_store_omap_iter_t *iter,
@@ -94,7 +94,7 @@ void mobject_store_read_op_omap_get_keys(mobject_store_read_op_t read_op,
 	read_op->num_actions += 1;
 }
 
-void mobject_store_read_op_omap_get_vals(mobject_store_read_op_t read_op,
+void mobject_read_op_omap_get_vals(mobject_store_read_op_t read_op,
                                          const char *start_after,
                                          const char *filter_prefix,
                                          uint64_t max_return,
@@ -126,7 +126,7 @@ void mobject_store_read_op_omap_get_vals(mobject_store_read_op_t read_op,
 	read_op->num_actions += 1;
 }
 
-void mobject_store_read_op_omap_get_vals_by_keys(mobject_store_read_op_t read_op,
+void mobject_read_op_omap_get_vals_by_keys(mobject_store_read_op_t read_op,
                                                  char const* const* keys,
                                                  size_t keys_len,
                                                  mobject_store_omap_iter_t *iter,

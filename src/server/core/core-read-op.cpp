@@ -58,7 +58,8 @@ void read_op_exec_stat(void* u, uint64_t* psize, time_t* pmtime, int* prval)
 void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_t* bytes_read, int* prval)
 {
     auto vargs = static_cast<server_visitor_args_t>(u);
-    bake_target_id_t bti = vargs->srv_ctx->bake_id;
+    bake_provider_handle_t bph = vargs->srv_ctx->bake_ph;
+    bake_target_id_t bti = vargs->srv_ctx->bake_tid;
     bake_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
     const char* object_name = vargs->object_name;
@@ -103,7 +104,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
                 uint64_t segment_size  = r.end - r.start;
                 uint64_t region_offset = r.start - seg.start_index;
                 uint64_t remote_offset = r.start - offset;
-                bake_proxy_read(bti, region, region_offset, remote_bulk,
+                bake_proxy_read(bph, region, region_offset, remote_bulk,
                         remote_offset, remote_addr_str, segment_size);
                 if(*bytes_read < r.end) *bytes_read = r.end;
             }
@@ -120,7 +121,6 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
                 void* buf_ptrs[1] = { const_cast<char*>(base + region_offset) };
                 hg_size_t buf_sizes[1] = { segment_size };
                 hg_bulk_t handle;
-                std::cout << "Reading from a small region" << std::endl;
                 ret = margo_bulk_create(mid,1, buf_ptrs, buf_sizes, HG_BULK_READ_ONLY, &handle);
                 ret = margo_bulk_transfer(mid, HG_BULK_PUSH, remote_addr, remote_bulk, buf.as_offset+remote_offset, handle, 0, segment_size);
                 ret = margo_bulk_free(handle);
