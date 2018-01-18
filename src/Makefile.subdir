@@ -1,5 +1,6 @@
 noinst_HEADERS += \
   src/client/cluster.h \
+  src/client/mobject-client-impl.h \
   src/client/aio/completion.h \
   src/io-chain/args-read-actions.h \
   src/io-chain/args-write-actions.h \
@@ -20,8 +21,8 @@ noinst_HEADERS += \
   src/omap-iter/proc-omap-iter.h \
   src/rpc-types/read-op.h \
   src/rpc-types/write-op.h \
-  src/server/print-read-op.h\
-  src/server/print-write-op.h \
+  src/server/printer/print-read-op.h\
+  src/server/printer/print-write-op.h \
   src/util/buffer-union.h \
   src/util/log.h \
   src/util/utlist.h
@@ -45,11 +46,13 @@ src_io_chain_libio_chain_la_SOURCES = src/io-chain/prepare-read-op.c \
 
 
 src_client_libmobject_store_la_SOURCES = \
+  src/client/mobject-client.c \
   src/client/cluster.c \
   src/client/read-op.c \
   src/client/write-op.c \
   src/client/omap-iter.c \
   src/client/aio/completion.c \
+  src/client/aio/aio-cluster-operate.c \
   src/client/aio/aio-operate.c
 src_client_libmobject_store_la_CPPFLAGS = ${AM_CPPFLAGS} ${CLIENT_CPPFLAGS}
 src_client_libmobject_store_la_LIBADD = src/omap-iter/libomap-iter.la \
@@ -60,15 +63,20 @@ src_server_libmobject_server_la_SOURCES = \
   src/server/fake/fake-write-op.cpp \
   src/server/fake/fake-read-op.cpp \
   src/server/fake/fake-db.cpp \
-  src/server/print-write-op.c \
-  src/server/print-read-op.c
+  src/server/core/core-write-op.cpp \
+  src/server/core/core-read-op.cpp \
+  src/server/printer/print-write-op.c \
+  src/server/printer/print-read-op.c \
+  src/server/core/fake-kv.cpp
 src_server_libmobject_server_la_CPPFLAGS = ${AM_CPPFLAGS} ${SERVER_CPPFLAGS}
+src_server_libmobject_server_la_CFLAGS   = ${AM_CFLAGS} ${SERVER_CFLAGS}
 src_server_libmobject_server_la_LIBADD = src/omap-iter/libomap-iter.la \
 				  src/io-chain/libio-chain.la ${SERVER_LIBS}
 
 src_server_mobject_server_daemon_SOURCES = \
   src/server/mobject-server-daemon.c
 src_server_mobject_server_daemon_CPPFLAGS = ${AM_CPPFLAGS} ${SERVER_CPPFLAGS}
+src_server_mobject_server_daemon_CFLAGS = ${AM_CFLAGS} ${SERVER_CFLAGS}
 src_server_mobject_server_daemon_LDADD = \
   src/server/libmobject-server.la ${SERVER_LIBS}
 

@@ -17,7 +17,7 @@ static void read_op_exec_omap_get_vals(void*, const char*, const char*, uint64_t
 static void read_op_exec_omap_get_vals_by_keys(void*, char const* const*, size_t, mobject_store_omap_iter_t*, int*);
 static void read_op_exec_end(void*);
 
-struct read_op_visitor read_op_exec = {
+static struct read_op_visitor read_op_exec = {
 	.visit_begin                 = read_op_exec_begin,
 	.visit_stat                  = read_op_exec_stat,
 	.visit_read                  = read_op_exec_read,
@@ -59,7 +59,8 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
         *prval = -1;
         return;
     }
-    fake_db[name].read(vargs->mid, vargs->client_addr, vargs->bulk_handle, 
+    margo_instance_id mid = vargs->srv_ctx->mid;
+    fake_db[name].read(mid, vargs->client_addr, vargs->bulk_handle, 
                         buf.as_offset, offset, len, bytes_read);
 	*prval = 0;
 }

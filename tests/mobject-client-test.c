@@ -63,7 +63,7 @@ int main(int argc, char** argv)
         int prval2;
         mobject_store_read_op_read(read_op, 0, 512, read_buf, &bytes_read, &prval2);
         // Add "omap_get_keys" operation
-        const char* start_after1 = "shane";
+        const char* start_after1 = "rob";
         mobject_store_omap_iter_t iter3;
         int prval3;
         mobject_store_read_op_omap_get_keys(read_op, start_after1, 7, &iter3, &prval3);
@@ -73,7 +73,6 @@ int main(int argc, char** argv)
         mobject_store_omap_iter_t iter4;
         int prval4;
         mobject_store_read_op_omap_get_vals(read_op, start_after2, filter_prefix2, 3, &iter4, &prval4);
-
         // Add "omap_get_vals_by_keys" operation
         const char* keys[] = {"matthieu", "robl"};
         mobject_store_omap_iter_t iter5;
@@ -86,6 +85,7 @@ int main(int argc, char** argv)
 
         // print the results of the read operations
         printf("Client received the following results:\n");
+
         printf("stat: psize=%ld pmtime=%lld prval=%d\n", psize, (long long)pmtime, prval1);
         {
             printf("read: bytes_read = %ld, prval=%d content: ", bytes_read, prval2);

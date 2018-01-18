@@ -13,17 +13,17 @@
 #include "src/util/utlist.h"
 #include "src/util/log.h"
 
-mobject_store_write_op_t mobject_store_create_write_op(void)
+mobject_store_write_op_t mobject_create_write_op(void)
 {
 	return create_write_op();
 }
 
-void mobject_store_release_write_op(mobject_store_write_op_t write_op)
+void mobject_release_write_op(mobject_store_write_op_t write_op)
 {
     release_write_op(write_op);
 }
 
-void mobject_store_write_op_create(mobject_store_write_op_t write_op,
+void mobject_write_op_create(mobject_store_write_op_t write_op,
                                    int exclusive,
                                    const char* category)
 {
@@ -40,7 +40,7 @@ void mobject_store_write_op_create(mobject_store_write_op_t write_op,
 	write_op->num_actions += 1;
 }
 
-void mobject_store_write_op_write(mobject_store_write_op_t write_op,
+void mobject_write_op_write(mobject_store_write_op_t write_op,
                                   const char *buffer,
                                   size_t len,
                                   uint64_t offset)
@@ -60,7 +60,7 @@ void mobject_store_write_op_write(mobject_store_write_op_t write_op,
 	write_op->num_actions += 1;
 }
 
-void mobject_store_write_op_write_full(mobject_store_write_op_t write_op,
+void mobject_write_op_write_full(mobject_store_write_op_t write_op,
                                        const char *buffer,
                                        size_t len)
 {
@@ -96,7 +96,7 @@ void mobject_store_write_op_write_full(mobject_store_write_op_t write_op,
 	write_op->num_actions += 1;
 }
 
-void mobject_store_write_op_writesame(mobject_store_write_op_t write_op,
+void mobject_write_op_write_same(mobject_store_write_op_t write_op,
                                       const char *buffer,
                                       size_t data_len,
                                       size_t write_len,
@@ -118,7 +118,7 @@ void mobject_store_write_op_writesame(mobject_store_write_op_t write_op,
 	write_op->num_actions += 1;
 }
 
-void mobject_store_write_op_append(mobject_store_write_op_t write_op,
+void mobject_write_op_append(mobject_store_write_op_t write_op,
                                    const char *buffer,
                                    size_t len)
 {
@@ -136,7 +136,7 @@ void mobject_store_write_op_append(mobject_store_write_op_t write_op,
 	write_op->num_actions += 1;
 }
 
-void mobject_store_write_op_remove(mobject_store_write_op_t write_op)
+void mobject_write_op_remove(mobject_store_write_op_t write_op)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
 	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
@@ -168,7 +168,7 @@ void mobject_store_write_op_remove(mobject_store_write_op_t write_op)
 	write_op->num_actions += 1;
 }
 
-void mobject_store_write_op_truncate(mobject_store_write_op_t write_op,
+void mobject_write_op_truncate(mobject_store_write_op_t write_op,
                                      uint64_t offset)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
@@ -184,7 +184,7 @@ void mobject_store_write_op_truncate(mobject_store_write_op_t write_op,
 	write_op->num_actions += 1;
 }
 
-void mobject_store_write_op_zero(mobject_store_write_op_t write_op,
+void mobject_write_op_zero(mobject_store_write_op_t write_op,
                                  uint64_t offset,
                                  uint64_t len)
 {
@@ -202,7 +202,7 @@ void mobject_store_write_op_zero(mobject_store_write_op_t write_op,
 	write_op->num_actions += 1;
 }
 
-void mobject_store_write_op_omap_set(mobject_store_write_op_t write_op,
+void mobject_write_op_omap_set(mobject_store_write_op_t write_op,
                                      char const* const* keys,
                                      char const* const* vals,
                                      const size_t *lens,
@@ -243,7 +243,7 @@ void mobject_store_write_op_omap_set(mobject_store_write_op_t write_op,
 	write_op->num_actions += 1;
 }
 
-void mobject_store_write_op_omap_rm_keys(mobject_store_write_op_t write_op,
+void mobject_write_op_omap_rm_keys(mobject_store_write_op_t write_op,
                                          char const* const* keys,
                                          size_t keys_len)
 {

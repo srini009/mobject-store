@@ -17,6 +17,13 @@ hg_return_t hg_proc_mobject_store_omap_iter_t(hg_proc_t proc, mobject_store_omap
 
 	case HG_ENCODE:
 
+        if(*iter == NULL) {
+            hg_size_t s = 0;
+            ret = hg_proc_hg_size_t(proc, &s);
+            if(ret != HG_SUCCESS) return ret;
+            break;
+        }
+
 		ret = hg_proc_hg_size_t(proc, &((*iter)->num_items));
 		if(ret != HG_SUCCESS) return ret;
 	

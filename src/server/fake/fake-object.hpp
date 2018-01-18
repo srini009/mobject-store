@@ -35,6 +35,8 @@ public:
 
     void omap_get_keys(const std::string& start_after, size_t max, mobject_store_omap_iter_t iter) const {
         auto it = m_omap.lower_bound(start_after);
+        if(it == m_omap.end()) return;
+        if(it->first == start_after) it++;
         for(size_t i = 0; (it != m_omap.end()) && (i < max); it++, i++) {
             auto& key = it->first;
             omap_iter_append(iter, &key[0], (const char*)0 , 0);
@@ -44,6 +46,8 @@ public:
     void omap_get_vals(const std::string& start_after, const std::string& filter_prefix, 
                        size_t max, mobject_store_omap_iter_t iter) const {
         auto it = m_omap.lower_bound(start_after);
+        if(it == m_omap.end()) return;
+        if(it->first == start_after) it++;
         for(size_t i = 0; (it != m_omap.end()) && (i < max); it++, i++) {
             auto& key = it->first;
             auto& val = it->second;
