@@ -15,5 +15,5 @@ bool operator<(const omap_key_t& k1, const omap_key_t& k2) {
 
 std::map<oid_t, std::string>                    oid_map;
 std::map<std::string, oid_t>                    name_map;
-std::map<segment_key_t, bake_region_id_t>  segment_map;
+std::map<segment_key_t, bake_region_id_t>       segment_map;
 std::map<omap_key_t, std::vector<char>>         omap_map;
