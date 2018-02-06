@@ -3,6 +3,8 @@
 #include <string>
 #include <bake-client.h>
 
+#include "src/server/core/key-types.h"
+/*
 typedef uint64_t oid_t;
 
 enum class seg_type_t : std::int32_t {
@@ -26,7 +28,7 @@ struct omap_key_t {
 };
 
 #define SMALL_REGION_THRESHOLD (sizeof(bake_region_id_t))
-
+*/
 bool operator<(const segment_key_t& s1, const segment_key_t& s2);
 bool operator<(const omap_key_t& k1, const omap_key_t& k2);
 

@@ -217,9 +217,20 @@ void write_op_exec_omap_set(void* u, char const* const* keys,
                                      const size_t *lens,
                                      size_t num)
 {
+    int ret;
 	auto vargs = static_cast<server_visitor_args_t>(u);
     oid_t oid = get_or_create_oid(vargs->object_name);
-
+    sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
+    sdskv_database_id_t omap_db_id = vargs->srv_ctx->omap_db_id;
+    for(auto i=0; i<num; i++) {
+        ret = sdskv_put(sdskv_ph, omap_db_id, 
+                (const void*)keys[i], strlen(keys[i])+1,
+                (const void*)vals[i], lens[i]);
+        if(ret != SDSKV_SUCCESS) {
+            fprintf(stderr, "write_op_exec_omap_set: error in sdskv_put() (ret = %d)\n", ret);
+        }
+    }
+#if 0
     for(auto i=0; i<num; i++) {
         std::vector<char> val(vals[i], vals[i]+lens[i]);
         omap_key_t omk;
@@ -227,19 +238,31 @@ void write_op_exec_omap_set(void* u, char const* const* keys,
         omk.key = std::string(keys[i]);
         omap_map[std::move(omk)] = std::move(val);
     }
+#endif
 }
 
 void write_op_exec_omap_rm_keys(void* u, char const* const* keys, size_t num_keys)
 {
 	auto vargs = static_cast<server_visitor_args_t>(u);
     oid_t oid = get_or_create_oid(vargs->object_name);
-    
+    int ret;
+
+    sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
+    sdskv_database_id_t omap_db_id = vargs->srv_ctx->omap_db_id;
+    for(auto i=0; i<num_keys; i++) {
+        ret = sdskv_erase(sdskv_ph, omap_db_id, 
+                (const void*)keys[i], strlen(keys[i])+1);
+        if(ret != SDSKV_SUCCESS)
+            fprintf(stderr, "write_op_exec_omap_rm_keys: error in sdskv_erase() (ret = %d)\n", ret);
+    }
+#if 0
     for(auto i=0; i < num_keys; i++) {
         omap_key_t omk;
         omk.oid = oid;
         omk.key = std::string(keys[i]);
         omap_map.erase(omk);
     }
+#endif
 }
 
 oid_t get_or_create_oid(const char* object_name) 
