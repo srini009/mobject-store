@@ -182,6 +182,7 @@ static hg_return_t mobject_write_op_ult(hg_handle_t h)
 
     server_visitor_args vargs;
     vargs.object_name = in.object_name;
+    vargs.oid         = 0;
     vargs.pool_name   = in.pool_name;
     vargs.srv_ctx     = margo_registered_data_mplex(mid, info->id, info->target_id);
     if(vargs.srv_ctx == NULL) return HG_OTHER_ERROR;
@@ -234,6 +235,7 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
 
     server_visitor_args vargs;
     vargs.object_name = in.object_name;
+    vargs.oid         = 0;
     vargs.pool_name   = in.pool_name;
     vargs.srv_ctx     = margo_registered_data_mplex(mid, info->id, info->target_id);
     if(vargs.srv_ctx == NULL) return HG_OTHER_ERROR;

@@ -21,6 +21,11 @@ static void read_op_exec_omap_get_vals(void*, const char*, const char*, uint64_t
 static void read_op_exec_omap_get_vals_by_keys(void*, char const* const*, size_t, mobject_store_omap_iter_t*, int*);
 static void read_op_exec_end(void*);
 
+static oid_t get_oid_from_name(
+        sdskv_provider_handle_t ph,
+        sdskv_database_id_t name_db_id,
+        const char* name);
+
 struct read_request_t {
     double timestamp;              // timestamp at which the segment was created
     uint64_t absolute_start_index; // start index within the object
@@ -74,11 +79,17 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
     *prval = 0;
 
     // find oid
-    if(name_map.count(object_name) == 0) {
+    oid_t oid = vargs->oid;
+    if(oid == 0) {
+        sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
+        sdskv_database_id_t name_db_id = vargs->srv_ctx->name_db_id;
+        oid = get_oid_from_name(sdskv_ph, name_db_id, object_name);
+        vargs->oid = oid;
+    }
+    if(oid == 0) {
         *prval = -1;
         return;
     }
-    oid_t oid = name_map[object_name];
 
     segment_key_t lb;
     lb.oid = oid;
@@ -143,12 +154,17 @@ void read_op_exec_omap_get_keys(void* u, const char* start_after, uint64_t max_r
     int ret;
     *prval = 0;
 
-    // find oid
-    if(name_map.count(object_name) == 0) {
+    oid_t oid = vargs->oid;
+    if(oid == 0) {
+        sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
+        sdskv_database_id_t name_db_id = vargs->srv_ctx->name_db_id;
+        oid = get_oid_from_name(sdskv_ph, name_db_id, object_name);
+        vargs->oid = oid;
+    }
+    if(oid == 0) {
         *prval = -1;
         return;
     }
-    oid_t oid = name_map[object_name];
     
     omap_iter_create(iter);
     size_t lb_size = sizeof(omap_key_t)+strlen(start_after);
@@ -201,12 +217,17 @@ void read_op_exec_omap_get_vals(void* u, const char* start_after, const char* fi
     int ret;
     *prval = 0;
 
-    // find oid
-    if(name_map.count(object_name) == 0) {
+    oid_t oid = vargs->oid;
+    if(oid == 0) {
+        sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
+        sdskv_database_id_t name_db_id = vargs->srv_ctx->name_db_id;
+        oid = get_oid_from_name(sdskv_ph, name_db_id, object_name);
+        vargs->oid = oid;
+    }
+    if(oid == 0) {
         *prval = -1;
         return;
     }
-    oid_t oid = name_map[object_name];
 
     hg_size_t max_items = 10;
     // TODO make this changeable
@@ -286,13 +307,18 @@ void read_op_exec_omap_get_vals_by_keys(void* u, char const* const* keys, size_t
     int ret;
     *prval = 0;
 
-    // find oid
-    if(name_map.count(object_name) == 0) {
+    oid_t oid = vargs->oid;
+    if(oid == 0) {
+        sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
+        sdskv_database_id_t name_db_id = vargs->srv_ctx->name_db_id;
+        oid = get_oid_from_name(sdskv_ph, name_db_id, object_name);
+        vargs->oid = oid;
+    }
+    if(oid == 0) {
         *prval = -1;
         return;
     }
-    oid_t oid = name_map[object_name];
-
+    
     omap_iter_create(iter);
 
     // figure out key sizes
@@ -331,4 +357,16 @@ void read_op_exec_omap_get_vals_by_keys(void* u, char const* const* keys, size_t
 void read_op_exec_end(void* u)
 {
     auto vargs = static_cast<server_visitor_args_t>(u);
+}
+
+static oid_t get_oid_from_name( 
+        sdskv_provider_handle_t ph,
+        sdskv_database_id_t name_db_id,
+        const char* name)
+{
+    oid_t result = 0;
+    hg_size_t oid_size = sizeof(result);
+    int ret = sdskv_get(ph, name_db_id, (const void*)name, strlen(name+1), (void*)&result, &oid_size);
+    if(ret != SDSKV_SUCCESS) return 0;
+    return result;
 }
