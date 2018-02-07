@@ -274,6 +274,7 @@ static void mobject_finalize_cb(void* data)
 {
     mobject_provider_t srv_ctx = (mobject_provider_t)data;
 
+    sdskv_provider_handle_release(srv_ctx->sdskv_ph);
     bake_provider_handle_release(srv_ctx->bake_ph);
     ssg_group_destroy(srv_ctx->gid);
 

@@ -13,6 +13,11 @@
 #include "src/server/core/fake-kv.hpp"
 #include "src/server/core/covermap.hpp"
 
+static int tabs = 0;
+#define ENTERING {for(int i=0; i<tabs; i++) fprintf(stderr," "); fprintf(stderr,"[ENTERING]>> %s\n",__FUNCTION__); tabs += 1;}
+#define LEAVING  {tabs -= 1; for(int i=0; i<tabs; i++) fprintf(stderr," "); fprintf(stderr,"[LEAVING]<<< %s\n",__FUNCTION__); }
+#define ERROR    {for(int i=0; i<(tabs+1); i++) fprintf(stderr, " "); fprintf(stderr,"[ERROR] "); }
+
 static void read_op_exec_begin(void*);
 static void read_op_exec_stat(void*, uint64_t*, time_t*, int*);
 static void read_op_exec_read(void*, uint64_t, size_t, buffer_u, size_t*, int*);
@@ -53,16 +58,22 @@ extern "C" void core_read_op(mobject_store_read_op_t read_op, server_visitor_arg
 
 void read_op_exec_begin(void* u)
 {
+    ENTERING;
     auto vargs = static_cast<server_visitor_args_t>(u);
+    LEAVING;
 }
 
 void read_op_exec_stat(void* u, uint64_t* psize, time_t* pmtime, int* prval)
 {
+    ENTERING;
     auto vargs = static_cast<server_visitor_args_t>(u);
+    // TODO
+    LEAVING;
 }
 
 void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_t* bytes_read, int* prval)
 {
+    ENTERING;
     auto vargs = static_cast<server_visitor_args_t>(u);
     bake_provider_handle_t bph = vargs->srv_ctx->bake_ph;
     bake_target_id_t bti = vargs->srv_ctx->bake_tid;
@@ -88,6 +99,8 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
     }
     if(oid == 0) {
         *prval = -1;
+        ERROR fprintf(stderr,"oid == 0\n");
+        LEAVING;
         return;
     }
 
@@ -116,8 +129,13 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
                 uint64_t segment_size  = r.end - r.start;
                 uint64_t region_offset = r.start - seg.start_index;
                 uint64_t remote_offset = r.start - offset;
-                bake_proxy_read(bph, region, region_offset, remote_bulk,
+                ret = bake_proxy_read(bph, region, region_offset, remote_bulk,
                         remote_offset, remote_addr_str, segment_size);
+                if(ret != 0) {
+                    ERROR fprintf(stderr,"bake_proxy_read returned %d\n", ret);
+                    LEAVING;
+                    return;
+                }
                 if(*bytes_read < r.end) *bytes_read = r.end;
             }
             break;
@@ -134,19 +152,36 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
                 hg_size_t buf_sizes[1] = { segment_size };
                 hg_bulk_t handle;
                 ret = margo_bulk_create(mid,1, buf_ptrs, buf_sizes, HG_BULK_READ_ONLY, &handle);
+                if(ret != HG_SUCCESS) {
+                    ERROR fprintf(stderr,"margo_bulk_create returned %d\n", ret);
+                    LEAVING;
+                    return;
+                }
                 ret = margo_bulk_transfer(mid, HG_BULK_PUSH, remote_addr, remote_bulk, buf.as_offset+remote_offset, handle, 0, segment_size);
+                if(ret != HG_SUCCESS) {
+                    ERROR fprintf(stderr,"margo_bulk_transfer returned %d\n", ret);
+                    LEAVING;
+                    return;
+                }
                 ret = margo_bulk_free(handle);
+                if(ret != HG_SUCCESS) {
+                    ERROR fprintf(stderr,"margo_bulk_free returned %d\n", ret);
+                    LEAVING;
+                    return;
+                }
                 if(*bytes_read < r.end) *bytes_read = r.end;
             }
           }
         }
         it++;
     }
+    LEAVING;
 }
 
 void read_op_exec_omap_get_keys(void* u, const char* start_after, uint64_t max_return, 
 				mobject_store_omap_iter_t* iter, int* prval)
 {
+    ENTERING;
     auto vargs = static_cast<server_visitor_args_t>(u);
     const char* object_name = vargs->object_name;
     sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
@@ -163,6 +198,8 @@ void read_op_exec_omap_get_keys(void* u, const char* start_after, uint64_t max_r
     }
     if(oid == 0) {
         *prval = -1;
+        ERROR fprintf(stderr, "oid == 0\n");
+        LEAVING;
         return;
     }
     
@@ -173,7 +210,7 @@ void read_op_exec_omap_get_keys(void* u, const char* start_after, uint64_t max_r
     strcpy(lb->key, start_after);
 
     hg_size_t max_keys = 10;
-    hg_size_t key_len  = 128; 
+    hg_size_t key_len  = MAX_OMAP_KEY_SIZE+sizeof(omap_key_t); 
     std::vector<void*> keys(max_keys);
     std::vector<hg_size_t> ksizes(max_keys, key_len);
     std::vector<std::vector<char>> buffers(max_keys, std::vector<char>(key_len));
@@ -188,6 +225,7 @@ void read_op_exec_omap_get_keys(void* u, const char* start_after, uint64_t max_r
                 &keys_retrieved);
         if(ret != SDSKV_SUCCESS) {
             *prval = -1;
+            ERROR fprintf(stderr, "sdskv_list_keys returned %d\n", ret);
             break;
         }
         const char* k;
@@ -206,10 +244,12 @@ void read_op_exec_omap_get_keys(void* u, const char* start_after, uint64_t max_r
 
 out:
     free(lb);
+    LEAVING;
 }
 
 void read_op_exec_omap_get_vals(void* u, const char* start_after, const char* filter_prefix, uint64_t max_return, mobject_store_omap_iter_t* iter, int* prval)
 {
+    ENTERING;
     auto vargs = static_cast<server_visitor_args_t>(u);
     const char* object_name = vargs->object_name;
     sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
@@ -226,18 +266,19 @@ void read_op_exec_omap_get_vals(void* u, const char* start_after, const char* fi
     }
     if(oid == 0) {
         *prval = -1;
+        ERROR fprintf(stderr, "oid == 0\n");
+        LEAVING;
         return;
     }
 
-    hg_size_t max_items = 10;
-    // TODO make this changeable
-    hg_size_t key_len  = 128 + sizeof(omap_key_t);
-    hg_size_t val_len  = 256;
+    hg_size_t max_items = std::min(max_return, (decltype(max_return))10);
+    hg_size_t key_len  = MAX_OMAP_KEY_SIZE + sizeof(omap_key_t);
+    hg_size_t val_len  = MAX_OMAP_VAL_SIZE;
 
     omap_iter_create(iter);
 
     /* omap_key_t equivalent of start_key */
-    hg_size_t lb_size = sizeof(omap_key_t)+strlen(start_after);
+    hg_size_t lb_size = key_len;
     omap_key_t* lb = (omap_key_t*)calloc(1, lb_size);
     lb->oid = oid;
     strcpy(lb->key, start_after);
@@ -247,11 +288,9 @@ void read_op_exec_omap_get_vals(void* u, const char* start_after, const char* fi
     omap_key_t* prefix = (omap_key_t*)calloc(1, prefix_size);
     prefix->oid = oid;
     strcpy(prefix->key, filter_prefix);
+    hg_size_t prefix_actual_size = offsetof(omap_key_t, key)+strlen(filter_prefix);
+    /* we need the above because the prefix in sdskv is not considered a string */
 
-    /* key entry used to navigate the returned keys */
-    omap_key_t* key = (omap_key_t*)calloc(1, key_len);
-    key->oid = oid;
-    
     /* initialize structures to pass to SDSKV functions */
     std::vector<void*> keys(max_items);
     std::vector<void*> vals(max_items);
@@ -270,12 +309,13 @@ void read_op_exec_omap_get_vals(void* u, const char* start_after, const char* fi
         ret = sdskv_list_keyvals_with_prefix(
                 sdskv_ph, omap_db_id,
                 (const void*)lb, lb_size,
-                (const void*)prefix, prefix_size,
+                (const void*)prefix, prefix_actual_size,
                 keys.data(), ksizes.data(),
                 vals.data(), vsizes.data(),
                 &items_retrieved);
         if(ret != SDSKV_SUCCESS) {
             *prval = -1;
+            ERROR fprintf(stderr, "sdskv_list_keyvals_with_prefix returned %d\n", ret);
             break;
         }
         const char* k;
@@ -287,19 +327,21 @@ void read_op_exec_omap_get_vals(void* u, const char* start_after, const char* fi
 
             omap_iter_append(*iter, k, (const char*)vals[i], vsizes[i]);
         }
+        memset(lb, 0, lb_size);
+        lb->oid = oid;
         strcpy(lb->key, k);
-        lb_size = strlen(k) + sizeof(omap_key_t);
+        //lb_size = strlen(k) + sizeof(omap_key_t);
 
     } while(items_retrieved == max_items && count < max_return);
 
 out:
-
     free(lb);
-    free(key);
+    LEAVING;
 }
 
 void read_op_exec_omap_get_vals_by_keys(void* u, char const* const* keys, size_t num_keys, mobject_store_omap_iter_t* iter, int* prval)
 {
+    ENTERING;
     auto vargs = static_cast<server_visitor_args_t>(u);
     const char* object_name = vargs->object_name;
     sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
@@ -316,6 +358,8 @@ void read_op_exec_omap_get_vals_by_keys(void* u, char const* const* keys, size_t
     }
     if(oid == 0) {
         *prval = -1;
+        ERROR fprintf(stderr, "oid == 0\n");
+        LEAVING;
         return;
     }
     
@@ -325,14 +369,16 @@ void read_op_exec_omap_get_vals_by_keys(void* u, char const* const* keys, size_t
     std::vector<hg_size_t> ksizes(num_keys);
     hg_size_t max_ksize = 0;
     for(auto i=0; i < num_keys; i++) {
-        hg_size_t s = strlen(keys[i])+1;
+        hg_size_t s = offsetof(omap_key_t,key)+strlen(keys[i])+1;
         if(s > max_ksize) max_ksize = s;
         ksizes[i] = s;
     }
+    max_ksize += sizeof(omap_key_t);
 
-    omap_key_t* key = (omap_key_t*)calloc(1, sizeof(omap_key_t)+max_ksize);
-    key->oid = oid;
+    omap_key_t* key = (omap_key_t*)calloc(1, max_ksize);
     for(size_t i=0; i < num_keys; i++) {
+        memset(key, 0, max_ksize);
+        key->oid = oid;
         strcpy(key->key, keys[i]);
         // get length of the value
         hg_size_t vsize;
@@ -340,6 +386,7 @@ void read_op_exec_omap_get_vals_by_keys(void* u, char const* const* keys, size_t
                 (const void*)key, ksizes[i], &vsize);
         if(ret != SDSKV_SUCCESS) {
             *prval = -1;
+            ERROR fprintf(stderr, "sdskv_length returned %d\n", ret);
             break;
         }
         std::vector<char> value(vsize);
@@ -348,10 +395,12 @@ void read_op_exec_omap_get_vals_by_keys(void* u, char const* const* keys, size_t
                 (void*)value.data(), &vsize);
         if(ret != SDSKV_SUCCESS) {
             *prval = -1;
+            ERROR fprintf(stderr, "sdskv_get returned %d\n", ret);
             break;
         }
         omap_iter_append(*iter, keys[i], value.data(), vsize);
     }
+    LEAVING;
 }
 
 void read_op_exec_end(void* u)
@@ -364,9 +413,14 @@ static oid_t get_oid_from_name(
         sdskv_database_id_t name_db_id,
         const char* name)
 {
+    ENTERING;
     oid_t result = 0;
     hg_size_t oid_size = sizeof(result);
-    int ret = sdskv_get(ph, name_db_id, (const void*)name, strlen(name+1), (void*)&result, &oid_size);
-    if(ret != SDSKV_SUCCESS) return 0;
+    int ret = sdskv_get(ph, name_db_id, (const void*)name, strlen(name)+1, (void*)&result, &oid_size);
+    if(ret != SDSKV_SUCCESS) result = 0;
+    if(result == 0) {
+        ERROR fprintf(stderr,"oid == 0\n");
+    }
+    LEAVING;
     return result;
 }

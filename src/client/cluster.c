@@ -386,7 +386,8 @@ int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
     if(r != 0) return r;
     
     r = mobject_read_op_operate(mph,read_op, ioctx->pool_name, oid, flags);
-    return 0;
+    mobject_provider_handle_release(mph);
+    return r;
 }
 
 // send a shutdown signal to a server cluster

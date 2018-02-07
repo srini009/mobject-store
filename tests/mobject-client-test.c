@@ -22,23 +22,34 @@ int main(int argc, char** argv)
         mobject_store_write_op_create(write_op, LIBMOBJECT_CREATE_EXCLUSIVE, NULL);
         // Add a "write_full" operation to write "AAAABBBB"
         mobject_store_write_op_write_full(write_op, content, 8);
-        // Add a "write" operation to write "CCCC"
+        // Add a "write" operation to write "CCCC", content should then be "AAAABBBBCCCC"
         mobject_store_write_op_write(write_op, content+8, 4, 8);
-        // Add a "writesame" operation to write "DDDD" in two "DD"
-        mobject_store_write_op_writesame(write_op, content+12, 2, 4, 12);
+        // Add a "writesame" operation to write "DDDD" in two "DD",
+        // content should then be "AAAABBBBCCCCDDDD"
+//        mobject_store_write_op_writesame(write_op, content+12, 2, 4, 12);
         // Add a "append" operation to append "EEEEFFFF"
-        mobject_store_write_op_append(write_op, content+16, 8);
+        // content should then be "AAAABBBBCCCCDDDDEEEEFFFFF"
+//        mobject_store_write_op_append(write_op, content+16, 8);
         // Add a "remove" operation
 //        mobject_store_write_op_remove(write_op);
         // Add a "truncate" operation to remove the "FFFF" part
-        mobject_store_write_op_truncate(write_op, 20);
+        // content should then be "AAAABBBBCCCCDDDDEEEE"
+//        mobject_store_write_op_truncate(write_op, 20);
         // Add a "zero" operation zero-ing the "BBBBCCCC"
-        mobject_store_write_op_zero(write_op, 4, 8);
+        // content should then be "AAAA********DDDDEEEE" where "*" represent 0s
+//        mobject_store_write_op_zero(write_op, 4, 8);
         // Add a "omap_set" operation
         const char* keys[]   = { "matthieu", "rob", "shane", "phil", "robl" };
         const char* values[] = { "mdorier@anl.gov", "rross@anl.gov", "ssnyder@anl.gov", "carns@anl.gov", "robl@anl.gov" };
         size_t val_sizes[]   = { 16, 14, 16, 14, 13 };
         mobject_store_write_op_omap_set(write_op, keys, values, val_sizes, 5);
+        // keys will be sorted and stored as follows:
+        /* matthieu => mdorier@anl.gov
+           phil     => carns@anl.gov
+           rob      => rross@anl.gov
+           robl     => robl@anl.gov
+           shane    => ssnyder@anl.gov
+        */
         // Add a omap_rm_keys" operation
 //        mobject_store_write_op_omap_rm_keys(write_op, keys, 5);
 
@@ -56,7 +67,7 @@ int main(int argc, char** argv)
         uint64_t psize;
         time_t pmtime;
         int prval1;
-        mobject_store_read_op_stat(read_op, &psize, &pmtime, &prval1);
+//        mobject_store_read_op_stat(read_op, &psize, &pmtime, &prval1);
         // Add "read" operation
         char read_buf[512];
         size_t bytes_read;
@@ -66,12 +77,14 @@ int main(int argc, char** argv)
         const char* start_after1 = "rob";
         mobject_store_omap_iter_t iter3;
         int prval3;
+        // the following should return ["robl","shane"] 
         mobject_store_read_op_omap_get_keys(read_op, start_after1, 7, &iter3, &prval3);
         // Add "omap_get_vals" operation
         const char* start_after2 = "matthieu";
         const char* filter_prefix2 = "p";
         mobject_store_omap_iter_t iter4;
         int prval4;
+        // the following should return ["phil"], and  its associated value
         mobject_store_read_op_omap_get_vals(read_op, start_after2, filter_prefix2, 3, &iter4, &prval4);
         // Add "omap_get_vals_by_keys" operation
         const char* keys[] = {"matthieu", "robl"};
@@ -86,13 +99,15 @@ int main(int argc, char** argv)
         // print the results of the read operations
         printf("Client received the following results:\n");
 
-        printf("stat: psize=%ld pmtime=%lld prval=%d\n", psize, (long long)pmtime, prval1);
+//        printf("stat: psize=%ld pmtime=%lld prval=%d\n", psize, (long long)pmtime, prval1);
+
         {
             printf("read: bytes_read = %ld, prval=%d content: ", bytes_read, prval2);
             unsigned i;
             for(i=0; i<bytes_read; i++) printf("%c", read_buf[i] ? read_buf[i] : '*' );
             printf("\n");
         }
+
         printf("omap_get_keys: prval=%d\n", prval3);
         {
             char* key = NULL;

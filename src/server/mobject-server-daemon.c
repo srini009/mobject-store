@@ -103,13 +103,9 @@ int main(int argc, char *argv[])
     sdskv_provider_register(mid, sdskv_mplex_id, SDSKV_ABT_POOL_DEFAULT, &sdskv_prov);
 
     sdskv_provider_add_database(sdskv_prov, "oid_map",  KVDB_MAP, &oid_map_compare,  &oid_map_id);
-    fprintf(stderr, "oid_map at id %ld\n", oid_map_id);
     sdskv_provider_add_database(sdskv_prov, "name_map", KVDB_MAP, &name_map_compare, &name_map_id);
-    fprintf(stderr, "name_map at id %ld\n", name_map_id);
     sdskv_provider_add_database(sdskv_prov, "seg_map",  KVDB_MAP, &seg_map_compare,  &seg_map_id);
-    fprintf(stderr, "seg_map at id %ld\n", seg_map_id);
     sdskv_provider_add_database(sdskv_prov, "omap_map", KVDB_MAP, &omap_map_compare, &omap_map_id);
-    fprintf(stderr, "omap_map at id %ld\n", omap_map_id);
 
     /* SDSKV provider handle initialization from self addr */
     sdskv_client_data sdskv_clt_data;
@@ -130,6 +126,8 @@ int main(int argc, char *argv[])
         margo_finalize(mid);
         return -1;
     }
+
+    margo_addr_free(mid,self_addr);
 
     margo_wait_for_finalize(mid);
 
