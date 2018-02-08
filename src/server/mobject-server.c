@@ -10,9 +10,6 @@
 #include <mpi.h>
 #include <abt.h>
 #include <margo.h>
-//#include <sds-keyval.h>
-#include <bake-server.h>
-#include <bake-client.h>
 #include <ssg-mpi.h>
 
 #include "mobject-server.h"
@@ -42,6 +39,7 @@ int mobject_provider_register(
         uint8_t mplex_id,
         ABT_pool pool,
         bake_provider_handle_t bake_ph,
+        sdskv_provider_handle_t sdskv_ph,
         const char *cluster_file,
         mobject_provider_t* provider)
 {
@@ -113,6 +111,41 @@ int mobject_provider_register(
         free(srv_ctx);
         return -1;
     }
+    /* SDSKV settings initialization */
+    sdskv_provider_handle_ref_incr(sdskv_ph);
+    srv_ctx->sdskv_ph = sdskv_ph;
+    ret = sdskv_open(sdskv_ph, "oid_map", &(srv_ctx->oid_db_id));
+    if(ret != SDSKV_SUCCESS) {
+        fprintf(stderr, "Error: unable to open oid_map from SDSKV provider\n");
+        ssg_group_destroy(srv_ctx->gid);
+        bake_provider_handle_release(srv_ctx->bake_ph);
+        sdskv_provider_handle_release(srv_ctx->sdskv_ph);
+        free(srv_ctx);
+    }
+    ret = sdskv_open(sdskv_ph, "name_map", &(srv_ctx->name_db_id));
+    if(ret != SDSKV_SUCCESS) {
+        fprintf(stderr, "Error: unable to open name_map from SDSKV provider\n");
+        bake_provider_handle_release(srv_ctx->bake_ph);
+        sdskv_provider_handle_release(srv_ctx->sdskv_ph);
+        ssg_group_destroy(srv_ctx->gid);
+        free(srv_ctx);
+    }
+    ret = sdskv_open(sdskv_ph, "seg_map", &(srv_ctx->segment_db_id));
+    if(ret != SDSKV_SUCCESS) {
+        fprintf(stderr, "Error: unable to open seg_map from SDSKV provider\n");
+        bake_provider_handle_release(srv_ctx->bake_ph);
+        sdskv_provider_handle_release(srv_ctx->sdskv_ph);
+        ssg_group_destroy(srv_ctx->gid);
+        free(srv_ctx);
+    }
+    ret = sdskv_open(sdskv_ph, "omap_map", &(srv_ctx->omap_db_id));
+    if(ret != SDSKV_SUCCESS) {
+        fprintf(stderr, "Error: unable to open omap_map from SDSKV provider\n");
+        bake_provider_handle_release(srv_ctx->bake_ph);
+        sdskv_provider_handle_release(srv_ctx->sdskv_ph);
+        ssg_group_destroy(srv_ctx->gid);
+        free(srv_ctx);
+    }
 
     hg_id_t rpc_id;
 
@@ -149,6 +182,7 @@ static hg_return_t mobject_write_op_ult(hg_handle_t h)
 
     server_visitor_args vargs;
     vargs.object_name = in.object_name;
+    vargs.oid         = 0;
     vargs.pool_name   = in.pool_name;
     vargs.srv_ctx     = margo_registered_data_mplex(mid, info->id, info->target_id);
     if(vargs.srv_ctx == NULL) return HG_OTHER_ERROR;
@@ -201,6 +235,7 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
 
     server_visitor_args vargs;
     vargs.object_name = in.object_name;
+    vargs.oid         = 0;
     vargs.pool_name   = in.pool_name;
     vargs.srv_ctx     = margo_registered_data_mplex(mid, info->id, info->target_id);
     if(vargs.srv_ctx == NULL) return HG_OTHER_ERROR;
@@ -239,6 +274,7 @@ static void mobject_finalize_cb(void* data)
 {
     mobject_provider_t srv_ctx = (mobject_provider_t)data;
 
+    sdskv_provider_handle_release(srv_ctx->sdskv_ph);
     bake_provider_handle_release(srv_ctx->bake_ph);
     ssg_group_destroy(srv_ctx->gid);
 

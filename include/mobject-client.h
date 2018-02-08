@@ -194,7 +194,7 @@ extern "C" {
     void mobject_write_op_zero(
             mobject_store_write_op_t write_op,
             uint64_t offset,
-            uint64_t len);
+            size_t len);
 
     /**
      * Set key/value pairs on an object

@@ -20,8 +20,12 @@ function mobject_test_start_servers()
     startwait=${2:-15}
     maxtime=${3:-120}
     cfile=${4:-/tmp/mobject-connect-cluster.gid}
+    storage=${5:-/dev/shm/mobject.dat}
 
-    run_to $maxtime mpirun -np $nservers src/server/mobject-server-daemon na+sm:// $cfile &
+    rm -rf ${storage}
+    bake-mkpool -s 50M /dev/shm/mobject.dat
+
+    run_to $maxtime mpirun -np $nservers src/server/mobject-server-daemon tcp:// $cfile &
     if [ $? -ne 0 ]; then
         # TODO: this doesn't actually work; can't check return code of
         # something executing in background.  We have to rely on the
