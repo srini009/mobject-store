@@ -109,108 +109,6 @@ void read_op_exec_stat(void* u, uint64_t* psize, time_t* pmtime, int* prval)
     LEAVING;
 }
 
-#if 0
-void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_t* bytes_read, int* prval)
-{
-    ENTERING;
-    auto vargs = static_cast<server_visitor_args_t>(u);
-    bake_provider_handle_t bph = vargs->srv_ctx->bake_ph;
-    bake_target_id_t bti = vargs->srv_ctx->bake_tid;
-    bake_region_id_t rid;
-    hg_bulk_t remote_bulk = vargs->bulk_handle;
-    const char* remote_addr_str = vargs->client_addr_str;
-    hg_addr_t   remote_addr     = vargs->client_addr;
-    int ret;
-
-    uint64_t client_start_index = offset;
-    uint64_t client_end_index = offset+len;
-
-    *prval = 0;
-
-    // find oid
-    oid_t oid = vargs->oid;
-    if(oid == 0) {
-        *prval = -1;
-        ERROR fprintf(stderr,"oid == 0\n");
-        LEAVING;
-        return;
-    }
-
-    segment_key_t lb;
-    lb.oid = oid;
-    lb.timestamp = std::numeric_limits<double>::max();
-    auto it = segment_map.lower_bound(lb);
-    covermap<uint64_t> coverage(offset, offset+len);
-
-    while(!coverage.full() && it != segment_map.end() && it->first.oid == oid) {
-        const segment_key_t& seg = it->first;
-        const bake_region_id_t& region = it->second;
-       
-        switch(seg.type) {
-        case seg_type_t::ZERO:
-            coverage.set(seg.start_index, seg.end_index);
-            if(*bytes_read < seg.end_index) *bytes_read = seg.end_index;
-            break;
-        case seg_type_t::TOMBSTONE:
-            coverage.set(seg.start_index, seg.end_index);
-            if(*bytes_read < seg.start_index) *bytes_read = seg.start_index;
-            break;
-        case seg_type_t::BAKE_REGION: {
-            auto ranges = coverage.set(seg.start_index, seg.end_index);
-            for(auto r : ranges) {
-                uint64_t segment_size  = r.end - r.start;
-                uint64_t region_offset = r.start - seg.start_index;
-                uint64_t remote_offset = r.start - offset;
-                ret = bake_proxy_read(bph, region, region_offset, remote_bulk,
-                        remote_offset, remote_addr_str, segment_size);
-                if(ret != 0) {
-                    ERROR fprintf(stderr,"bake_proxy_read returned %d\n", ret);
-                    LEAVING;
-                    return;
-                }
-                if(*bytes_read < r.end) *bytes_read = r.end;
-            }
-            break;
-          }
-        case seg_type_t::SMALL_REGION: {
-            auto ranges = coverage.set(seg.start_index, seg.end_index);
-            const char* base = static_cast<const char*>((void*)(&region));
-            margo_instance_id mid = vargs->srv_ctx->mid;
-            for(auto r : ranges) {
-                uint64_t segment_size  = r.end - r.start;
-                uint64_t region_offset = r.start - seg.start_index;
-                uint64_t remote_offset = r.start - offset;
-                void* buf_ptrs[1] = { const_cast<char*>(base + region_offset) };
-                hg_size_t buf_sizes[1] = { segment_size };
-                hg_bulk_t handle;
-                ret = margo_bulk_create(mid,1, buf_ptrs, buf_sizes, HG_BULK_READ_ONLY, &handle);
-                if(ret != HG_SUCCESS) {
-                    ERROR fprintf(stderr,"margo_bulk_create returned %d\n", ret);
-                    LEAVING;
-                    return;
-                }
-                ret = margo_bulk_transfer(mid, HG_BULK_PUSH, remote_addr, remote_bulk, buf.as_offset+remote_offset, handle, 0, segment_size);
-                if(ret != HG_SUCCESS) {
-                    ERROR fprintf(stderr,"margo_bulk_transfer returned %d\n", ret);
-                    LEAVING;
-                    return;
-                }
-                ret = margo_bulk_free(handle);
-                if(ret != HG_SUCCESS) {
-                    ERROR fprintf(stderr,"margo_bulk_free returned %d\n", ret);
-                    LEAVING;
-                    return;
-                }
-                if(*bytes_read < r.end) *bytes_read = r.end;
-            }
-          }
-        }
-        it++;
-    }
-    LEAVING;
-}
-#endif
-
 void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_t* bytes_read, int* prval)
 {
     ENTERING;
@@ -507,7 +405,6 @@ void read_op_exec_omap_get_vals(void* u, const char* start_after, const char* fi
         memset(lb, 0, lb_size);
         lb->oid = oid;
         strcpy(lb->key, k);
-        //lb_size = strlen(k) + sizeof(omap_key_t);
 
     } while(items_retrieved == max_items && count < max_return);
 
