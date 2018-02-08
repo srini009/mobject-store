@@ -66,8 +66,7 @@ src_server_libmobject_server_la_SOURCES = \
   src/server/core/core-write-op.cpp \
   src/server/core/core-read-op.cpp \
   src/server/printer/print-write-op.c \
-  src/server/printer/print-read-op.c \
-  src/server/core/fake-kv.cpp
+  src/server/printer/print-read-op.c 
 src_server_libmobject_server_la_CPPFLAGS = ${AM_CPPFLAGS} ${SERVER_CPPFLAGS}
 src_server_libmobject_server_la_CFLAGS   = ${AM_CFLAGS} ${SERVER_CFLAGS}
 src_server_libmobject_server_la_LIBADD = src/omap-iter/libomap-iter.la \

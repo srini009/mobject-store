@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
+#include <vector>
 #include <list>
 #include <bake-client.h>
 #include "src/server/core/core-read-op.h"
@@ -10,7 +11,6 @@
 #include "src/io-chain/read-resp-impl.h"
 #include "src/omap-iter/omap-iter-impl.h"
 #include "src/server/core/key-types.h"
-#include "src/server/core/fake-kv.hpp"
 #include "src/server/core/covermap.hpp"
 
 static int tabs = 0;

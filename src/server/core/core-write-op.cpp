@@ -6,7 +6,6 @@
 #include <bake-client.h>
 #include "src/server/visitor-args.h"
 #include "src/io-chain/write-op-visitor.h"
-#include "src/server/core/fake-kv.hpp"
 
 #if 0
 static int tabs = 0;
