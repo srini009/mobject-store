@@ -25,7 +25,7 @@ function mobject_test_start_servers()
     rm -rf ${storage}
     bake-mkpool -s 50M /dev/shm/mobject.dat
 
-    run_to $maxtime mpirun -np $nservers src/server/mobject-server-daemon na+sm:// $cfile &
+    run_to $maxtime mpirun -np $nservers src/server/mobject-server-daemon tcp:// $cfile &
     if [ $? -ne 0 ]; then
         # TODO: this doesn't actually work; can't check return code of
         # something executing in background.  We have to rely on the

@@ -42,8 +42,8 @@ void mobject_write_op_create(mobject_store_write_op_t write_op,
 
 void mobject_write_op_write(mobject_store_write_op_t write_op,
                                   const char *buffer,
-                                  size_t len,
-                                  uint64_t offset)
+                                  uint64_t offset,
+                                  size_t len)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
 	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
@@ -53,7 +53,7 @@ void mobject_write_op_write(mobject_store_write_op_t write_op,
 	action->buffer.as_pointer = buffer;
 	action->len               = len;
 	action->offset            = offset;
-	
+
 	WRITE_ACTION_UPCAST(base, action);
 	DL_APPEND(write_op->actions, base);
 
@@ -98,9 +98,9 @@ void mobject_write_op_write_full(mobject_store_write_op_t write_op,
 
 void mobject_write_op_write_same(mobject_store_write_op_t write_op,
                                       const char *buffer,
+                                      uint64_t offset,
                                       size_t data_len,
-                                      size_t write_len,
-                                      uint64_t offset)
+                                      size_t write_len)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
 	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");
@@ -186,7 +186,7 @@ void mobject_write_op_truncate(mobject_store_write_op_t write_op,
 
 void mobject_write_op_zero(mobject_store_write_op_t write_op,
                                  uint64_t offset,
-                                 uint64_t len)
+                                 size_t len)
 {
 	MOBJECT_ASSERT(write_op != MOBJECT_WRITE_OP_NULL, "invalid mobject_store_write_op_t obect");
 	MOBJECT_ASSERT(!(write_op->ready), "can't modify a write_op that is ready to be processed");

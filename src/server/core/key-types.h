@@ -30,5 +30,4 @@ typedef struct omap_key_t {
 #define MAX_OMAP_VAL_SIZE 256
 
 #define SMALL_REGION_THRESHOLD (sizeof(bake_region_id_t))
-
 #endif

@@ -8,10 +8,16 @@
 #include "src/io-chain/write-op-visitor.h"
 #include "src/server/core/fake-kv.hpp"
 
+#if 0
 static int tabs = 0;
 #define ENTERING {for(int i=0; i<tabs; i++) fprintf(stderr," "); fprintf(stderr,"[ENTERING]>> %s\n",__FUNCTION__); tabs += 1;}
 #define LEAVING  {tabs -= 1; for(int i=0; i<tabs; i++) fprintf(stderr," "); fprintf(stderr,"[LEAVING]<<< %s\n",__FUNCTION__); }
 #define ERROR    {for(int i=0; i<(tabs+1); i++) fprintf(stderr, " "); fprintf(stderr,"[ERROR] "); }
+#else
+#define ENTERING
+#define LEAVING
+#define ERROR
+#endif
 
 static void write_op_exec_begin(void*);
 static void write_op_exec_end(void*);
@@ -177,8 +183,23 @@ void write_op_exec_write_full(void* u, buffer_u buf, size_t len)
     unsigned i;
     // TODO: check return values of those calls
     ret = bake_create(bph, bti, len, &rid);
+    if(ret != 0) {
+        ERROR fprintf(stderr,"bake_create() returned %d\n", ret);
+        LEAVING;
+        return;
+    }
     ret = bake_proxy_write(bph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
+    if(ret != 0) {
+        ERROR fprintf(stderr,"bake_proxy_write() returned %d\n", ret);
+        LEAVING;
+        return;
+    }
     ret = bake_persist(bph, rid);
+    if(ret != 0) {
+        ERROR fprintf(stderr, "bake_persist() returned %d\n", ret);
+        LEAVING;
+        return;
+    }
     insert_region_log_entry(oid, 0, len, &rid);
     LEAVING;
 }

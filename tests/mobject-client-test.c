@@ -26,23 +26,23 @@ int main(int argc, char** argv)
         mobject_store_write_op_write(write_op, content+8, 4, 8);
         // Add a "writesame" operation to write "DDDD" in two "DD",
         // content should then be "AAAABBBBCCCCDDDD"
-//        mobject_store_write_op_writesame(write_op, content+12, 2, 4, 12);
+        mobject_store_write_op_writesame(write_op, content+12, 2, 4, 12);
         // Add a "append" operation to append "EEEEFFFF"
         // content should then be "AAAABBBBCCCCDDDDEEEEFFFFF"
-//        mobject_store_write_op_append(write_op, content+16, 8);
+        mobject_store_write_op_append(write_op, content+16, 8);
         // Add a "remove" operation
 //        mobject_store_write_op_remove(write_op);
         // Add a "truncate" operation to remove the "FFFF" part
         // content should then be "AAAABBBBCCCCDDDDEEEE"
-//        mobject_store_write_op_truncate(write_op, 20);
+        mobject_store_write_op_truncate(write_op, 20);
         // Add a "zero" operation zero-ing the "BBBBCCCC"
         // content should then be "AAAA********DDDDEEEE" where "*" represent 0s
-//        mobject_store_write_op_zero(write_op, 4, 8);
+        mobject_store_write_op_zero(write_op, 4, 8);
         // Add a "omap_set" operation
         const char* keys[]   = { "matthieu", "rob", "shane", "phil", "robl" };
         const char* values[] = { "mdorier@anl.gov", "rross@anl.gov", "ssnyder@anl.gov", "carns@anl.gov", "robl@anl.gov" };
         size_t val_sizes[]   = { 16, 14, 16, 14, 13 };
-        mobject_store_write_op_omap_set(write_op, keys, values, val_sizes, 5);
+//        mobject_store_write_op_omap_set(write_op, keys, values, val_sizes, 5);
         // keys will be sorted and stored as follows:
         /* matthieu => mdorier@anl.gov
            phil     => carns@anl.gov
@@ -74,6 +74,7 @@ int main(int argc, char** argv)
         int prval2;
         mobject_store_read_op_read(read_op, 0, 512, read_buf, &bytes_read, &prval2);
         // Add "omap_get_keys" operation
+#if 0
         const char* start_after1 = "rob";
         mobject_store_omap_iter_t iter3;
         int prval3;
@@ -91,7 +92,7 @@ int main(int argc, char** argv)
         mobject_store_omap_iter_t iter5;
         int prval5;
         mobject_store_read_op_omap_get_vals_by_keys(read_op, keys, 2, &iter5, &prval5);
-
+#endif
         mobject_store_read_op_operate(read_op, ioctx, "test-object",LIBMOBJECT_OPERATION_NOFLAG);
 
         mobject_store_release_read_op(read_op);
@@ -107,7 +108,7 @@ int main(int argc, char** argv)
             for(i=0; i<bytes_read; i++) printf("%c", read_buf[i] ? read_buf[i] : '*' );
             printf("\n");
         }
-
+#if 0
         printf("omap_get_keys: prval=%d\n", prval3);
         {
             char* key = NULL;
@@ -138,8 +139,8 @@ int main(int argc, char** argv)
                 if(key) printf("===> key: \"%s\" , val: %s \n", key, val);
             } while(key);
         }
+#endif
     }
-
     mobject_store_ioctx_destroy(ioctx);
 
     mobject_store_shutdown(cluster);

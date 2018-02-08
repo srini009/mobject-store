@@ -14,9 +14,14 @@
 #include "src/server/core/covermap.hpp"
 
 static int tabs = 0;
+/*
 #define ENTERING {for(int i=0; i<tabs; i++) fprintf(stderr," "); fprintf(stderr,"[ENTERING]>> %s\n",__FUNCTION__); tabs += 1;}
 #define LEAVING  {tabs -= 1; for(int i=0; i<tabs; i++) fprintf(stderr," "); fprintf(stderr,"[LEAVING]<<< %s\n",__FUNCTION__); }
 #define ERROR    {for(int i=0; i<(tabs+1); i++) fprintf(stderr, " "); fprintf(stderr,"[ERROR] "); }
+*/
+#define ENTERING
+#define LEAVING
+#define ERROR
 
 static void read_op_exec_begin(void*);
 static void read_op_exec_stat(void*, uint64_t*, time_t*, int*);
@@ -113,7 +118,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
     while(!coverage.full() && it != segment_map.end() && it->first.oid == oid) {
         const segment_key_t& seg = it->first;
         const bake_region_id_t& region = it->second;
-        
+       
         switch(seg.type) {
         case seg_type_t::ZERO:
             coverage.set(seg.start_index, seg.end_index);
