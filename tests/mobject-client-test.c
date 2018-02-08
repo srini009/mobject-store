@@ -14,6 +14,7 @@ int main(int argc, char** argv)
     mobject_store_ioctx_t ioctx;
     mobject_store_ioctx_create(cluster, "my-object-pool", &ioctx);
 
+    fprintf(stderr, "********** WRITE PHASE **********\n");
     { // WRITE OP TEST
 
         mobject_store_write_op_t write_op = mobject_store_create_write_op();
@@ -42,7 +43,7 @@ int main(int argc, char** argv)
         const char* keys[]   = { "matthieu", "rob", "shane", "phil", "robl" };
         const char* values[] = { "mdorier@anl.gov", "rross@anl.gov", "ssnyder@anl.gov", "carns@anl.gov", "robl@anl.gov" };
         size_t val_sizes[]   = { 16, 14, 16, 14, 13 };
-//        mobject_store_write_op_omap_set(write_op, keys, values, val_sizes, 5);
+        mobject_store_write_op_omap_set(write_op, keys, values, val_sizes, 5);
         // keys will be sorted and stored as follows:
         /* matthieu => mdorier@anl.gov
            phil     => carns@anl.gov
@@ -59,6 +60,7 @@ int main(int argc, char** argv)
 
     }
 
+    fprintf(stderr, "********** READ PHASE **********\n");
     { // READ OP TEST
 
         mobject_store_read_op_t read_op = mobject_store_create_read_op();
@@ -67,14 +69,13 @@ int main(int argc, char** argv)
         uint64_t psize;
         time_t pmtime;
         int prval1;
-//        mobject_store_read_op_stat(read_op, &psize, &pmtime, &prval1);
+        mobject_store_read_op_stat(read_op, &psize, &pmtime, &prval1);
         // Add "read" operation
         char read_buf[512];
         size_t bytes_read;
         int prval2;
         mobject_store_read_op_read(read_op, 0, 512, read_buf, &bytes_read, &prval2);
         // Add "omap_get_keys" operation
-#if 0
         const char* start_after1 = "rob";
         mobject_store_omap_iter_t iter3;
         int prval3;
@@ -92,7 +93,7 @@ int main(int argc, char** argv)
         mobject_store_omap_iter_t iter5;
         int prval5;
         mobject_store_read_op_omap_get_vals_by_keys(read_op, keys, 2, &iter5, &prval5);
-#endif
+
         mobject_store_read_op_operate(read_op, ioctx, "test-object",LIBMOBJECT_OPERATION_NOFLAG);
 
         mobject_store_release_read_op(read_op);
@@ -100,7 +101,7 @@ int main(int argc, char** argv)
         // print the results of the read operations
         printf("Client received the following results:\n");
 
-//        printf("stat: psize=%ld pmtime=%lld prval=%d\n", psize, (long long)pmtime, prval1);
+        printf("stat: psize=%ld pmtime=%lld prval=%d\n", psize, (long long)pmtime, prval1);
 
         {
             printf("read: bytes_read = %ld, prval=%d content: ", bytes_read, prval2);
@@ -108,7 +109,6 @@ int main(int argc, char** argv)
             for(i=0; i<bytes_read; i++) printf("%c", read_buf[i] ? read_buf[i] : '*' );
             printf("\n");
         }
-#if 0
         printf("omap_get_keys: prval=%d\n", prval3);
         {
             char* key = NULL;
@@ -139,7 +139,6 @@ int main(int argc, char** argv)
                 if(key) printf("===> key: \"%s\" , val: %s \n", key, val);
             } while(key);
         }
-#endif
     }
     mobject_store_ioctx_destroy(ioctx);
 
