@@ -285,7 +285,7 @@ void read_op_exec_omap_get_keys(void* u, const char* start_after, uint64_t max_r
     }
     
     omap_iter_create(iter);
-    size_t lb_size = sizeof(omap_key_t)+strlen(start_after);
+    size_t lb_size = sizeof(omap_key_t)+MAX_OMAP_KEY_SIZE;
     omap_key_t* lb = (omap_key_t*)calloc(1, lb_size);
     lb->oid = oid;
     strcpy(lb->key, start_after);
