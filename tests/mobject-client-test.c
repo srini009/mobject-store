@@ -14,6 +14,11 @@ int main(int argc, char** argv)
     mobject_store_ioctx_t ioctx;
     mobject_store_ioctx_create(cluster, "my-object-pool", &ioctx);
 
+    char* objects[] = { "object1_abcd", "object2_efgh", "object3_ijkl" };
+
+    int i;
+    for(i=0; i<3; i++) {
+
     fprintf(stderr, "********** WRITE PHASE **********\n");
     { // WRITE OP TEST
 
@@ -54,7 +59,7 @@ int main(int argc, char** argv)
         // Add a omap_rm_keys" operation
 //        mobject_store_write_op_omap_rm_keys(write_op, keys, 5);
 
-        mobject_store_write_op_operate(write_op, ioctx, "test-object", NULL, LIBMOBJECT_OPERATION_NOFLAG);
+        mobject_store_write_op_operate(write_op, ioctx, objects[i], NULL, LIBMOBJECT_OPERATION_NOFLAG);
 
         mobject_store_release_write_op(write_op);
 
@@ -94,7 +99,7 @@ int main(int argc, char** argv)
         int prval5;
         mobject_store_read_op_omap_get_vals_by_keys(read_op, keys, 2, &iter5, &prval5);
 
-        mobject_store_read_op_operate(read_op, ioctx, "test-object",LIBMOBJECT_OPERATION_NOFLAG);
+        mobject_store_read_op_operate(read_op, ioctx, objects[i],LIBMOBJECT_OPERATION_NOFLAG);
 
         mobject_store_release_read_op(read_op);
 
@@ -139,6 +144,8 @@ int main(int argc, char** argv)
                 if(key) printf("===> key: \"%s\" , val: %s \n", key, val);
             } while(key);
         }
+    }
+
     }
     mobject_store_ioctx_destroy(ioctx);
 

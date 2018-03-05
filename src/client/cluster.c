@@ -340,6 +340,8 @@ int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
     // XXX multiple providers may be in the same node (with distinct mplex ids)
     hg_addr_t svr_addr = ssg_get_addr(io->cluster->gid, server_idx);
 
+    fprintf(stderr,"Object oid=%s will go to server %ld\n", oid, server_idx);
+
     // TODO for now multiplex id is hard-coded as 1
     int r = mobject_provider_handle_create(io->cluster->mobject_clt, svr_addr, 1, &mph);
     if(r != 0) return r;
@@ -416,6 +418,7 @@ int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
     ch_placement_find_closest(ioctx->cluster->ch_instance, oid_hash, 1, &server_idx);
     // XXX multiple providers may be in the same node (with distinct mplex ids)
     hg_addr_t svr_addr = ssg_get_addr(ioctx->cluster->gid, server_idx);
+    fprintf(stderr,"Object oid=%s is read from server %ld\n", oid, server_idx);
     // TODO for now multiplex id is hard-coded as 1
     int r = mobject_provider_handle_create(ioctx->cluster->mobject_clt, svr_addr, 1, &mph);
     if(r != 0) return r;
