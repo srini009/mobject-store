@@ -21,6 +21,8 @@
 #include "src/rpc-types/read-op.h"
 #include "src/util/log.h"
 
+static unsigned long sdbm_hash(const char* str);
+
 static int mobject_store_shutdown_servers(struct mobject_store_handle *cluster_handle);
 
 int mobject_store_create(mobject_store_t *cluster, const char * const id)
@@ -42,7 +44,7 @@ int mobject_store_create(mobject_store_t *cluster, const char * const id)
     if (!cluster_file)
     {
         fprintf(stderr, "Error: %s env variable must point to mobject cluster file\n",
-            MOBJECT_CLUSTER_FILE_ENV);
+                MOBJECT_CLUSTER_FILE_ENV);
         free(cluster_handle);
         return -1;
     }
@@ -51,11 +53,10 @@ int mobject_store_create(mobject_store_t *cluster, const char * const id)
     if (ret != 0)
     {
         fprintf(stderr, "Error: Unable to load mobject cluster info from file %s\n",
-            cluster_file);
+                cluster_file);
         free(cluster_handle);
         return -1;
     }
-
 
     /* set the returned cluster handle */
     *cluster = cluster_handle;
@@ -133,6 +134,34 @@ int mobject_store_connect(mobject_store_t cluster)
     }
     cluster_handle->connected = 1;
 
+    // get number of servers
+    int gsize = ssg_get_group_size(cluster_handle->gid);
+    if(gsize == 0)
+    {
+        fprintf(stderr, "Error: Unable to get SSG group size\n");
+        ssg_finalize();
+        margo_finalize(cluster_handle->mid);
+        free(svr_addr_str);
+        ssg_group_id_free(cluster_handle->gid);
+        free(cluster_handle);
+        return -1;
+    }
+
+    // initialize ch-placement
+    cluster_handle->ch_instance = 
+        ch_placement_initialize("hash_lookup3", gsize, 4, 0);
+    if(!cluster_handle->ch_instance)
+    {
+        fprintf(stderr, "Error: Unable to initialize ch-placement instance\n");
+        ssg_finalize();
+        margo_finalize(cluster_handle->mid);
+        free(svr_addr_str);
+        ssg_group_id_free(cluster_handle->gid);
+        free(cluster_handle);
+        return -1;
+    }
+
+    // initialize mobject client
     ret = mobject_client_init(mid, &(cluster_handle->mobject_clt));
     if(ret != 0)
     {
@@ -166,7 +195,7 @@ void mobject_store_shutdown(mobject_store_t cluster)
         if (ret != 0)
         {
             fprintf(stderr, "Warning: Unable to send shutdown signal \
-                to mobject server cluster\n");
+                    to mobject server cluster\n");
         }
     }
 
@@ -175,6 +204,7 @@ void mobject_store_shutdown(mobject_store_t cluster)
     ssg_finalize();
     margo_finalize(cluster_handle->mid);
     ssg_group_id_free(cluster_handle->gid);
+    ch_placement_finalize(cluster_handle->ch_instance);
     free(cluster_handle);
 
     return;
@@ -197,9 +227,9 @@ int mobject_store_pool_delete(mobject_store_t cluster, const char * pool_name)
 }
 
 int mobject_store_ioctx_create(
-    mobject_store_t cluster,
-    const char * pool_name,
-    mobject_store_ioctx_t *ioctx)
+        mobject_store_t cluster,
+        const char * pool_name,
+        mobject_store_ioctx_t *ioctx)
 {
     *ioctx = (mobject_store_ioctx_t)calloc(1, sizeof(**ioctx));
     (*ioctx)->pool_name = strdup(pool_name);
@@ -298,15 +328,18 @@ void mobject_store_write_op_omap_rm_keys(mobject_store_write_op_t write_op,
 }
 
 int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
-                                   mobject_store_ioctx_t io,
-                                   const char *oid,
-                                   time_t *mtime,
-                                   int flags)
+        mobject_store_ioctx_t io,
+        const char *oid,
+        time_t *mtime,
+        int flags)
 {
-    mobject_provider_handle_t mph;
-    // TODO chose the target server based on ch-placement
-    // remember that multiple providers may be in the same node (with distinct mplex ids)
-    hg_addr_t svr_addr = ssg_get_addr(io->cluster->gid, 0);
+    mobject_provider_handle_t mph = MOBJECT_PROVIDER_HANDLE_NULL;
+    uint64_t oid_hash = sdbm_hash(oid);
+    unsigned long server_idx;
+    ch_placement_find_closest(io->cluster->ch_instance, oid_hash, 1, &server_idx);
+    // XXX multiple providers may be in the same node (with distinct mplex ids)
+    hg_addr_t svr_addr = ssg_get_addr(io->cluster->gid, server_idx);
+
     // TODO for now multiplex id is hard-coded as 1
     int r = mobject_provider_handle_create(io->cluster->mobject_clt, svr_addr, 1, &mph);
     if(r != 0) return r;
@@ -373,18 +406,20 @@ void mobject_store_read_op_omap_get_vals_by_keys(mobject_store_read_op_t read_op
 }
 
 int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
-                                  mobject_store_ioctx_t ioctx,
-                                  const char *oid,
-                                  int flags)
+        mobject_store_ioctx_t ioctx,
+        const char *oid,
+        int flags)
 {
-    mobject_provider_handle_t mph;
-    // TODO chose the target server based on ch-placement
-    // remember that multiple providers may be in the same node (with distinct mplex ids)
-    hg_addr_t svr_addr = ssg_get_addr(ioctx->cluster->gid, 0);
+    mobject_provider_handle_t mph = MOBJECT_PROVIDER_HANDLE_NULL;
+    uint64_t oid_hash = sdbm_hash(oid);
+    unsigned long server_idx;
+    ch_placement_find_closest(ioctx->cluster->ch_instance, oid_hash, 1, &server_idx);
+    // XXX multiple providers may be in the same node (with distinct mplex ids)
+    hg_addr_t svr_addr = ssg_get_addr(ioctx->cluster->gid, server_idx);
     // TODO for now multiplex id is hard-coded as 1
     int r = mobject_provider_handle_create(ioctx->cluster->mobject_clt, svr_addr, 1, &mph);
     if(r != 0) return r;
-    
+
     r = mobject_read_op_operate(mph,read_op, ioctx->pool_name, oid, flags);
     mobject_provider_handle_release(mph);
     return r;
@@ -406,3 +441,13 @@ static int mobject_store_shutdown_servers(struct mobject_store_handle *cluster_h
     return mobject_shutdown(cluster_handle->mobject_clt, svr_addr);
 }
 
+static unsigned long sdbm_hash(const char* str)
+{
+    unsigned long hash = 0;
+    int c;
+
+    while (c = *str++)
+        hash = c + (hash << 6) + (hash << 16) - hash;
+
+    return hash;
+}
