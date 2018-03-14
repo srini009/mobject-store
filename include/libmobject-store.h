@@ -15,40 +15,9 @@ extern "C" {
 #include <time.h>
 
 #include <mobject-client.h>
-// derived from: http://docs.ceph.com/docs/master/mobject_store/api/libmobject_store/
 
+// derived from: http://docs.ceph.com/docs/master/rados/api/librados/
 
-/* KEY TERMS
- * 
- * Pool:
- *      - an object container providing separate namespaces for objects
- *      - pools can have different placement & replication strategies
- *
- * Placement group (PG):
- *      - Groups of objects within a pool that share the same OSDs.
- *
- * CRUSH:
- *      - Data placement algorithm for RADOS objects, mapping OIDs to PGs.
- */
-
-/* ASSUMPTIONS/QUESTIONS
- * - Initially we enforce one global pool for each mobject store instance for simplicity.
- *
- * - Does ch-placement offer an algorithm similar to crush (e.g., PG concept)? 
- *
- * - We will not implement any replication.
- *
- * - RADOS seems to expose object versions, but I only see them in the 'object operation' portion of their API, which is big and awkward (i.e., would love to not implement that). 
- *
- * - Do we need any of the following from RADOS:
- *      - async I/O operations?
- *      - cursor stuff?
- *      - snapshots?
- *      - extended attributes?
- * 
- * - RADOS API includes a watch/notify API that sounds like something we could build on top of a generic SSG pub-sub service, if we wanted.
- *
- */
 
 /* opaque type for a handle for interacting with a mobject store cluster */
 typedef struct mobject_store_handle *mobject_store_t;
@@ -179,13 +148,8 @@ typedef struct mobject_store_completion* mobject_store_completion_t;
  * Create a handle to a mobject cluster.
  *
  * @param[in/out] cluster   pointer to store mobject cluster handle at
- * @param[in]          id   the user to connect as (NOTE: ignored in mobject store)
+ * @param[in]          id   the user to connect as (NOTE: currently ignored in mobject store)
  * @returns 0 on success, negative error code on failure
- *
- * NOTES:
- *      - from mobject_store_create(mobject_store_t * cluster, const char *const user_id)
- *          - drop user_id from API
- *      - may eventually need conf. file, env variable checking, etc.
  */
 int mobject_store_create(
     mobject_store_t *cluster,

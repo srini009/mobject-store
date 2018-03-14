@@ -9,11 +9,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#ifdef USE_RADOS
-#include <rados/librados.h>
-#else
 #include <librados-mobject-store.h>
-#endif
 
 int main(int argc, char *argv[])
 {
