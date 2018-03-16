@@ -34,6 +34,7 @@ typedef mobject_store_completion_t rados_completion_t;
 typedef mobject_store_callback_t   rados_callback_t;
 
 #define rados_create                        mobject_store_create
+#define rados_conf_read_file                mobject_store_conf_read_file
 #define rados_connect                       mobject_store_connect
 #define rados_shutdown                      mobject_store_shutdown
 #define rados_pool_create                   mobject_store_pool_create

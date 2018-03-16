@@ -155,6 +155,14 @@ int mobject_store_create(
     mobject_store_t *cluster,
     const char * const id);
 
+static inline
+int mobject_store_conf_read_file(
+    mobject_store_t cluster,
+    const char * path)
+{
+    return 0;
+}
+
 /**
  * Connect to a mobject cluster.
  *
