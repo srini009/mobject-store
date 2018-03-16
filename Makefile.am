@@ -28,6 +28,7 @@ lib_LTLIBRARIES = \
 include_HEADERS = \
   include/libmobject-store.h \
   include/librados-mobject-store.h \
+  include/mobject-client.h \
   include/mobject-server.h
 
 include Make.rules
