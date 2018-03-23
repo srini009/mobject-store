@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: mobject-store
+Description: Margo-based object store with a RADOS-like API, client side
+Version: 0.1
+URL: https://xgitlab.cels.anl.gov/sds/mobject-store
+Requires: margo ssg ch-placement
+Libs: -L${libdir} -lmobject-store
+Cflags: -I${includedir}

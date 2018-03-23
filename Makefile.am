@@ -34,3 +34,7 @@ include Make.rules
 
 include $(top_srcdir)/src/Makefile.subdir
 include $(top_srcdir)/tests/Makefile.subdir
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = maint/mobject-server.pc \
+		 maint/mobject-store.pc

@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: mobject-server
+Description: Margo-based object store with a RADOS-like API, server side
+Version: 0.1
+URL: https://xgitlab.cels.anl.gov/sds/mobject-store
+Requires: margo bake-client sdskv-server sdskv-client ssg
+Libs: -L${libdir} -lmobject-server
+Cflags: -I${includedir}
