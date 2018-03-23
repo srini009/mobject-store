@@ -1,3 +1,8 @@
+/*
+ * (C) 2018 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #ifndef __CORE_KEY_TYPES_H
 #define __CORE_KEY_TYPES_H
 

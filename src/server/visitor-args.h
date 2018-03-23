@@ -1,3 +1,8 @@
+/*
+ * (C) 2018 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #ifndef __SERVER_VISITOR_ARGS_H
 #define __SERVER_VISITOR_ARGS_H
 

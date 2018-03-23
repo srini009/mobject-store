@@ -1,3 +1,8 @@
+/*
+ * (C) 2018 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #include <stdio.h>
 #include "src/server/printer/print-write-op.h"
 #include "src/io-chain/write-op-visitor.h"

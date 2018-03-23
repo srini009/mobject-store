@@ -1,3 +1,8 @@
+/*
+ * (C) 2018 The University of Chicago
+ * 
+ * See COPYRIGHT in top-level directory.
+ */
 #ifndef __FAKE_WRITE_OP_H
 #define __FAKE_WRITE_OP_H
 
