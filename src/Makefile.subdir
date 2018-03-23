@@ -60,6 +60,7 @@ src_client_libmobject_store_la_LIBADD = src/omap-iter/libomap-iter.la \
 
 src_server_libmobject_server_la_SOURCES = \
   src/server/mobject-server.c \
+  src/server/mobject-daemon-helper.c \
   src/server/fake/fake-write-op.cpp \
   src/server/fake/fake-read-op.cpp \
   src/server/fake/fake-db.cpp \

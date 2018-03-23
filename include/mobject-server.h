@@ -10,6 +10,7 @@
 #include <margo.h>
 #include <bake-client.h>
 #include <sdskv-client.h>
+#include <sdskv-server.h>
 /* server-side utilities and routines.  Clients are looking for either
  * libmobject-store.h or librados-mobject-store.h */
 
@@ -39,5 +40,15 @@ int mobject_provider_register(
         sdskv_provider_handle_t sdskv_ph,
         const char *cluster_file,
         mobject_provider_t* provider);
+
+/**
+ * Helper function that sets up the appropriate databases
+ * in a given SDSKV provider. 
+ *
+ * @param sdskv_prov SDSKV provider
+ *
+ * @return 0 on success, negative error code on failure
+ */
+int mobject_sdskv_provider_setup(sdskv_provider_t sdskv_prov);
 
 #endif
