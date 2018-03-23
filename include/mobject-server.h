@@ -13,6 +13,9 @@
 #include <sdskv-server.h>
 /* server-side utilities and routines.  Clients are looking for either
  * libmobject-store.h or librados-mobject-store.h */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define MOBJECT_SERVER_GROUP_NAME "mobject-store-servers"
 #define MOBJECT_ABT_POOL_DEFAULT ABT_POOL_NULL
@@ -50,5 +53,9 @@ int mobject_provider_register(
  * @return 0 on success, negative error code on failure
  */
 int mobject_sdskv_provider_setup(sdskv_provider_t sdskv_prov);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
