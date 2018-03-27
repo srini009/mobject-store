@@ -39,6 +39,7 @@ typedef struct {
 static void finalize_ssg_cb(void* data);
 static void finalize_bake_client_cb(void* data);
 static void finalize_sdskv_client_cb(void* data);
+static void finalized_ssg_group_cb(void* data);
 
 int main(int argc, char *argv[])
 {
@@ -117,13 +118,18 @@ int main(int argc, char *argv[])
     ASSERT(ret == 0, "sdskv_provider_handle_create() failed (ret = %d)\n", ret);
     margo_push_finalize_callback(mid, &finalize_sdskv_client_cb, (void*)&sdskv_clt_data);
 
+    /* SSG group creation */
+    ssg_group_id_t gid = ssg_group_create_mpi(MOBJECT_SERVER_GROUP_NAME, MPI_COMM_WORLD, NULL, NULL);
+    ASSERT(gid != SSG_GROUP_ID_NULL, "ssg_group_create_mpi() failed (ret = %s)","SSG_GROUP_ID_NULL");
+    margo_push_finalize_callback(mid, &finalized_ssg_group_cb, (void*)&gid);
+
     /* Mobject provider initialization */
     mobject_provider_t mobject_prov;
     ret = mobject_provider_register(mid, 1, 
             MOBJECT_ABT_POOL_DEFAULT, 
             bake_clt_data.provider_handle, 
-            sdskv_clt_data.provider_handle, 
-            cluster_file, &mobject_prov);
+            sdskv_clt_data.provider_handle,
+            gid, cluster_file, &mobject_prov);
     if (ret != 0)
     {
         fprintf(stderr, "Error: Unable to initialize mobject provider\n");
@@ -158,4 +164,10 @@ static void finalize_sdskv_client_cb(void* data)
     sdskv_client_data* clt_data = (sdskv_client_data*)data;
     sdskv_provider_handle_release(clt_data->provider_handle);
     sdskv_client_finalize(clt_data->client);
+}
+
+static void finalized_ssg_group_cb(void* data)
+{
+    ssg_group_id_t gid = *((ssg_group_id_t*)data);
+    ssg_group_destroy(gid);
 }

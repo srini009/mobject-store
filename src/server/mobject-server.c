@@ -40,6 +40,7 @@ int mobject_provider_register(
         ABT_pool pool,
         bake_provider_handle_t bake_ph,
         sdskv_provider_handle_t sdskv_ph,
+        ssg_group_id_t gid,
         const char *cluster_file,
         mobject_provider_t* provider)
 {
@@ -67,15 +68,7 @@ int mobject_provider_register(
     srv_ctx->pool = pool;
     srv_ctx->ref_count = 1;
 
-    /* server group create */
-    srv_ctx->gid =  ssg_group_create_mpi(MOBJECT_SERVER_GROUP_NAME, MPI_COMM_WORLD, NULL, NULL); 
-        /* XXX membership update callbacks unused currently */
-    if (srv_ctx->gid == SSG_GROUP_ID_NULL)
-    {
-        fprintf(stderr, "Error: Unable to create the mobject server group\n");
-        free(srv_ctx);
-        return -1;
-    }
+    srv_ctx->gid = gid; 
     my_id = ssg_get_group_self_id(srv_ctx->gid);
 
     /* one proccess writes cluster connect info to file for clients to find later */
@@ -89,7 +82,6 @@ int mobject_provider_register(
             /* XXX: this call is performed by one process, and we do not currently
              * have an easy way to propagate this error to the entire cluster group
              */
-            ssg_group_destroy(srv_ctx->gid);
             free(srv_ctx);
             return -1;
         }
@@ -102,12 +94,10 @@ int mobject_provider_register(
     ret = bake_probe(bake_ph, 1, &(srv_ctx->bake_tid), &num_targets);
     if(ret != 0) {
         fprintf(stderr, "Error: unable to probe bake server for targets\n");
-        ssg_group_destroy(srv_ctx->gid);
         return -1;
     }
     if(num_targets < 1) {
         fprintf(stderr, "Error: unable to find a target on bake provider\n");
-        ssg_group_destroy(srv_ctx->gid);
         free(srv_ctx);
         return -1;
     }
@@ -117,7 +107,6 @@ int mobject_provider_register(
     ret = sdskv_open(sdskv_ph, "oid_map", &(srv_ctx->oid_db_id));
     if(ret != SDSKV_SUCCESS) {
         fprintf(stderr, "Error: unable to open oid_map from SDSKV provider\n");
-        ssg_group_destroy(srv_ctx->gid);
         bake_provider_handle_release(srv_ctx->bake_ph);
         sdskv_provider_handle_release(srv_ctx->sdskv_ph);
         free(srv_ctx);
@@ -127,7 +116,6 @@ int mobject_provider_register(
         fprintf(stderr, "Error: unable to open name_map from SDSKV provider\n");
         bake_provider_handle_release(srv_ctx->bake_ph);
         sdskv_provider_handle_release(srv_ctx->sdskv_ph);
-        ssg_group_destroy(srv_ctx->gid);
         free(srv_ctx);
     }
     ret = sdskv_open(sdskv_ph, "seg_map", &(srv_ctx->segment_db_id));
@@ -135,7 +123,6 @@ int mobject_provider_register(
         fprintf(stderr, "Error: unable to open seg_map from SDSKV provider\n");
         bake_provider_handle_release(srv_ctx->bake_ph);
         sdskv_provider_handle_release(srv_ctx->sdskv_ph);
-        ssg_group_destroy(srv_ctx->gid);
         free(srv_ctx);
     }
     ret = sdskv_open(sdskv_ph, "omap_map", &(srv_ctx->omap_db_id));
@@ -143,7 +130,6 @@ int mobject_provider_register(
         fprintf(stderr, "Error: unable to open omap_map from SDSKV provider\n");
         bake_provider_handle_release(srv_ctx->bake_ph);
         sdskv_provider_handle_release(srv_ctx->sdskv_ph);
-        ssg_group_destroy(srv_ctx->gid);
         free(srv_ctx);
     }
 
@@ -276,7 +262,6 @@ static void mobject_finalize_cb(void* data)
 
     sdskv_provider_handle_release(srv_ctx->sdskv_ph);
     bake_provider_handle_release(srv_ctx->bake_ph);
-    ssg_group_destroy(srv_ctx->gid);
 
     free(srv_ctx);
 }

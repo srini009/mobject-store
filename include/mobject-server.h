@@ -8,6 +8,7 @@
 #define MOBJECT_SERVER_H
 
 #include <margo.h>
+#include <ssg.h>
 #include <bake-client.h>
 #include <sdskv-client.h>
 #include <sdskv-server.h>
@@ -30,6 +31,7 @@ typedef struct mobject_server_context* mobject_provider_t;
  * @param[in] pool          Argobots pool for the provider
  * @param[in] bake_ph       Bake provider handle to use to write/read data
  * @param[in] sdskv_ph      SDSKV provider handle to use to access metadata
+ * @param[in] gid           SSG group id of the group gathering all mobject providers
  * @param[in] cluster_file  file name to write cluster connect info to
  * @param[out] provider     resulting provider
  * 
@@ -41,6 +43,7 @@ int mobject_provider_register(
         ABT_pool pool,
         bake_provider_handle_t bake_ph,
         sdskv_provider_handle_t sdskv_ph,
+        ssg_group_id_t gid,
         const char *cluster_file,
         mobject_provider_t* provider);
 
