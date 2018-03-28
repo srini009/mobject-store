@@ -36,7 +36,7 @@ static void mobject_finalize_cb(void* data);
 
 int mobject_provider_register(
         margo_instance_id mid,
-        uint8_t mplex_id,
+        uint16_t provider_id,
         ABT_pool pool,
         bake_provider_handle_t bake_ph,
         sdskv_provider_handle_t sdskv_ph,
@@ -52,9 +52,9 @@ int mobject_provider_register(
     {
         hg_id_t id;
         hg_bool_t flag;
-        margo_registered_name_mplex(mid, "mobject_write_op", mplex_id, &id, &flag);
+        margo_provider_registered_name(mid, "mobject_write_op", provider_id, &id, &flag);
         if(flag == HG_TRUE) {
-            fprintf(stderr, "mobject_provider_register(): a provider with the same mplex id (%d) already exists\n", mplex_id);
+            fprintf(stderr, "mobject_provider_register(): a provider with the same id (%d) already exists\n", provider_id);
             return -1;
         }
     }
@@ -64,7 +64,7 @@ int mobject_provider_register(
     if (!srv_ctx)
         return -1;
     srv_ctx->mid = mid;
-    srv_ctx->mplex_id = mplex_id;
+    srv_ctx->provider_id = provider_id;
     srv_ctx->pool = pool;
     srv_ctx->ref_count = 1;
 
@@ -135,15 +135,15 @@ int mobject_provider_register(
 
     hg_id_t rpc_id;
 
-    rpc_id = MARGO_REGISTER_MPLEX(mid, "mobject_write_op", 
+    rpc_id = MARGO_REGISTER_PROVIDER(mid, "mobject_write_op", 
             write_op_in_t, write_op_out_t, mobject_write_op_ult,
-            mplex_id, pool);
-    margo_register_data_mplex(mid, rpc_id, mplex_id, srv_ctx, NULL);
+            provider_id, pool);
+    margo_register_data(mid, rpc_id, srv_ctx, NULL);
 
-    rpc_id = MARGO_REGISTER_MPLEX(mid, "mobject_read_op",
+    rpc_id = MARGO_REGISTER_PROVIDER(mid, "mobject_read_op",
             read_op_in_t, read_op_out_t, mobject_read_op_ult,
-            mplex_id, pool);
-    margo_register_data_mplex(mid, rpc_id, mplex_id, srv_ctx, NULL);
+            provider_id, pool);
+    margo_register_data(mid, rpc_id, srv_ctx, NULL);
 
     margo_push_finalize_callback(mid, mobject_finalize_cb, (void*)srv_ctx);
 
@@ -170,7 +170,7 @@ static hg_return_t mobject_write_op_ult(hg_handle_t h)
     vargs.object_name = in.object_name;
     vargs.oid         = 0;
     vargs.pool_name   = in.pool_name;
-    vargs.srv_ctx     = margo_registered_data_mplex(mid, info->id, info->target_id);
+    vargs.srv_ctx     = margo_registered_data(mid, info->id);
     if(vargs.srv_ctx == NULL) return HG_OTHER_ERROR;
     vargs.client_addr_str = in.client_addr;
     vargs.client_addr = info->addr;
@@ -223,7 +223,7 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
     vargs.object_name = in.object_name;
     vargs.oid         = 0;
     vargs.pool_name   = in.pool_name;
-    vargs.srv_ctx     = margo_registered_data_mplex(mid, info->id, info->target_id);
+    vargs.srv_ctx     = margo_registered_data(mid, info->id);
     if(vargs.srv_ctx == NULL) return HG_OTHER_ERROR;
     vargs.client_addr_str = in.client_addr;
     vargs.client_addr = info->addr;

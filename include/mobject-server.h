@@ -27,7 +27,7 @@ typedef struct mobject_server_context* mobject_provider_t;
  * Start a mobject server instance
  *
  * @param[in] mid           margo instance id
- * @param[in] mplex_id      multiplex id of the provider
+ * @param[in] provider_id   id of the provider
  * @param[in] pool          Argobots pool for the provider
  * @param[in] bake_ph       Bake provider handle to use to write/read data
  * @param[in] sdskv_ph      SDSKV provider handle to use to access metadata
@@ -39,7 +39,7 @@ typedef struct mobject_server_context* mobject_provider_t;
  */
 int mobject_provider_register(
         margo_instance_id mid,
-        uint8_t mplex_id,
+        uint16_t provider_id,
         ABT_pool pool,
         bake_provider_handle_t bake_ph,
         sdskv_provider_handle_t sdskv_ph,

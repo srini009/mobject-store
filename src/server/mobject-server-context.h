@@ -20,7 +20,7 @@ struct mobject_server_context
 {
     /* margo, bake, sds-keyval, ssg state */
     margo_instance_id mid;
-    uint8_t mplex_id;
+    uint16_t provider_id;
     ABT_pool pool;
     /* ssg-related data */
     ssg_group_id_t gid;

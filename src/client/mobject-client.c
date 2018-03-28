@@ -14,30 +14,12 @@
 #include <ssg.h>
 
 #include "mobject-client.h"
+#include "src/client/mobject-client-impl.h"
 #include "src/io-chain/prepare-write-op.h"
 #include "src/io-chain/prepare-read-op.h"
 #include "src/rpc-types/write-op.h"
 #include "src/rpc-types/read-op.h"
 #include "src/util/log.h"
-
-struct mobject_client {
-
-    margo_instance_id mid;
-
-    char* client_addr;
-
-    hg_id_t mobject_write_op_rpc_id;
-    hg_id_t mobject_read_op_rpc_id;
-
-    uint64_t num_provider_handles;
-};
-
-struct mobject_provider_handle {
-    mobject_client_t client;
-    hg_addr_t        addr;
-    uint8_t          mplex_id;
-    uint64_t         refcount;
-};
 
 static int mobject_client_register(mobject_client_t client, margo_instance_id mid) 
 {
@@ -110,7 +92,7 @@ int mobject_client_finalize(mobject_client_t client)
 int mobject_provider_handle_create(
         mobject_client_t client,
         hg_addr_t addr,
-        uint8_t mplex_id,
+        uint16_t provider_id,
         mobject_provider_handle_t* handle)
 {
     if(client == MOBJECT_CLIENT_NULL) return -1;
@@ -126,9 +108,9 @@ int mobject_provider_handle_create(
         return -1;
     }
 
-    provider->client   = client;
-    provider->mplex_id = mplex_id;
-    provider->refcount = 1;
+    provider->client      = client;
+    provider->provider_id = provider_id;
+    provider->refcount    = 1;
 
     client->num_provider_handles += 1;
 
@@ -192,9 +174,7 @@ int mobject_write_op_operate(
         return -1;
     }
 
-    margo_set_target_id(h, mph->mplex_id);
-
-    ret = margo_forward(h, &in);
+    ret = margo_provider_forward(mph->provider_id, h, &in);
     if(ret != HG_SUCCESS) {
         fprintf(stderr, "[MOBJECT] margo_forward() failed in mobject_write_op_operate()\n");
         margo_destroy(h);
@@ -247,9 +227,7 @@ int mobject_read_op_operate(
         return -1;
     }
 
-    margo_set_target_id(h, mph->mplex_id);
-
-    ret = margo_forward(h, &in);
+    ret = margo_provider_forward(mph->provider_id, h, &in);
     if(ret != HG_SUCCESS) {
         fprintf(stderr, "[MOBJECT] margo_forward() failed in mobject_read_op_operate()\n");
         margo_destroy(h);

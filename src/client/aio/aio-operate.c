@@ -46,10 +46,8 @@ int mobject_aio_write_op_operate(
         return -1;
     }
 
-    margo_set_target_id(h, mph->mplex_id);
-
     margo_request mreq;
-    ret = margo_iforward(h, &in, &mreq);
+    ret = margo_provider_iforward(mph->provider_id, h, &in, &mreq);
     if(ret != HG_SUCCESS) {
         fprintf(stderr, "[MOBJECT] margo_iforward() failed in mobject_aio_write_op_operate()\n");
         margo_destroy(h);
@@ -97,10 +95,8 @@ int mobject_aio_read_op_operate(
         return -1;
     }
 
-    margo_set_target_id(h, mph->mplex_id);
-
     margo_request mreq;
-    ret = margo_iforward(h, &in, &mreq);
+    ret = margo_provider_iforward(mph->provider_id, h, &in, &mreq);
     if(ret != HG_SUCCESS) {
         fprintf(stderr, "[MOBJECT] margo_iforward() failed in mobject_aio_write_op_operate()\n");
         margo_destroy(h);
