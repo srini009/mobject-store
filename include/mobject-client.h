@@ -58,7 +58,7 @@ extern "C" {
      *
      * @param client client managing the provider handle
      * @param addr address of the provider
-     * @param mplex_id multiplex id of the provider
+     * @param provider_id multiplex id of the provider
      * @param handle resulting handle
      *
      * @return 0 on success, -1 on failure
@@ -66,7 +66,7 @@ extern "C" {
     int mobject_provider_handle_create(
             mobject_client_t client,
             hg_addr_t addr,
-            uint8_t mplex_id,
+            uint16_t provider_id,
             mobject_provider_handle_t* handle);
 
     /**
