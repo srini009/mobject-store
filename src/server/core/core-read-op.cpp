@@ -196,12 +196,10 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
 
                 case seg_type_t::ZERO:
                     coverage.set(seg.start_index, seg.end_index);
-                    if(*bytes_read < seg.end_index) *bytes_read = seg.end_index;
                     break;
 
                 case seg_type_t::TOMBSTONE:
                     coverage.set(seg.start_index, seg.end_index);
-                    if(*bytes_read < seg.start_index) *bytes_read = seg.start_index;
                     break;
 
                 case seg_type_t::BAKE_REGION: {
@@ -218,7 +216,6 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
                             LEAVING;
                             return;
                         }
-                        if(*bytes_read < r.end) *bytes_read = r.end;
                     }
                     break;
                 } // end case seg_type_t::BAKE_REGION
@@ -258,7 +255,6 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
                             LEAVING;
                             return;
                         } // end if
-                        if(*bytes_read < r.end) *bytes_read = r.end;
                     } // end for
                 } // end case seg_type_t::SMALL_REGION
 
@@ -267,6 +263,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
 
         if(num_segments != max_segments) done = true;
     }
+    *bytes_read = coverage.bytes_read();
     LEAVING;
 }
 

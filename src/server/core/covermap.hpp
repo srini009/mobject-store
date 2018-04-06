@@ -37,12 +37,14 @@ class covermap {
     };
 
     covermap(T s, T e)
-        : m_start(s), m_end(e) {}
+        : m_start(s), m_end(e), m_level(0) {}
 
     std::list<segment> set(T start, T end) {
         // make start and end match the bounds
         if(start < m_start) start = m_start;
         if(end > m_end) end = m_end;
+
+        if(end-start == 0) return std::list<segment>();
 
         std::list<segment> result;
         // easy case: the coverage map is empty
@@ -114,6 +116,18 @@ class covermap {
 
     bool full() const {
         return capacity() == level();
+    }
+
+    uint64_t bytes_read() const {
+        if(full()) return capacity();
+        if(m_segments.empty()) return 0;
+        uint64_t start = m_end;
+        uint64_t end   = m_start;
+        for(const auto& s : m_segments) {
+            if(s.first < start) start = s.first;
+            if(s.second > end)  end = s.second;
+        }
+        return end-start;
     }
 };
 
