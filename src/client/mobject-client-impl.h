@@ -30,7 +30,7 @@ struct mobject_client {
 struct mobject_provider_handle {
     mobject_client_t client;
     hg_addr_t        addr;
-    uint8_t          mplex_id;
+    uint16_t         provider_id;
     uint64_t         refcount;
 };
 

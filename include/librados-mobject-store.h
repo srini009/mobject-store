@@ -15,6 +15,9 @@ extern "C" {
 
 typedef mobject_store_t rados_t;
 
+#define LIBRADOS_CREATE_EXCLUSIVE   LIBMOBJECT_CREATE_EXCLUSIVE
+#define LIBRADOS_CREATE_IDEMPOTENT  LIBMOBJECT_CREATE_IDEMPOTENT
+
 #define LIBRADOS_OPERATION_NOFLAG             LIBMOBJECT_OPERATION_NOFLAG
 #define LIBRADOS_OPERATION_BALANCE_READS      LIBMOBJECT_OPERATION_BALANCE_READS
 #define LIBRADOS_OPERATION_LOCALIZE_READS     LIBMOBJECT_OPERATION_LOCALIZE_READS
@@ -34,6 +37,7 @@ typedef mobject_store_completion_t rados_completion_t;
 typedef mobject_store_callback_t   rados_callback_t;
 
 #define rados_create                        mobject_store_create
+#define rados_conf_read_file                mobject_store_conf_read_file
 #define rados_connect                       mobject_store_connect
 #define rados_shutdown                      mobject_store_shutdown
 #define rados_pool_create                   mobject_store_pool_create
