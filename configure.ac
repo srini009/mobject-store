@@ -15,8 +15,8 @@ AM_PROG_CC_C_O
 AC_PROG_CXX
 AC_PROG_INSTALL
 
-# check for C++14
-AX_CXX_COMPILE_STDCXX_14
+# check for C++11
+AX_CXX_COMPILE_STDCXX(11, noext, mandatory)
 
 # checks for libraires
 # pkg-config and libraries supporting that
