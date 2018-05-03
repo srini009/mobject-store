@@ -23,13 +23,13 @@ int mobject_sdskv_provider_setup(sdskv_provider_t sdskv_prov)
     int ret;
     /* SDSKV provider initialization */
     sdskv_database_id_t oid_map_id, name_map_id, seg_map_id, omap_map_id;
-    ret = sdskv_provider_add_database(sdskv_prov, "oid_map",  KVDB_MAP, &oid_map_compare,  &oid_map_id);
+    ret = sdskv_provider_add_database(sdskv_prov, "oid_map", "",  KVDB_MAP, &oid_map_compare,  &oid_map_id);
     ASSERT(ret == 0, "sdskv_provider_add_database() failed to add database \"oid_map\" (ret = %d)\n", ret);
-    ret = sdskv_provider_add_database(sdskv_prov, "name_map", KVDB_MAP, &name_map_compare, &name_map_id);
+    ret = sdskv_provider_add_database(sdskv_prov, "name_map", "", KVDB_MAP, &name_map_compare, &name_map_id);
     ASSERT(ret == 0, "sdskv_provider_add_database() failed to add database \"name_map\" (ret = %d)\n", ret);
-    ret = sdskv_provider_add_database(sdskv_prov, "seg_map",  KVDB_MAP, &seg_map_compare,  &seg_map_id);
+    ret = sdskv_provider_add_database(sdskv_prov, "seg_map",  "", KVDB_MAP, &seg_map_compare,  &seg_map_id);
     ASSERT(ret == 0, "sdskv_provider_add_database() failed to add database \"seg_map\" (ret = %d)\n", ret);
-    ret = sdskv_provider_add_database(sdskv_prov, "omap_map", KVDB_MAP, &omap_map_compare, &omap_map_id);
+    ret = sdskv_provider_add_database(sdskv_prov, "omap_map", "", KVDB_MAP, &omap_map_compare, &omap_map_id);
     ASSERT(ret == 0, "sdskv_provider_add_database() failed to add database \"omap_map\" (ret = %d)\n", ret);
 }
 
