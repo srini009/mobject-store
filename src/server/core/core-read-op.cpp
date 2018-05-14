@@ -208,11 +208,19 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
                         uint64_t segment_size  = r.end - r.start;
                         uint64_t region_offset = r.start - seg.start_index;
                         uint64_t remote_offset = r.start - offset;
+                        uint64_t bytes_read = 0;
                         ret = bake_proxy_read(bph, region, region_offset, remote_bulk,
-                                remote_offset, remote_addr_str, segment_size);
+                                remote_offset, remote_addr_str, segment_size, &bytes_read);
                         if(ret != 0) {
                             *prval = -1;
                             ERROR fprintf(stderr,"bake_proxy_read returned %d\n", ret);
+                            LEAVING;
+                            return;
+                        }
+                        else if (bytes_read != segment_size) {
+                            *prval = -1;
+                            ERROR fprintf(stderr,"bake_proxy_read invalid read of %" PRIu64 \
+                                                 " (requested=%" PRIu64 ")\n", bytes_read, segment_size);
                             LEAVING;
                             return;
                         }
