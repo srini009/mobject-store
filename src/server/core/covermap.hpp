@@ -19,10 +19,14 @@ class covermap {
     std::map<T,T> m_segments;
 
     static bool intersects(const T& start1, const T& end1, const T& start2, const T& end2) {
+        if((start1 == end1) || (start2 == end2))
+            return false;
+        if(start1 == start2)
+            return true;
         if(start1 < start2) {
-            return start2 <= end1;
+            return start2 < end1;
         } else {
-            return start1 <= end2;
+            return start1 < end2;
         }
     }
 
@@ -43,6 +47,8 @@ class covermap {
         // make start and end match the bounds
         if(start < m_start) start = m_start;
         if(end > m_end) end = m_end;
+        if(start >= m_end) return std::list<segment>();
+        if(end <= m_start) return std::list<segment>();
 
         if(end-start == 0) return std::list<segment>();
 
