@@ -333,8 +333,95 @@ void write_op_exec_remove(void* u)
 {
     ENTERING;
 	auto vargs = static_cast<server_visitor_args_t>(u);
-    write_op_exec_truncate(u,0);
-    // TODO: technically should mark the object as removed
+    const char *object_name = vargs->object_name;
+    oid_t oid = vargs->oid;
+    bake_provider_handle_t bake_ph = vargs->srv_ctx->bake_ph;
+    sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
+    sdskv_database_id_t name_db_id = vargs->srv_ctx->name_db_id;
+    sdskv_database_id_t oid_db_id = vargs->srv_ctx->oid_db_id;
+    sdskv_database_id_t seg_db_id = vargs->srv_ctx->segment_db_id;
+    int ret;
+
+    /* remove name->OID entry to make object no longer visible to clients */
+    ret = sdskv_erase(sdskv_ph, name_db_id, (const void *)object_name,
+            strlen(object_name)+1);
+    if(ret != SDSKV_SUCCESS) {
+        ERROR fprintf(stderr,"write_op_exec_remove: "
+            "error in name_db sdskv_erase() (ret = %d)\n", ret);
+        LEAVING;
+        return;
+    }
+
+    /* TODO bg thread for everything beyond this point */
+
+    ret = sdskv_erase(sdskv_ph, oid_db_id, &oid, sizeof(oid));
+    if(ret != SDSKV_SUCCESS) {
+        ERROR fprintf(stderr,"write_op_exec_remove: "
+            "error in oid_db sdskv_erase() (ret = %d)\n", ret);
+        LEAVING;
+        return;
+    }
+
+    segment_key_t lb;
+    lb.oid = oid;
+    lb.timestamp = ABT_get_wtime();
+
+    size_t max_segments = 10; // XXX this is a pretty arbitrary number
+    segment_key_t       segment_keys[max_segments];
+    void*               segment_keys_addrs[max_segments];
+    hg_size_t           segment_keys_size[max_segments];
+    bake_region_id_t    segment_data[max_segments];
+    void*               segment_data_addrs[max_segments];
+    hg_size_t           segment_data_size[max_segments];
+    for(auto i = 0 ; i < max_segments; i++) {
+        segment_keys_addrs[i] = (void*)(&segment_keys[i]);
+        segment_keys_size[i]  = sizeof(segment_key_t);
+        segment_data_addrs[i] = (void*)(&segment_data[i]);
+        segment_data_size[i]  = sizeof(bake_region_id_t);
+    }
+
+    /* iterate over and remove all segments for this oid */
+    size_t num_segments = max_segments;
+    do {
+        ret = sdskv_list_keyvals(sdskv_ph, seg_db_id,
+                    (const void *)&lb, sizeof(lb),
+                    segment_keys_addrs, segment_keys_size,
+                    segment_data_addrs, segment_data_size,
+                    &num_segments);
+
+        if(ret != SDSKV_SUCCESS) {
+            /* XXX should save the error and keep removing */
+            ERROR fprintf(stderr, "write_op_exec_remove: "
+                "error in sdskv_list_keyvals() (ret = %d)\n", ret);
+            LEAVING;
+            return;
+        }
+
+        size_t i;
+        for(i = 0; i < num_segments; i++) {
+            const segment_key_t&    seg    = segment_keys[i];
+            const bake_region_id_t& region = segment_data[i];
+
+            if(seg.type == seg_type_t::BAKE_REGION) {
+                ret = bake_remove(bake_ph, region);
+                if (ret != BAKE_SUCCESS) {
+                    /* XXX should save the error and keep removing */
+                    ERROR fprintf(stderr, "write_op_exec_remove: "
+                        "error in bake_remove() (ret = %d)\n", ret);
+                    LEAVING;
+                    return;
+                }
+            }
+            ret = sdskv_erase(sdskv_ph, seg_db_id, &seg, sizeof(seg));
+            if(ret != SDSKV_SUCCESS) {
+                ERROR fprintf(stderr,"write_op_exec_remove: "
+                    "error in seg_db sdskv_erase() (ret = %d)\n", ret);
+                LEAVING;
+                return;
+            }
+        }
+    } while(num_segments == max_segments);
+
     LEAVING;
 }
 
