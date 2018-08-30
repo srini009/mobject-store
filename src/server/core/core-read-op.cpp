@@ -319,18 +319,18 @@ void read_op_exec_omap_get_keys(void* u, const char* start_after, uint64_t max_r
             ERROR fprintf(stderr, "sdskv_list_keys returned %d\n", ret);
             break;
         }
-        const char* k;
+        const char* k = NULL;
         for(auto i = 0; i < keys_retrieved && count < max_return; i++, count++) {
             // extract the actual key part, without the oid
             k = ((omap_key_t*)keys[i])->key;
             /* this key is not part of the same object, we should leave the loop */
             if(((omap_key_t*)keys[i])->oid != oid) goto out; /* ugly way of leaving the loop, I know ... */
-
             omap_iter_append(*iter, k, nullptr, 0);
         }
-        strcpy(lb->key, k);
-        lb_size = strlen(k) + sizeof(omap_key_t);
-
+        if(k != NULL) {
+            strcpy(lb->key, k);
+            lb_size = strlen(k) + sizeof(omap_key_t);
+        }
     } while(keys_retrieved == max_keys && count < max_return);
 
 out:

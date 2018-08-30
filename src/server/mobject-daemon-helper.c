@@ -22,15 +22,42 @@ int mobject_sdskv_provider_setup(sdskv_provider_t sdskv_prov)
 {
     int ret;
     /* SDSKV provider initialization */
+    sdskv_provider_add_comparison_function(sdskv_prov, "mobject_oid_map_compare", oid_map_compare);
+    sdskv_provider_add_comparison_function(sdskv_prov, "mobject_name_map_compare", name_map_compare);
+    sdskv_provider_add_comparison_function(sdskv_prov, "mobject_seg_map_compare", seg_map_compare);
+    sdskv_provider_add_comparison_function(sdskv_prov, "mobject_omap_map_compare", omap_map_compare);
+
     sdskv_database_id_t oid_map_id, name_map_id, seg_map_id, omap_map_id;
-    ret = sdskv_provider_add_database(sdskv_prov, "oid_map", "",  KVDB_MAP, &oid_map_compare,  &oid_map_id);
-    ASSERT(ret == 0, "sdskv_provider_add_database() failed to add database \"oid_map\" (ret = %d)\n", ret);
-    ret = sdskv_provider_add_database(sdskv_prov, "name_map", "", KVDB_MAP, &name_map_compare, &name_map_id);
-    ASSERT(ret == 0, "sdskv_provider_add_database() failed to add database \"name_map\" (ret = %d)\n", ret);
-    ret = sdskv_provider_add_database(sdskv_prov, "seg_map",  "", KVDB_MAP, &seg_map_compare,  &seg_map_id);
-    ASSERT(ret == 0, "sdskv_provider_add_database() failed to add database \"seg_map\" (ret = %d)\n", ret);
-    ret = sdskv_provider_add_database(sdskv_prov, "omap_map", "", KVDB_MAP, &omap_map_compare, &omap_map_id);
-    ASSERT(ret == 0, "sdskv_provider_add_database() failed to add database \"omap_map\" (ret = %d)\n", ret);
+    sdskv_config_t config;
+    memset(&config,0,sizeof(config));
+
+    config.db_name = "oid_map";
+    config.db_path = "";
+    config.db_type = KVDB_MAP;
+    config.db_comp_fn_name = "mobject_oid_map_compare";
+    ret = sdskv_provider_attach_database(sdskv_prov, &config,  &oid_map_id);
+    ASSERT(ret == 0, "sdskv_provider_attach_database() failed to add database \"oid_map\" (ret = %d)\n", ret);
+
+    config.db_name = "name_map";
+    config.db_path = "";
+    config.db_type = KVDB_MAP;
+    config.db_comp_fn_name = "mobject_name_map_compare";
+    ret = sdskv_provider_attach_database(sdskv_prov, &config, &name_map_id);
+    ASSERT(ret == 0, "sdskv_provider_attach_database() failed to add database \"name_map\" (ret = %d)\n", ret);
+
+    config.db_name = "seg_map";
+    config.db_path = "";
+    config.db_type = KVDB_MAP;
+    config.db_comp_fn_name = "mobject_seg_map_compare";
+    ret = sdskv_provider_attach_database(sdskv_prov, &config,  &seg_map_id);
+    ASSERT(ret == 0, "sdskv_provider_attach_database() failed to add database \"seg_map\" (ret = %d)\n", ret);
+
+    config.db_name = "omap_map";
+    config.db_path = "";
+    config.db_type = KVDB_MAP;
+    config.db_comp_fn_name = "mobject_omap_map_compare";
+    ret = sdskv_provider_attach_database(sdskv_prov, &config, &omap_map_id);
+    ASSERT(ret == 0, "sdskv_provider_attach_database() failed to add database \"omap_map\" (ret = %d)\n", ret);
 }
 
 static int oid_map_compare(const void* k1, size_t sk1, const void* k2, size_t sk2)

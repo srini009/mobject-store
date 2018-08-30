@@ -21,18 +21,24 @@ int main(int argc, char** argv)
         // Add a "create" operation
         mobject_store_write_op_create(write_op, LIBMOBJECT_CREATE_EXCLUSIVE, NULL);
         // Add a "write_full" operation to write "AAAABBBB"
+        // Content is now "AAAABBBB"
         mobject_store_write_op_write_full(write_op, content, 8);
         // Add a "write" operation to write "CCCC"
+        // Content is now "AAAABBBBCCCC"
         mobject_store_write_op_write(write_op, content+8, 4, 8);
         // Add a "writesame" operation to write "DDDD" in two "DD"
+        // Content is now "AAAABBBBCCCCDDDD"
         mobject_store_write_op_writesame(write_op, content+12, 2, 4, 12);
         // Add a "append" operation to append "EEEEFFFF"
+        // Content is now "AAAABBBBCCCCDDDDEEEEFFFF"
         mobject_store_write_op_append(write_op, content+16, 8);
         // Add a "remove" operation
 //        mobject_store_write_op_remove(write_op);
         // Add a "truncate" operation to remove the "FFFF" part
+        // Content is now "AAAABBBBCCCCDDDDEEEE"
         mobject_store_write_op_truncate(write_op, 20);
         // Add a "zero" operation zero-ing the "BBBBCCCC"
+        // Content is now "AAAA********DDDDEEEE"
         mobject_store_write_op_zero(write_op, 4, 8);
         // Add a "omap_set" operation
         const char* keys[]   = { "matthieu", "rob", "shane", "phil", "robl" };
