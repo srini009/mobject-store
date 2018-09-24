@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
     margo_push_finalize_callback(mid, &finalize_bake_client_cb, (void*)&bake_clt_data);
 
     /* SDSKV provider initialization */
-    uint8_t sdskv_mplex_id = 1;
+    uint8_t sdskv_mplex_id = 2;
     sdskv_provider_t sdskv_prov;
     ret = sdskv_provider_register(mid, sdskv_mplex_id, SDSKV_ABT_POOL_DEFAULT, &sdskv_prov);
     ASSERT(ret == 0, "sdskv_provider_register() failed (ret = %d)\n", ret);
