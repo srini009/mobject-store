@@ -150,7 +150,7 @@ void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
         if(ret != 0) {
             ERROR fprintf(stderr, "bake_proxy_write returned %d\n", ret);
         }
-        ret = bake_persist(bake_ph, rid);
+        ret = bake_persist(bake_ph, rid, offset, len);
         if(ret != 0) {
             ERROR fprintf(stderr, "bake_persist returned %d\n", ret);
         }
@@ -225,7 +225,7 @@ void write_op_exec_writesame(void* u, buffer_u buf, size_t data_len, size_t writ
             LEAVING;
             return;
         }
-        ret = bake_persist(bph, rid);
+        ret = bake_persist(bph, rid, offset, data_len);
         if(ret != 0) {
             ERROR fprintf(stderr, "bake_persist returned %d\n", ret);
             LEAVING;
@@ -300,7 +300,7 @@ void write_op_exec_append(void* u, buffer_u buf, size_t len)
 
         ret = bake_create(bph, bti, len, &rid);
         ret = bake_proxy_write(bph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
-        ret = bake_persist(bph, rid);
+        ret = bake_persist(bph, rid, offset, len);
 
         insert_region_log_entry(sdskv_ph, seg_db_id, oid, offset, len, &rid, ts);
 
