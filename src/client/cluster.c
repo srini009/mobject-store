@@ -94,7 +94,6 @@ int mobject_store_connect(mobject_store_t cluster)
         proto[i] = svr_addr_str[i];
 
     /* intialize margo */
-    fprintf(stderr,"Client initialized with proto = %s\n",proto);
     /* XXX: probably want to expose some way of tweaking threading parameters */
     margo_instance_id mid = margo_init(proto, MARGO_SERVER_MODE, 0, -1);
     if (mid == MARGO_INSTANCE_NULL)
@@ -340,7 +339,6 @@ int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
     // XXX multiple providers may be in the same node (with distinct mplex ids)
     hg_addr_t svr_addr = ssg_get_addr(io->cluster->gid, server_idx);
 
-    fprintf(stderr,"Object oid=%s will go to server %ld\n", oid, server_idx);
 
     // TODO for now multiplex id is hard-coded as 1
     int r = mobject_provider_handle_create(io->cluster->mobject_clt, svr_addr, 1, &mph);
@@ -418,7 +416,6 @@ int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
     ch_placement_find_closest(ioctx->cluster->ch_instance, oid_hash, 1, &server_idx);
     // XXX multiple providers may be in the same node (with distinct mplex ids)
     hg_addr_t svr_addr = ssg_get_addr(ioctx->cluster->gid, server_idx);
-    fprintf(stderr,"Object oid=%s is read from server %ld\n", oid, server_idx);
     // TODO for now multiplex id is hard-coded as 1
     int r = mobject_provider_handle_create(ioctx->cluster->mobject_clt, svr_addr, 1, &mph);
     if(r != 0) return r;
