@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <vector>
 #include <list>
+#include <cinttypes>
 #include <bake-client.h>
 #include "src/server/core/core-read-op.h"
 #include "src/server/visitor-args.h"

@@ -55,6 +55,7 @@ src_client_libmobject_store_la_SOURCES = \
   src/client/aio/aio-cluster-operate.c \
   src/client/aio/aio-operate.c
 src_client_libmobject_store_la_CPPFLAGS = ${AM_CPPFLAGS} ${CLIENT_CPPFLAGS}
+src_client_libmobject_store_la_CFLAGS   = ${AM_CFLAGS} ${CLIENT_CFLAGS}
 src_client_libmobject_store_la_LIBADD = src/omap-iter/libomap-iter.la \
 				 src/io-chain/libio-chain.la ${CLIENT_LIBS}
 
