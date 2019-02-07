@@ -143,16 +143,16 @@ void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
     if(len > SMALL_REGION_THRESHOLD) {
         ret = bake_create(bake_ph, bti, len, &rid);
         if(ret != 0) {
-            ERROR fprintf(stderr,"bake_create returned %d\n",ret);
+            ERROR bake_perror("bake_create",ret);
             return;
         }
         ret = bake_proxy_write(bake_ph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
         if(ret != 0) {
-            ERROR fprintf(stderr, "bake_proxy_write returned %d\n", ret);
+            ERROR bake_perror( "bake_proxy_write", ret);
         }
         ret = bake_persist(bake_ph, rid, offset, len);
         if(ret != 0) {
-            ERROR fprintf(stderr, "bake_persist returned %d\n", ret);
+            ERROR bake_perror("bake_persist", ret);
         }
    
         insert_region_log_entry(sdskv_ph, seg_db_id, oid, offset, len, &rid);
@@ -215,19 +215,19 @@ void write_op_exec_writesame(void* u, buffer_u buf, size_t data_len, size_t writ
 
         ret = bake_create(bph, bti, data_len, &rid);
         if(ret != 0) {
-            ERROR fprintf(stderr, "bake_create returned %d\n", ret);
+            ERROR bake_perror("bake_create", ret);
             LEAVING;
             return;
         }
         ret = bake_proxy_write(bph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, data_len);
         if(ret != 0) {
-            ERROR fprintf(stderr, "bake_proxy_write returned %d\n", ret);
+            ERROR bake_perror("bake_proxy_write", ret);
             LEAVING;
             return;
         }
         ret = bake_persist(bph, rid, offset, data_len);
         if(ret != 0) {
-            ERROR fprintf(stderr, "bake_persist returned %d\n", ret);
+            ERROR bake_perror("bake_persist", ret);
             LEAVING;
             return;
         }
@@ -299,8 +299,11 @@ void write_op_exec_append(void* u, buffer_u buf, size_t len)
         bake_region_id_t rid;
 
         ret = bake_create(bph, bti, len, &rid);
+        if (ret != 0) bake_perror("bake_create", ret);
         ret = bake_proxy_write(bph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
+        if (ret != 0) bake_perror("bake_proxy_write", ret);
         ret = bake_persist(bph, rid, offset, len);
+        if (ret != 0) bake_perror("bake_persist", ret);
 
         insert_region_log_entry(sdskv_ph, seg_db_id, oid, offset, len, &rid, ts);
 
@@ -406,8 +409,8 @@ void write_op_exec_remove(void* u)
                 ret = bake_remove(bake_ph, region);
                 if (ret != BAKE_SUCCESS) {
                     /* XXX should save the error and keep removing */
-                    ERROR fprintf(stderr, "write_op_exec_remove: "
-                        "error in bake_remove() (ret = %d)\n", ret);
+                    ERROR bake_perror("write_op_exec_remove: "
+                        "error in bake_remove()", ret);
                     LEAVING;
                     return;
                 }

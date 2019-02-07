@@ -84,21 +84,26 @@ int main(int argc, char *argv[])
     if(-1 == access(bake_target_name, F_OK)) {
         // XXX creating a pool of 10MB - this should come from a config file
         ret = bake_makepool(bake_target_name, 10*1024*1024, 0664);
+        if (ret != 0) bake_perror("bake_makepool", ret);
         ASSERT(ret == 0, "bake_makepool() failed (ret = %d)\n", ret);
     }
     bake_provider_t bake_prov;
     bake_target_id_t bake_tid;
     ret = bake_provider_register(mid, bake_mplex_id, BAKE_ABT_POOL_DEFAULT, &bake_prov);
+    if (ret != 0) bake_perror("bake_provider_register", ret);
     ASSERT(ret == 0, "bake_provider_register() failed (ret = %d)\n", ret);
     ret = bake_provider_add_storage_target(bake_prov, bake_target_name, &bake_tid);
+    if (ret != 0) bake_perror("bake_provider_add_storage_target", ret);
     ASSERT(ret == 0, "bake_provider_add_storage_target() failed to add target %s (ret = %d)\n",
             bake_target_name, ret);
 
     /* Bake provider handle initialization from self addr */
     bake_client_data bake_clt_data;
     ret = bake_client_init(mid, &(bake_clt_data.client));
+    if (ret != 0) bake_perror("bake_client_init", ret);
     ASSERT(ret == 0, "bake_client_init() failed (ret = %d)\n", ret);
     ret = bake_provider_handle_create(bake_clt_data.client, self_addr, bake_mplex_id, &(bake_clt_data.provider_handle));
+    if (ret != 0) bake_perror("bake_provider_handle_create", ret);
     ASSERT(ret == 0, "bake_provider_handle_create() failed (ret = %d)\n", ret);
     margo_push_finalize_callback(mid, &finalize_bake_client_cb, (void*)&bake_clt_data);
 
