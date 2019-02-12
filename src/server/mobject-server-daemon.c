@@ -5,6 +5,7 @@
  */
 
 #include <unistd.h>
+#include <getopt.h>
 #include <mpi.h>
 #include <margo.h>
 #include <ssg.h>
@@ -18,14 +19,6 @@
 
 #define ASSERT(__cond, __msg, ...) { if(!(__cond)) { fprintf(stderr, "[%s:%d] " __msg, __FILE__, __LINE__, __VA_ARGS__); exit(-1); } }
 
-void usage(void)
-{
-    fprintf(stderr, "Usage: mobject-server-daemon <listen_addr> <cluster_file>\n");
-    fprintf(stderr, "  <listen_addr>    the Mercury address to listen on\n");
-    fprintf(stderr, "  <cluster_file>   the file to write mobject cluster connect info to\n");
-    exit(-1);
-}
-
 typedef struct {
     bake_client_t          client;
     bake_provider_handle_t provider_handle;
@@ -36,6 +29,49 @@ typedef struct {
     sdskv_provider_handle_t provider_handle;
 } sdskv_client_data;
 
+typedef struct {
+    char*   listen_addr;
+    char*   cluster_file;
+    int     pool_size;
+} mobject_server_options;
+
+static void usage(void)
+{
+    fprintf(stderr, "Usage: mobject-server-daemon <listen_addr> <cluster_file>\n");
+    fprintf(stderr, "  <listen_addr>    the Mercury address to listen on\n");
+    fprintf(stderr, "  <cluster_file>   the file to write mobject cluster connect info to\n");
+    exit(-1);
+}
+
+static void parse_args(int argc, char **argv, mobject_server_options *opts)
+{
+    int c;
+    char *short_options = "p:";
+    struct option long_options[] = {
+        {"pool-size",  required_argument, 0, 'p'},
+    };
+    char *check = NULL;
+
+    while ((c = getopt_long(argc, argv, short_options, long_options, NULL)) != -1)
+    {
+        switch (c)
+        {
+            case 'p':
+                opts->pool_size = atoi(optarg);
+                break;
+            default:
+                usage();
+        }
+    }
+
+    if ((argc - optind) != 2)
+        usage();
+    opts->listen_addr = argv[optind++];
+    opts->cluster_file = argv[optind++];
+
+    return;
+}
+
 static void finalize_ssg_cb(void* data);
 static void finalize_bake_client_cb(void* data);
 static void finalize_sdskv_client_cb(void* data);
@@ -43,16 +79,13 @@ static void finalized_ssg_group_cb(void* data);
 
 int main(int argc, char *argv[])
 {
-    char *listen_addr;
-    char *cluster_file;
+    mobject_server_options server_opts = {
+        .pool_size = 10485760, /* 10 MiB default */
+    }; 
     margo_instance_id mid;
     int ret;
 
-    /* check args */
-    if (argc != 3)
-        usage();
-    listen_addr = argv[1];
-    cluster_file = argv[2];
+    parse_args(argc, argv, &server_opts);
 
     /* MPI required for SSG bootstrapping */
     MPI_Init(&argc, &argv);
@@ -60,7 +93,7 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     /* Margo initialization */
-    mid = margo_init(listen_addr, MARGO_SERVER_MODE, 0, -1);
+    mid = margo_init(server_opts.listen_addr, MARGO_SERVER_MODE, 0, -1);
     if (mid == MARGO_INSTANCE_NULL)
     {
         fprintf(stderr, "Error: Unable to initialize margo\n");
@@ -83,7 +116,7 @@ int main(int argc, char *argv[])
     /* create the bake target if it does not exist */
     if(-1 == access(bake_target_name, F_OK)) {
         // XXX creating a pool of 10MB - this should come from a config file
-        ret = bake_makepool(bake_target_name, 10*1024*1024, 0664);
+        ret = bake_makepool(bake_target_name, server_opts.pool_size, 0664);
         if (ret != 0) bake_perror("bake_makepool", ret);
         ASSERT(ret == 0, "bake_makepool() failed (ret = %d)\n", ret);
     }
@@ -134,7 +167,7 @@ int main(int argc, char *argv[])
             MOBJECT_ABT_POOL_DEFAULT, 
             bake_clt_data.provider_handle, 
             sdskv_clt_data.provider_handle,
-            gid, cluster_file, &mobject_prov);
+            gid, server_opts.cluster_file, &mobject_prov);
     if (ret != 0)
     {
         fprintf(stderr, "Error: Unable to initialize mobject provider\n");
