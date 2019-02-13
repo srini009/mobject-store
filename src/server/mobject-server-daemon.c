@@ -32,7 +32,7 @@ typedef struct {
 typedef struct {
     char*   listen_addr;
     char*   cluster_file;
-    int     pool_size;
+    size_t     pool_size;
 } mobject_server_options;
 
 static void usage(void)
@@ -57,7 +57,7 @@ static void parse_args(int argc, char **argv, mobject_server_options *opts)
         switch (c)
         {
             case 'p':
-                opts->pool_size = atoi(optarg);
+                opts->pool_size = strtoul(optarg, NULL, 0);
                 break;
             default:
                 usage();
