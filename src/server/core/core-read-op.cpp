@@ -143,7 +143,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
 
     covermap<uint64_t> coverage(offset, offset+len);
 
-    size_t max_segments = 10; // XXX this is a pretty arbitrary number
+    size_t max_segments = 1024; // XXX this is a pretty arbitrary number
     segment_key_t       segment_keys[max_segments];
     void*               segment_keys_addrs[max_segments];
     hg_size_t           segment_keys_size[max_segments];
