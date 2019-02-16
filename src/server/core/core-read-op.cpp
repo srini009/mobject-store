@@ -86,11 +86,6 @@ void read_op_exec_begin(void* u)
         oid = get_oid_from_name(sdskv_ph, name_db_id, object_name);
         vargs->oid = oid;
     }
-    if(oid == 0) {
-        ERROR fprintf(stderr,"oid == 0\n");
-        LEAVING;
-        return;
-    }
     LEAVING
 }
 
@@ -104,7 +99,6 @@ void read_op_exec_stat(void* u, uint64_t* psize, time_t* pmtime, int* prval)
     oid_t oid = vargs->oid;
     if(oid == 0) {
         *prval = -1;
-        ERROR fprintf(stderr,"oid == 0\n");
         LEAVING;
         return;
     }
@@ -497,9 +491,6 @@ static oid_t get_oid_from_name(
     hg_size_t oid_size = sizeof(result);
     int ret = sdskv_get(ph, name_db_id, (const void*)name, strlen(name)+1, (void*)&result, &oid_size);
     if(ret != SDSKV_SUCCESS) result = 0;
-    if(result == 0) {
-        ERROR fprintf(stderr,"oid == 0\n");
-    }
     LEAVING;
     return result;
 }
