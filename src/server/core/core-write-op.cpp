@@ -36,7 +36,11 @@ static void write_op_exec_zero(void*, uint64_t, uint64_t);
 static void write_op_exec_omap_set(void*, char const* const*, char const* const*, const size_t*, size_t);
 static void write_op_exec_omap_rm_keys(void*, char const* const*, size_t);
 
-static oid_t get_or_create_oid(
+static oid_t lookup_oid(
+        sdskv_provider_handle_t ph,
+        sdskv_database_id_t name_db_id,
+        const char* object_name);
+static oid_t create_oid(
         sdskv_provider_handle_t ph,
         sdskv_database_id_t name_db_id,
         sdskv_database_id_t oid_db_id,
@@ -97,7 +101,7 @@ void write_op_exec_begin(void* u)
     sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
     sdskv_database_id_t name_db_id = vargs->srv_ctx->name_db_id;
     sdskv_database_id_t oid_db_id  = vargs->srv_ctx->oid_db_id;
-    oid_t oid = get_or_create_oid(sdskv_ph, name_db_id, oid_db_id, vargs->object_name);
+    oid_t oid = lookup_oid(sdskv_ph, name_db_id, vargs->object_name);
     vargs->oid = oid;
 }
 
@@ -110,12 +114,22 @@ void write_op_exec_create(void* u, int exclusive)
 {
     ENTERING;
 	auto vargs = static_cast<server_visitor_args_t>(u);
+    sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
+    sdskv_database_id_t name_db_id = vargs->srv_ctx->name_db_id;
+    sdskv_database_id_t oid_db_id  = vargs->srv_ctx->oid_db_id;
+    const char *object_name = vargs->object_name;
     oid_t oid = vargs->oid; 
     if(oid == 0) {
-        ERROR fprintf(stderr,"oid == 0\n");
+        /* create OID if it didn't exist when this write op began */
+        oid = create_oid(sdskv_ph, name_db_id, oid_db_id, object_name);
+        if(oid == 0) {
+            /* XXX try one last time to lookup to deal with race to create OID */
+            oid = lookup_oid(sdskv_ph, name_db_id, object_name);
+            if(oid == 0) {
+                ERROR fprintf(stderr,"could not create OID for %s!\n", object_name); 
+            }
+        }
     }
-    /* nothing to do, the object is actually created in write_op_exec_begin
-       if it did not exist before */
     LEAVING;
 }
 
@@ -508,9 +522,8 @@ void write_op_exec_omap_set(void* u, char const* const* keys,
 
 void write_op_exec_omap_rm_keys(void* u, char const* const* keys, size_t num_keys)
 {
-    int ret;
-
     ENTERING;
+    int ret;
 	auto vargs = static_cast<server_visitor_args_t>(u);
     sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
     sdskv_database_id_t name_db_id = vargs->srv_ctx->name_db_id;
@@ -532,54 +545,79 @@ void write_op_exec_omap_rm_keys(void* u, char const* const* keys, size_t num_key
     LEAVING;
 }
 
-oid_t get_or_create_oid(
+static oid_t lookup_oid(
         sdskv_provider_handle_t ph,
         sdskv_database_id_t name_db_id,
-        sdskv_database_id_t oid_db_id,
-        const char* object_name) 
+        const char* object_name)
 {
     ENTERING;
-
+    LEAVING;
     oid_t oid = 0;
     hg_size_t vsize = sizeof(oid);
     int ret;
-
     ret = sdskv_get(ph, name_db_id, (const void*)object_name,
             strlen(object_name)+1, &oid, &vsize);
-    if(SDSKV_ERR_UNKNOWN_KEY == ret) {
-        std::hash<std::string> hash_fn;
-        oid = hash_fn(std::string(object_name));
-        ret = SDSKV_SUCCESS;
-        while(ret == SDSKV_SUCCESS) {
-            hg_size_t s = 0;
-            if(oid != 0) {
-                ret = sdskv_length(ph, oid_db_id, (const void*)&oid,
-                            sizeof(oid), &s);
+    if(SDSKV_SUCCESS == ret)
+        return oid;
+    else
+        return 0;
+}
+
+static oid_t create_oid(
+        sdskv_provider_handle_t ph,
+        sdskv_database_id_t name_db_id,
+        sdskv_database_id_t oid_db_id,
+        const char* object_name)
+{
+    ENTERING;
+    oid_t oid = 0;
+    int ret;
+    std::hash<std::string> hash_fn;
+    oid = hash_fn(std::string(object_name));
+    hg_size_t s = strlen(object_name)+1;
+    char *name_check = (char *)malloc(s);
+    if(!name_check) {
+        LEAVING;
+        return 0;
+    }
+    while(1) {
+        /* avoid hash collisions by checking this oid mapping */
+        ret = sdskv_get(ph, oid_db_id, (const void*)&oid,
+            sizeof(oid), (void *)name_check, &s);
+        if(ret == SDSKV_SUCCESS) {
+            if(strncmp(object_name, name_check, s) == 0) {
+                /* the object has been created by someone else in the meantime...  */
+                free(name_check);
+                LEAVING;
+                return oid;
             }
-            oid += 1;
+            oid++;
+            continue;
         }
-        // we make sure we stopped at an unknown key (not another SDSKV error)
-        if(ret != SDSKV_ERR_UNKNOWN_KEY) {
-            fprintf(stderr, "[ERROR] ret != SDSKV_ERR_UNKNOWN_KEY (ret = %d)\n", ret);
-            LEAVING;
-            return 0;
-        }
-        // set name => oid
-        ret = sdskv_put(ph, name_db_id, (const void*)object_name,
-                strlen(object_name)+1, &oid, sizeof(oid));
-        if(ret != SDSKV_SUCCESS) {
-            fprintf(stderr, "[ERROR] after sdskv_put(name->oid), ret != SDSKV_SUCCESS (ret = %d)\n", ret);
-            LEAVING;
-            return 0;
-        }
-        // set oid => name
-        ret = sdskv_put(ph, oid_db_id, &oid, sizeof(oid),
-                (const void*)object_name, strlen(object_name)+1);
-        if(ret != SDSKV_SUCCESS) {
-            fprintf(stderr, "[ERROR] after sdskv_put(oid->name), ret != SDSKV_SUCCESS (ret = %d)\n", ret);
-            LEAVING;
-            return 0;
-        }
+        break;
+    }
+    free(name_check);
+    // we make sure we stopped at an unknown key (not another SDSKV error)
+    if(ret != SDSKV_ERR_UNKNOWN_KEY) {
+        fprintf(stderr, "[ERROR] ret != SDSKV_ERR_UNKNOWN_KEY (ret = %d)\n", ret);
+        LEAVING;
+        return 0;
+    }
+    // set name => oid
+    ret = sdskv_put(ph, name_db_id, (const void*)object_name,
+            strlen(object_name)+1, &oid, sizeof(oid));
+    if(ret != SDSKV_SUCCESS) {
+        fprintf(stderr, "[WARNING] after sdskv_put(name->oid), ret != SDSKV_SUCCESS (ret = %d)\n", ret);
+        LEAVING;
+        return 0;
+    }
+    // set oid => name
+    ret = sdskv_put(ph, oid_db_id, &oid, sizeof(oid),
+            (const void*)object_name, strlen(object_name)+1);
+    if(ret != SDSKV_SUCCESS) {
+        fprintf(stderr, "[WARNING] after sdskv_put(oid->name), ret != SDSKV_SUCCESS (ret = %d)\n", ret);
+        LEAVING;
+        return 0;
     }
     LEAVING;
     return oid;
