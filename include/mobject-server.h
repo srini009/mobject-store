@@ -55,7 +55,9 @@ int mobject_provider_register(
  *
  * @return 0 on success, negative error code on failure
  */
-int mobject_sdskv_provider_setup(sdskv_provider_t sdskv_prov);
+int mobject_sdskv_provider_setup(
+    sdskv_provider_t sdskv_prov,
+    sdskv_database_id_t sdskv_backend);
 
 #ifdef __cplusplus
 }

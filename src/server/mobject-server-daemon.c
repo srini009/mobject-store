@@ -30,16 +30,20 @@ typedef struct {
 } sdskv_client_data;
 
 typedef struct {
-    char*   listen_addr;
-    char*   cluster_file;
-    size_t     pool_size;
+    char*           listen_addr;
+    char*           cluster_file;
+    sdskv_db_type_t kv_backend;
+    size_t          pool_size;
 } mobject_server_options;
 
 static void usage(void)
 {
-    fprintf(stderr, "Usage: mobject-server-daemon <listen_addr> <cluster_file>\n");
+    fprintf(stderr, "Usage: mobject-server-daemon [OPTIONS] <listen_addr> <cluster_file>\n");
     fprintf(stderr, "  <listen_addr>    the Mercury address to listen on\n");
     fprintf(stderr, "  <cluster_file>   the file to write mobject cluster connect info to\n");
+    fprintf(stderr, "  OPTIONS:\n");
+    fprintf(stderr, "    --pool-size    Bake pool size for each server [default: 1GiB]\n");
+    fprintf(stderr, "    --kv-backend   SDSKV backend to use (mapdb, leveldb, berkeleydb) [default: stdmap]\n");
     exit(-1);
 }
 
@@ -48,14 +52,24 @@ static void parse_args(int argc, char **argv, mobject_server_options *opts)
     int c;
     char *short_options = "p:";
     struct option long_options[] = {
-        {"pool-size",  required_argument, 0, 'p'},
+        {"kv-backend", required_argument, 0, 'k'},
+        {"pool-size", required_argument, 0, 'p'},
     };
-    char *check = NULL;
 
     while ((c = getopt_long(argc, argv, short_options, long_options, NULL)) != -1)
     {
         switch (c)
         {
+            case 'k':
+                if(strcmp(optarg, "mapdb") == 0)
+                    opts->kv_backend = KVDB_MAP;
+                else if(strcmp(optarg, "leveldb") == 0)
+                    opts->kv_backend = KVDB_LEVELDB;
+                else if(strcmp(optarg, "berkeleydb") == 0)
+                    opts->kv_backend = KVDB_BERKELEYDB;
+                else
+                    usage();
+                break;
             case 'p':
                 opts->pool_size = strtoul(optarg, NULL, 0);
                 break;
@@ -80,7 +94,8 @@ static void finalized_ssg_group_cb(void* data);
 int main(int argc, char *argv[])
 {
     mobject_server_options server_opts = {
-        .pool_size = 10485760, /* 10 MiB default */
+        .kv_backend = KVDB_MAP,
+        .pool_size = 1*1024*1024*1024, /* 1 GiB default */
     }; 
     margo_instance_id mid;
     int ret;
@@ -146,7 +161,7 @@ int main(int argc, char *argv[])
     ret = sdskv_provider_register(mid, sdskv_mplex_id, SDSKV_ABT_POOL_DEFAULT, &sdskv_prov);
     ASSERT(ret == 0, "sdskv_provider_register() failed (ret = %d)\n", ret);
 
-    ret = mobject_sdskv_provider_setup(sdskv_prov);
+    ret = mobject_sdskv_provider_setup(sdskv_prov, server_opts.kv_backend);
 
     /* SDSKV provider handle initialization from self addr */
     sdskv_client_data sdskv_clt_data;

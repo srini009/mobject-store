@@ -18,7 +18,8 @@ static int name_map_compare(const void*, size_t, const void*, size_t);
 static int seg_map_compare(const void*, size_t, const void*, size_t);
 static int omap_map_compare(const void*, size_t, const void*, size_t);
 
-int mobject_sdskv_provider_setup(sdskv_provider_t sdskv_prov)
+int mobject_sdskv_provider_setup(
+    sdskv_provider_t sdskv_prov, sdskv_database_id_t sdskv_backend)
 {
     int ret;
     /* SDSKV provider initialization */
@@ -33,28 +34,28 @@ int mobject_sdskv_provider_setup(sdskv_provider_t sdskv_prov)
 
     config.db_name = "oid_map";
     config.db_path = "";
-    config.db_type = KVDB_MAP;
+    config.db_type = sdskv_backend;
     config.db_comp_fn_name = "mobject_oid_map_compare";
     ret = sdskv_provider_attach_database(sdskv_prov, &config,  &oid_map_id);
     ASSERT(ret == 0, "sdskv_provider_attach_database() failed to add database \"oid_map\" (ret = %d)\n", ret);
 
     config.db_name = "name_map";
     config.db_path = "";
-    config.db_type = KVDB_MAP;
+    config.db_type = sdskv_backend;
     config.db_comp_fn_name = "mobject_name_map_compare";
     ret = sdskv_provider_attach_database(sdskv_prov, &config, &name_map_id);
     ASSERT(ret == 0, "sdskv_provider_attach_database() failed to add database \"name_map\" (ret = %d)\n", ret);
 
     config.db_name = "seg_map";
     config.db_path = "";
-    config.db_type = KVDB_MAP;
+    config.db_type = sdskv_backend;
     config.db_comp_fn_name = "mobject_seg_map_compare";
     ret = sdskv_provider_attach_database(sdskv_prov, &config,  &seg_map_id);
     ASSERT(ret == 0, "sdskv_provider_attach_database() failed to add database \"seg_map\" (ret = %d)\n", ret);
 
     config.db_name = "omap_map";
     config.db_path = "";
-    config.db_type = KVDB_MAP;
+    config.db_type = sdskv_backend;
     config.db_comp_fn_name = "mobject_omap_map_compare";
     ret = sdskv_provider_attach_database(sdskv_prov, &config, &omap_map_id);
     ASSERT(ret == 0, "sdskv_provider_attach_database() failed to add database \"omap_map\" (ret = %d)\n", ret);
