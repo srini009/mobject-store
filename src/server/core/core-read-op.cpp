@@ -143,7 +143,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
 
     covermap<uint64_t> coverage(offset, offset+len);
 
-    size_t max_segments = 1024; // XXX this is a pretty arbitrary number
+    size_t max_segments = 128; // XXX this is a pretty arbitrary number
     segment_key_t       segment_keys[max_segments];
     void*               segment_keys_addrs[max_segments];
     hg_size_t           segment_keys_size[max_segments];
@@ -158,7 +158,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
     }
 
     bool done = false;
-
+    int seg_start_ndx =  0;
     while(!coverage.full() && !done) {
 
         // get the next max_segments segments
@@ -177,7 +177,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
         }
 
         size_t i;
-        for(i=0; i < num_segments; i++) {
+        for(i=seg_start_ndx; i < num_segments; i++) {
 
             const segment_key_t&    seg    = segment_keys[i];
             const bake_region_id_t& region = segment_data[i];
@@ -262,8 +262,11 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
                 } // end case seg_type_t::SMALL_REGION
 
             } // end switch
+            // update the start key timestamp to that of the last processed segment
+            lb.timestamp = seg.timestamp;
         } // end for
 
+        seg_start_ndx = 1;
         if(num_segments != max_segments) done = true;
     }
     *bytes_read = coverage.bytes_read();
