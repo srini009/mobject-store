@@ -369,7 +369,7 @@ void write_op_exec_remove(void* u)
     lb.oid = oid;
     lb.timestamp = ABT_get_wtime();
 
-    size_t max_segments = 1024; // XXX this is a pretty arbitrary number
+    size_t max_segments = 128; // XXX this is a pretty arbitrary number
     segment_key_t       segment_keys[max_segments];
     void*               segment_keys_addrs[max_segments];
     hg_size_t           segment_keys_size[max_segments];
@@ -697,7 +697,7 @@ uint64_t mobject_compute_object_size(
     uint64_t size = 0; // current assumed size
     uint64_t max_size = std::numeric_limits<uint64_t>::max();
 
-    size_t max_segments = 10;
+    size_t max_segments = 128;
     segment_key_t segment_keys[max_segments];
     void* segment_keys_addrs[max_segments];
     hg_size_t segment_keys_size[max_segments];
