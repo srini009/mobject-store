@@ -708,6 +708,7 @@ uint64_t mobject_compute_object_size(
     }
 
     bool done = false;
+    int seg_start_ndx =  0;
     while(!done) {
 
         size_t num_items = max_segments;
@@ -723,8 +724,8 @@ uint64_t mobject_compute_object_size(
             return 0;
         }
 
-        size_t i = 0;
-        for(; i < num_items; i++) {
+        size_t i;
+        for(i=seg_start_ndx; i < num_items; i++) {
             if(segment_keys[i].oid != oid) {
                 done = true;
                 break;
@@ -749,6 +750,7 @@ uint64_t mobject_compute_object_size(
         if(num_items != max_segments) {
             done = true;
         }
+        seg_start_ndx = 1;
     }
     LEAVING;
     return size;
