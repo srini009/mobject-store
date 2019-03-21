@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     /* Margo initialization */
-    mid = margo_init(server_opts.listen_addr, MARGO_SERVER_MODE, 0, -1);
+    mid = margo_init(server_opts.listen_addr, MARGO_SERVER_MODE, 0, 4);
     if (mid == MARGO_INSTANCE_NULL)
     {
         fprintf(stderr, "Error: Unable to initialize margo\n");
@@ -144,6 +144,7 @@ int main(int argc, char *argv[])
     if (ret != 0) bake_perror("bake_provider_add_storage_target", ret);
     ASSERT(ret == 0, "bake_provider_add_storage_target() failed to add target %s (ret = %d)\n",
             bake_target_name, ret);
+    bake_provider_set_conf(provider, "pipeline_enabled", "1");
 
     /* Bake provider handle initialization from self addr */
     bake_client_data bake_clt_data;
