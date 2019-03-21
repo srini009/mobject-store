@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
     if (ret != 0) bake_perror("bake_provider_add_storage_target", ret);
     ASSERT(ret == 0, "bake_provider_add_storage_target() failed to add target %s (ret = %d)\n",
             bake_target_name, ret);
-    bake_provider_set_conf(provider, "pipeline_enabled", "1");
+    bake_provider_set_conf(bake_prov, "pipeline_enabled", "1");
 
     /* Bake provider handle initialization from self addr */
     bake_client_data bake_clt_data;
