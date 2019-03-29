@@ -85,6 +85,10 @@ static int seg_map_compare(const void* k1, size_t sk1, const void* k2, size_t sk
     if(seg1->oid > seg2->oid) return 1;
     if(seg1->timestamp > seg2->timestamp) return -1;
     if(seg1->timestamp < seg2->timestamp) return 1;
+    if(seg1->start_index < seg2->start_index) return -1;
+    if(seg1->start_index > seg2->start_index) return 1;
+    if(seg1->end_index < seg2->end_index) return -1;
+    if(seg1->end_index > seg2->end_index) return 1;
     return 0;
 }
 
