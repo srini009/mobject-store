@@ -384,8 +384,11 @@ void write_op_exec_remove(void* u)
     }
 
     /* iterate over and remove all segments for this oid */
-    size_t num_segments = max_segments;
-    do {
+    bool done = false;
+    int seg_start_ndx = 0;
+    while(!done) {
+        size_t num_segments = max_segments;
+
         ret = sdskv_list_keyvals(sdskv_ph, seg_db_id,
                     (const void *)&lb, sizeof(lb),
                     segment_keys_addrs, segment_keys_size,
@@ -401,9 +404,14 @@ void write_op_exec_remove(void* u)
         }
 
         size_t i;
-        for(i = 0; i < num_segments; i++) {
+        for(i = seg_start_ndx; i < num_segments; i++) {
             const segment_key_t&    seg    = segment_keys[i];
             const bake_region_id_t& region = segment_data[i];
+
+            if(seg.oid != oid) {
+                done = true;
+                break;
+            }
 
             if(seg.type == seg_type_t::BAKE_REGION) {
                 ret = bake_remove(bake_ph, region);
@@ -423,7 +431,11 @@ void write_op_exec_remove(void* u)
                 return;
             }
         }
-    } while(num_segments == max_segments);
+        if(num_segments != max_segments) {
+            done = true;
+        }
+        seg_start_ndx = 1;
+    }
 
     LEAVING;
 }
