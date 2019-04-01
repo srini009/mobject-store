@@ -32,8 +32,10 @@ typedef struct {
 typedef struct {
     char*           listen_addr;
     char*           cluster_file;
-    sdskv_db_type_t kv_backend;
+    char *          pool_path;
     size_t          pool_size;
+    char *          kv_path;
+    sdskv_db_type_t kv_backend;
 } mobject_server_options;
 
 static void usage(void)
@@ -42,24 +44,37 @@ static void usage(void)
     fprintf(stderr, "  <listen_addr>    the Mercury address to listen on\n");
     fprintf(stderr, "  <cluster_file>   the file to write mobject cluster connect info to\n");
     fprintf(stderr, "  OPTIONS:\n");
+    fprintf(stderr, "    --pool-path    Bake pool location [default: /dev/shm]\n");
     fprintf(stderr, "    --pool-size    Bake pool size for each server [default: 1GiB]\n");
     fprintf(stderr, "    --kv-backend   SDSKV backend to use (mapdb, leveldb, berkeleydb) [default: stdmap]\n");
+    fprintf(stderr, "    --kv-path      SDSKV storage location [default: /dev/shm]\n");
     exit(-1);
 }
 
 static void parse_args(int argc, char **argv, mobject_server_options *opts)
 {
     int c;
-    char *short_options = "p:";
+    char *short_options = "p:s:a:k:";
     struct option long_options[] = {
+        {"pool-path", required_argument, 0, 'p'},
+        {"pool-size", required_argument, 0, 's'},
+        {"kv-path", required_argument, 0, 'a'},
         {"kv-backend", required_argument, 0, 'k'},
-        {"pool-size", required_argument, 0, 'p'},
     };
 
     while ((c = getopt_long(argc, argv, short_options, long_options, NULL)) != -1)
     {
         switch (c)
         {
+            case 'p':
+                opts->pool_path = optarg;
+                break;
+            case 's':
+                opts->pool_size = strtoul(optarg, NULL, 0);
+                break;
+            case 'a':
+                opts->kv_path = optarg;
+                break;
             case 'k':
                 if(strcmp(optarg, "mapdb") == 0)
                     opts->kv_backend = KVDB_MAP;
@@ -69,9 +84,6 @@ static void parse_args(int argc, char **argv, mobject_server_options *opts)
                     opts->kv_backend = KVDB_BERKELEYDB;
                 else
                     usage();
-                break;
-            case 'p':
-                opts->pool_size = strtoul(optarg, NULL, 0);
                 break;
             default:
                 usage();
@@ -94,8 +106,10 @@ static void finalized_ssg_group_cb(void* data);
 int main(int argc, char *argv[])
 {
     mobject_server_options server_opts = {
-        .kv_backend = KVDB_MAP,
+        .pool_path = "/dev/shm", /* default bake pool path */
         .pool_size = 1*1024*1024*1024, /* 1 GiB default */
+        .kv_path = "/dev/shm", /* default sdskv path */
+        .kv_backend = KVDB_MAP, /* in-memory map default */
     }; 
     margo_instance_id mid;
     int ret;
@@ -127,7 +141,7 @@ int main(int argc, char *argv[])
     /* XXX mplex id and target name should be taken from config file */
     uint8_t bake_mplex_id = 1;
     char bake_target_name[128];
-    sprintf(bake_target_name, "/dev/shm/mobject.%d.dat", rank);
+    sprintf(bake_target_name, "%s/mobject.%d.dat", server_opts.pool_path, rank);
     /* create the bake target if it does not exist */
     if(-1 == access(bake_target_name, F_OK)) {
         // XXX creating a pool of 10MB - this should come from a config file
@@ -162,7 +176,7 @@ int main(int argc, char *argv[])
     ret = sdskv_provider_register(mid, sdskv_mplex_id, SDSKV_ABT_POOL_DEFAULT, &sdskv_prov);
     ASSERT(ret == 0, "sdskv_provider_register() failed (ret = %d)\n", ret);
 
-    ret = mobject_sdskv_provider_setup(sdskv_prov, server_opts.kv_backend);
+    ret = mobject_sdskv_provider_setup(sdskv_prov, server_opts.kv_path, server_opts.kv_backend);
 
     /* SDSKV provider handle initialization from self addr */
     sdskv_client_data sdskv_clt_data;

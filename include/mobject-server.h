@@ -51,12 +51,15 @@ int mobject_provider_register(
  * Helper function that sets up the appropriate databases
  * in a given SDSKV provider. 
  *
- * @param sdskv_prov SDSKV provider
+ * @param sdskv_prov    SDSKV provider
+ * @param sdskv_path    Path to store SDSKV files
+ * @param sdskv_backend Type of SDSKV backend to use
  *
  * @return 0 on success, negative error code on failure
  */
 int mobject_sdskv_provider_setup(
     sdskv_provider_t sdskv_prov,
+    const char *sdskv_path,
     sdskv_database_id_t sdskv_backend);
 
 #ifdef __cplusplus
