@@ -16,12 +16,15 @@
 extern "C" {
 #endif
 
+#define MOBJECT_SEQ_ID_MAX UINT32_MAX
+
 struct mobject_server_context
 {
-    /* margo, bake, sds-keyval, ssg state */
+    /* margo/ABT state */
     margo_instance_id mid;
     uint16_t provider_id;
     ABT_pool pool;
+    ABT_mutex mutex;
     /* ssg-related data */
     ssg_group_id_t gid;
     /* bake-related data */
@@ -34,6 +37,7 @@ struct mobject_server_context
     sdskv_database_id_t segment_db_id;
     sdskv_database_id_t omap_db_id;
     /* other data */
+    uint32_t seq_id;
     int ref_count;
 };
 

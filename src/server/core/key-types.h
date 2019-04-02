@@ -35,8 +35,10 @@ typedef enum seg_type_t {
 
 typedef struct segment_key_t {
     oid_t oid;
+    time_t timestamp;
+    //double timestamp;
+    uint32_t seq_id;
     uint32_t type; /* seg_type */
-    double timestamp;
     uint64_t start_index; // first index, included
     uint64_t end_index;  // end index is not included
 } segment_key_t;

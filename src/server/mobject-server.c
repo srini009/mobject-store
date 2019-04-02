@@ -67,6 +67,7 @@ int mobject_provider_register(
     srv_ctx->provider_id = provider_id;
     srv_ctx->pool = pool;
     srv_ctx->ref_count = 1;
+    ABT_mutex_create(&srv_ctx->mutex);
 
     srv_ctx->gid = gid; 
     my_id = ssg_get_group_self_id(srv_ctx->gid);
@@ -262,6 +263,7 @@ static void mobject_finalize_cb(void* data)
 
     sdskv_provider_handle_release(srv_ctx->sdskv_ph);
     bake_provider_handle_release(srv_ctx->bake_ph);
+    ABT_mutex_free(&srv_ctx->mutex);
 
     free(srv_ctx);
 }

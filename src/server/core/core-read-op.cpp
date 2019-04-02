@@ -41,13 +41,14 @@ static void read_op_exec_end(void*);
 extern uint64_t mobject_compute_object_size(
         sdskv_provider_handle_t ph,
         sdskv_database_id_t seg_db_id,
-        oid_t oid, double ts);
+        oid_t oid, time_t ts);
 
 static oid_t get_oid_from_name(
         sdskv_provider_handle_t ph,
         sdskv_database_id_t name_db_id,
         const char* name);
 
+#if 0
 struct read_request_t {
     double timestamp;              // timestamp at which the segment was created
     uint64_t absolute_start_index; // start index within the object
@@ -57,6 +58,7 @@ struct read_request_t {
     uint64_t client_offset;        // offset within the client's buffer
     bake_region_id_t region;  // region id
 };
+#endif
 
 static struct read_op_visitor read_op_exec = {
 	.visit_begin                 = read_op_exec_begin,
@@ -103,7 +105,7 @@ void read_op_exec_stat(void* u, uint64_t* psize, time_t* pmtime, int* prval)
         return;
     }
     
-    double ts = ABT_get_wtime();
+    time_t ts = time(NULL);
     *psize = mobject_compute_object_size(sdskv_ph, seg_db_id, oid, ts);
 
     LEAVING;
@@ -139,7 +141,8 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
 
     segment_key_t lb;
     lb.oid = oid;
-    lb.timestamp = ABT_get_wtime();
+    lb.timestamp = time(NULL);
+    lb.seq_id = MOBJECT_SEQ_ID_MAX;
 
     covermap<uint64_t> coverage(offset, offset+len);
 
@@ -264,6 +267,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
             } // end switch
             // update the start key timestamp to that of the last processed segment
             lb.timestamp = seg.timestamp;
+            lb.seq_id = seg.seq_id;
         } // end for
 
         seg_start_ndx = 1;
