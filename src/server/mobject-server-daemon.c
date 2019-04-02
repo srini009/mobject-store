@@ -32,6 +32,7 @@ typedef struct {
 typedef struct {
     char*           listen_addr;
     char*           cluster_file;
+    int             handler_xstreams;
     char *          pool_path;
     size_t          pool_size;
     char *          kv_path;
@@ -44,18 +45,20 @@ static void usage(void)
     fprintf(stderr, "  <listen_addr>    the Mercury address to listen on\n");
     fprintf(stderr, "  <cluster_file>   the file to write mobject cluster connect info to\n");
     fprintf(stderr, "  OPTIONS:\n");
-    fprintf(stderr, "    --pool-path    Bake pool location [default: /dev/shm]\n");
-    fprintf(stderr, "    --pool-size    Bake pool size for each server [default: 1GiB]\n");
-    fprintf(stderr, "    --kv-backend   SDSKV backend to use (mapdb, leveldb, berkeleydb) [default: stdmap]\n");
-    fprintf(stderr, "    --kv-path      SDSKV storage location [default: /dev/shm]\n");
+    fprintf(stderr, "    --handler-xstreams Number of xtreams to user for RPC handlers [default: 4]\n"); 
+    fprintf(stderr, "    --pool-path        Bake pool location [default: /dev/shm]\n");
+    fprintf(stderr, "    --pool-size        Bake pool size for each server [default: 1GiB]\n");
+    fprintf(stderr, "    --kv-backend       SDSKV backend to use (mapdb, leveldb, berkeleydb) [default: stdmap]\n");
+    fprintf(stderr, "    --kv-path          SDSKV storage location [default: /dev/shm]\n");
     exit(-1);
 }
 
 static void parse_args(int argc, char **argv, mobject_server_options *opts)
 {
     int c;
-    char *short_options = "p:s:a:k:";
+    char *short_options = "x:p:s:a:k:";
     struct option long_options[] = {
+        {"handler-xstreams", required_argument, 0, 'x'},
         {"pool-path", required_argument, 0, 'p'},
         {"pool-size", required_argument, 0, 's'},
         {"kv-path", required_argument, 0, 'a'},
@@ -66,6 +69,9 @@ static void parse_args(int argc, char **argv, mobject_server_options *opts)
     {
         switch (c)
         {
+            case 'x':
+                opts->handler_xstreams = atoi(optarg);
+                break;
             case 'p':
                 opts->pool_path = optarg;
                 break;
@@ -106,6 +112,7 @@ static void finalized_ssg_group_cb(void* data);
 int main(int argc, char *argv[])
 {
     mobject_server_options server_opts = {
+        .handler_xstreams = 4, /* default to 4 rpc handler xstreams */
         .pool_path = "/dev/shm", /* default bake pool path */
         .pool_size = 1*1024*1024*1024, /* 1 GiB default */
         .kv_path = "/dev/shm", /* default sdskv path */
@@ -122,7 +129,8 @@ int main(int argc, char *argv[])
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     /* Margo initialization */
-    mid = margo_init(server_opts.listen_addr, MARGO_SERVER_MODE, 0, 4);
+    mid = margo_init(server_opts.listen_addr, MARGO_SERVER_MODE, 0, 
+        server_opts.handler_xstreams);
     if (mid == MARGO_INSTANCE_NULL)
     {
         fprintf(stderr, "Error: Unable to initialize margo\n");
