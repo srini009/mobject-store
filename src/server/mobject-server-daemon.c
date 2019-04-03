@@ -33,7 +33,7 @@ typedef struct {
     char*           listen_addr;
     char*           cluster_file;
     int             handler_xstreams;
-    char *          pool_path;
+    char *          pool_file;
     size_t          pool_size;
     char *          kv_path;
     sdskv_db_type_t kv_backend;
@@ -56,12 +56,12 @@ static void usage(void)
 static void parse_args(int argc, char **argv, mobject_server_options *opts)
 {
     int c;
-    char *short_options = "x:p:s:a:k:";
+    char *short_options = "x:f:s:p:k:";
     struct option long_options[] = {
         {"handler-xstreams", required_argument, 0, 'x'},
-        {"pool-path", required_argument, 0, 'p'},
+        {"pool-file", required_argument, 0, 'f'},
         {"pool-size", required_argument, 0, 's'},
-        {"kv-path", required_argument, 0, 'a'},
+        {"kv-path", required_argument, 0, 'p'},
         {"kv-backend", required_argument, 0, 'k'},
     };
 
@@ -72,13 +72,13 @@ static void parse_args(int argc, char **argv, mobject_server_options *opts)
             case 'x':
                 opts->handler_xstreams = atoi(optarg);
                 break;
-            case 'p':
-                opts->pool_path = optarg;
+            case 'f':
+                opts->pool_file = optarg;
                 break;
             case 's':
                 opts->pool_size = strtoul(optarg, NULL, 0);
                 break;
-            case 'a':
+            case 'p':
                 opts->kv_path = optarg;
                 break;
             case 'k':
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
 {
     mobject_server_options server_opts = {
         .handler_xstreams = 4, /* default to 4 rpc handler xstreams */
-        .pool_path = "/dev/shm", /* default bake pool path */
+        .pool_file = "/dev/shm/mobject.dat", /* default bake pool file */
         .pool_size = 1*1024*1024*1024, /* 1 GiB default */
         .kv_path = "/dev/shm", /* default sdskv path */
         .kv_backend = KVDB_MAP, /* in-memory map default */
@@ -148,12 +148,10 @@ int main(int argc, char *argv[])
     /* Bake provider initialization */
     /* XXX mplex id and target name should be taken from config file */
     uint8_t bake_mplex_id = 1;
-    char bake_target_name[128];
-    sprintf(bake_target_name, "%s/mobject.%d.dat", server_opts.pool_path, rank);
     /* create the bake target if it does not exist */
-    if(-1 == access(bake_target_name, F_OK)) {
+    if(-1 == access(server_opts.pool_file, F_OK)) {
         // XXX creating a pool of 10MB - this should come from a config file
-        ret = bake_makepool(bake_target_name, server_opts.pool_size, 0664);
+        ret = bake_makepool(server_opts.pool_file, server_opts.pool_size, 0664);
         if (ret != 0) bake_perror("bake_makepool", ret);
         ASSERT(ret == 0, "bake_makepool() failed (ret = %d)\n", ret);
     }
@@ -162,10 +160,10 @@ int main(int argc, char *argv[])
     ret = bake_provider_register(mid, bake_mplex_id, BAKE_ABT_POOL_DEFAULT, &bake_prov);
     if (ret != 0) bake_perror("bake_provider_register", ret);
     ASSERT(ret == 0, "bake_provider_register() failed (ret = %d)\n", ret);
-    ret = bake_provider_add_storage_target(bake_prov, bake_target_name, &bake_tid);
+    ret = bake_provider_add_storage_target(bake_prov, server_opts.pool_file, &bake_tid);
     if (ret != 0) bake_perror("bake_provider_add_storage_target", ret);
     ASSERT(ret == 0, "bake_provider_add_storage_target() failed to add target %s (ret = %d)\n",
-            bake_target_name, ret);
+            server_opts.pool_file, ret);
     bake_provider_set_conf(bake_prov, "pipeline_enabled", "1");
 
     /* Bake provider handle initialization from self addr */
