@@ -46,7 +46,7 @@ static void usage(void)
     fprintf(stderr, "  <cluster_file>   the file to write mobject cluster connect info to\n");
     fprintf(stderr, "  OPTIONS:\n");
     fprintf(stderr, "    --handler-xstreams Number of xtreams to user for RPC handlers [default: 4]\n"); 
-    fprintf(stderr, "    --pool-path        Bake pool location [default: /dev/shm]\n");
+    fprintf(stderr, "    --pool-file        Bake pool location [default: /dev/shm/mobject.dat]\n");
     fprintf(stderr, "    --pool-size        Bake pool size for each server [default: 1GiB]\n");
     fprintf(stderr, "    --kv-backend       SDSKV backend to use (mapdb, leveldb, berkeleydb) [default: stdmap]\n");
     fprintf(stderr, "    --kv-path          SDSKV storage location [default: /dev/shm]\n");
