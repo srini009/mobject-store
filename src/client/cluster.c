@@ -148,7 +148,7 @@ int mobject_store_connect(mobject_store_t cluster)
 
     // initialize ch-placement
     cluster_handle->ch_instance = 
-        ch_placement_initialize("hash_lookup3", gsize, 4, 0);
+        ch_placement_initialize("static_modulo", gsize, 0, 0);
     if(!cluster_handle->ch_instance)
     {
         fprintf(stderr, "Error: Unable to initialize ch-placement instance\n");
