@@ -7,6 +7,7 @@
 //#define FAKE_CPP_SERVER
 
 #include <assert.h>
+#include <unistd.h>
 #include <mpi.h>
 #include <abt.h>
 #include <margo.h>
@@ -31,6 +32,8 @@
 
 DECLARE_MARGO_RPC_HANDLER(mobject_write_op_ult)
 DECLARE_MARGO_RPC_HANDLER(mobject_read_op_ult)
+DECLARE_MARGO_RPC_HANDLER(mobject_server_clean_ult)
+DECLARE_MARGO_RPC_HANDLER(mobject_server_stat_ult)
 
 static void mobject_finalize_cb(void* data);
 
@@ -68,6 +71,7 @@ int mobject_provider_register(
     srv_ctx->pool = pool;
     srv_ctx->ref_count = 1;
     ABT_mutex_create(&srv_ctx->mutex);
+    ABT_mutex_create(&srv_ctx->stats_mutex);
 
     srv_ctx->gid = gid; 
     my_id = ssg_get_group_self_id(srv_ctx->gid);
@@ -136,6 +140,7 @@ int mobject_provider_register(
 
     hg_id_t rpc_id;
 
+    /* read/write op RPCs */
     rpc_id = MARGO_REGISTER_PROVIDER(mid, "mobject_write_op", 
             write_op_in_t, write_op_out_t, mobject_write_op_ult,
             provider_id, pool);
@@ -143,6 +148,17 @@ int mobject_provider_register(
 
     rpc_id = MARGO_REGISTER_PROVIDER(mid, "mobject_read_op",
             read_op_in_t, read_op_out_t, mobject_read_op_ult,
+            provider_id, pool);
+    margo_register_data(mid, rpc_id, srv_ctx, NULL);
+
+    /* server ctl RPCs */
+    rpc_id = MARGO_REGISTER_PROVIDER(mid, "mobject_server_clean",
+            void, void, mobject_server_clean_ult,
+            provider_id, pool);
+    margo_register_data(mid, rpc_id, srv_ctx, NULL);
+
+    rpc_id = MARGO_REGISTER_PROVIDER(mid, "mobject_server_stat",
+            void, void, mobject_server_stat_ult,
             provider_id, pool);
     margo_register_data(mid, rpc_id, srv_ctx, NULL);
 
@@ -257,6 +273,58 @@ static hg_return_t mobject_read_op_ult(hg_handle_t h)
 }
 DEFINE_MARGO_RPC_HANDLER(mobject_read_op_ult)
 
+static hg_return_t mobject_server_clean_ult(hg_handle_t h)
+{
+    hg_return_t ret;
+
+    /* XXX clean up mobject data */
+    fprintf(stderr, "ERROR: CLEANUP NOT SUPPORTED\n");
+
+    ret = margo_respond(h, NULL);
+    assert(ret == HG_SUCCESS);
+
+    ret = margo_destroy(h);
+    assert(ret == HG_SUCCESS);
+
+    return ret;
+}
+DEFINE_MARGO_RPC_HANDLER(mobject_server_clean_ult)
+
+static hg_return_t mobject_server_stat_ult(hg_handle_t h)
+{
+    hg_return_t ret;
+    int my_rank;
+    char my_hostname[256] = {0};
+
+    const struct hg_info* info = margo_get_info(h);
+    margo_instance_id mid = margo_hg_handle_get_instance(h);
+
+    struct mobject_server_context *srv_ctx = margo_registered_data(mid, info->id);
+    my_rank = ssg_get_group_self_id(srv_ctx->gid);
+    gethostname(my_hostname, sizeof(my_hostname));
+
+    ABT_mutex_lock(srv_ctx->stats_mutex);
+    fprintf(stderr,
+        "Server %d (host: %s):\n" \
+        "\tSegments allocated: %u\n" \
+        "\tTotal segment size: %lu bytes\n" \
+        "\tTotal segment write time: %.4lf s\ns" \
+        "\tTotal segment write b/w: %.4lf MiB/s\n", \
+        my_rank, my_hostname, srv_ctx->segs,
+        srv_ctx->total_seg_size, srv_ctx->total_seg_wr_duration,
+        (srv_ctx->total_seg_size / (1024.0 * 1024.0 ) / srv_ctx->total_seg_wr_duration));
+    ABT_mutex_unlock(srv_ctx->stats_mutex);
+
+    ret = margo_respond(h, NULL);
+    assert(ret == HG_SUCCESS);
+
+    ret = margo_destroy(h);
+    assert(ret == HG_SUCCESS);
+
+    return ret;
+}
+DEFINE_MARGO_RPC_HANDLER(mobject_server_stat_ult)
+
 static void mobject_finalize_cb(void* data)
 {
     mobject_provider_t srv_ctx = (mobject_provider_t)data;
@@ -264,6 +332,7 @@ static void mobject_finalize_cb(void* data)
     sdskv_provider_handle_release(srv_ctx->sdskv_ph);
     bake_provider_handle_release(srv_ctx->bake_ph);
     ABT_mutex_free(&srv_ctx->mutex);
+    ABT_mutex_free(&srv_ctx->stats_mutex);
 
     free(srv_ctx);
 }

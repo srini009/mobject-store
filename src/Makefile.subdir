@@ -81,6 +81,13 @@ src_server_mobject_server_daemon_CFLAGS = ${AM_CFLAGS} ${SERVER_CFLAGS}
 src_server_mobject_server_daemon_LDADD = \
   src/server/libmobject-server.la ${SERVER_LIBS}
 
+src_server_mobject_server_ctl_SOURCES = \
+  src/server/mobject-server-ctl.c
+src_server_mobject_server_ctl_CPPFLAGS = ${AM_CPPFLAGS} ${SERVER_CPPFLAGS}
+src_server_mobject_server_ctl_CFLAGS = ${AM_CFLAGS} ${SERVER_CFLAGS}
+src_server_mobject_server_ctl_LDADD = ${SERVER_LIBS}
+
 bin_PROGRAMS += \
-  src/server/mobject-server-daemon
+  src/server/mobject-server-daemon \
+  src/server/mobject-server-ctl
 

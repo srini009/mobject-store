@@ -25,6 +25,7 @@ struct mobject_server_context
     uint16_t provider_id;
     ABT_pool pool;
     ABT_mutex mutex;
+    ABT_mutex stats_mutex;
     /* ssg-related data */
     ssg_group_id_t gid;
     /* bake-related data */
@@ -39,6 +40,12 @@ struct mobject_server_context
     /* other data */
     uint32_t seq_id;
     int ref_count;
+    /* stats/counters/timers and helpers */
+    uint32_t segs;
+    uint64_t total_seg_size;
+    double total_seg_wr_duration;
+    double last_wr_start;
+    double last_wr_end;
 };
 
 #ifdef __cplusplus

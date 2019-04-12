@@ -126,13 +126,24 @@ void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
         return;
     }
 
-    bake_provider_handle_t bake_ph = vargs->srv_ctx->bake_ph;
-    bake_target_id_t bti = vargs->srv_ctx->bake_tid;
+    struct mobject_server_context *srv_ctx = vargs->srv_ctx;
+    bake_provider_handle_t bake_ph = srv_ctx->bake_ph;
+    bake_target_id_t bti = srv_ctx->bake_tid;
     bake_region_id_t rid;
     hg_bulk_t remote_bulk = vargs->bulk_handle;
     const char* remote_addr_str = vargs->client_addr_str;
     hg_addr_t   remote_addr     = vargs->client_addr;
+    double wr_start, wr_end;
+
     int ret;
+
+    ABT_mutex_lock(srv_ctx->stats_mutex);
+    wr_start = ABT_get_wtime();
+    if((srv_ctx->last_wr_start > 0) && (srv_ctx->last_wr_start >= srv_ctx->last_wr_end)) {
+        srv_ctx->total_seg_wr_duration += (wr_start - srv_ctx->last_wr_start);
+    }
+    srv_ctx->last_wr_start = wr_start;
+    ABT_mutex_unlock(srv_ctx->stats_mutex);
 
     if(len > SMALL_REGION_THRESHOLD) {
         ret = bake_create(bake_ph, bti, len, &rid);
@@ -149,7 +160,7 @@ void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
             ERROR bake_perror("bake_persist", ret);
         }
    
-        insert_region_log_entry(vargs->srv_ctx, oid, offset, len, &rid);
+        insert_region_log_entry(srv_ctx, oid, offset, len, &rid);
     } else {
         margo_instance_id mid = vargs->srv_ctx->mid;
         char data[SMALL_REGION_THRESHOLD];
@@ -169,8 +180,21 @@ void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
             ERROR fprintf(stderr, "margo_bulk_free returned %d\n", ret);
         }
 
-        insert_small_region_log_entry(vargs->srv_ctx, oid, offset, len, data);
+        insert_small_region_log_entry(srv_ctx, oid, offset, len, data);
     }
+
+    ABT_mutex_lock(srv_ctx->stats_mutex);
+    wr_end = ABT_get_wtime();
+    srv_ctx->segs++;
+    srv_ctx->total_seg_size += len;
+    if(srv_ctx->last_wr_start > srv_ctx->last_wr_end) {
+        srv_ctx->total_seg_wr_duration += (wr_end - srv_ctx->last_wr_start);
+    }
+    else {
+        srv_ctx->total_seg_wr_duration += (wr_end - srv_ctx->last_wr_end);
+    }
+    srv_ctx->last_wr_end = wr_end;
+    ABT_mutex_unlock(srv_ctx->stats_mutex);
     LEAVING;
 }
 
