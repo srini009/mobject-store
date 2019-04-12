@@ -308,7 +308,7 @@ static hg_return_t mobject_server_stat_ult(hg_handle_t h)
         "Server %d (host: %s):\n" \
         "\tSegments allocated: %u\n" \
         "\tTotal segment size: %lu bytes\n" \
-        "\tTotal segment write time: %.4lf s\ns" \
+        "\tTotal segment write time: %.4lf s\n" \
         "\tTotal segment write b/w: %.4lf MiB/s\n", \
         my_rank, my_hostname, srv_ctx->segs,
         srv_ctx->total_seg_size, srv_ctx->total_seg_wr_duration,
