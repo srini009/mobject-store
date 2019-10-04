@@ -24,7 +24,8 @@ int mobject_store_aio_write_op_operate(
     hg_return_t ret;
 
     // XXX pick other servers using ch-placement
-    hg_addr_t svr_addr = ssg_get_addr(io->cluster->gid, 0);
+    ssg_member_id_t svr_id = ssg_get_group_member_id_from_rank(io->cluster->gid, 0);
+    hg_addr_t svr_addr = ssg_get_group_member_addr(io->cluster->gid, svr_id);
 
     mobject_provider_handle_t mph;
     mobject_provider_handle_create(io->cluster->mobject_clt, svr_addr, 1, &mph);
@@ -46,7 +47,8 @@ int mobject_store_aio_read_op_operate(mobject_store_read_op_t read_op,
     hg_return_t ret;
 
     // XXX pick other servers using ch-placement
-    hg_addr_t svr_addr = ssg_get_addr(io->cluster->gid, 0);
+    ssg_member_id_t svr_id = ssg_get_group_member_id_from_rank(io->cluster->gid, 0);
+    hg_addr_t svr_addr = ssg_get_group_member_addr(io->cluster->gid, svr_id);
 
     mobject_provider_handle_t mph;
     mobject_provider_handle_create(io->cluster->mobject_clt, svr_addr, 1, &mph);

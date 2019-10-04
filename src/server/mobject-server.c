@@ -48,7 +48,7 @@ int mobject_provider_register(
         mobject_provider_t* provider)
 {
     mobject_provider_t srv_ctx;
-    int my_id;
+    int my_rank;
     int ret;
 
     /* check if a provider with the same multiplex id already exists */
@@ -74,10 +74,10 @@ int mobject_provider_register(
     ABT_mutex_create(&srv_ctx->stats_mutex);
 
     srv_ctx->gid = gid; 
-    my_id = ssg_get_group_self_id(srv_ctx->gid);
+    my_rank = ssg_get_group_self_rank(srv_ctx->gid);
 
     /* one proccess writes cluster connect info to file for clients to find later */
-    if (my_id == 0)
+    if (my_rank == 0)
     {
         ret = ssg_group_id_store(cluster_file, srv_ctx->gid);
         if (ret != 0)
@@ -293,24 +293,24 @@ DEFINE_MARGO_RPC_HANDLER(mobject_server_clean_ult)
 static hg_return_t mobject_server_stat_ult(hg_handle_t h)
 {
     hg_return_t ret;
-    int my_rank;
+    ssg_member_id_t my_id;
     char my_hostname[256] = {0};
 
     const struct hg_info* info = margo_get_info(h);
     margo_instance_id mid = margo_hg_handle_get_instance(h);
 
     struct mobject_server_context *srv_ctx = margo_registered_data(mid, info->id);
-    my_rank = ssg_get_group_self_id(srv_ctx->gid);
+    my_id = ssg_get_self_id(mid);
     gethostname(my_hostname, sizeof(my_hostname));
 
     ABT_mutex_lock(srv_ctx->stats_mutex);
     fprintf(stderr,
-        "Server %d (host: %s):\n" \
+        "Server %lu (host: %s):\n" \
         "\tSegments allocated: %u\n" \
         "\tTotal segment size: %lu bytes\n" \
         "\tTotal segment write time: %.4lf s\n" \
         "\tTotal segment write b/w: %.4lf MiB/s\n", \
-        my_rank, my_hostname, srv_ctx->segs,
+        my_id, my_hostname, srv_ctx->segs,
         srv_ctx->total_seg_size, srv_ctx->total_seg_wr_duration,
         (srv_ctx->total_seg_size / (1024.0 * 1024.0 ) / srv_ctx->total_seg_wr_duration));
     ABT_mutex_unlock(srv_ctx->stats_mutex);

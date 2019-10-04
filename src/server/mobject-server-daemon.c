@@ -113,7 +113,6 @@ static void parse_args(int argc, char **argv, mobject_server_options *opts)
 static void finalize_ssg_cb(void* data);
 static void finalize_bake_client_cb(void* data);
 static void finalize_sdskv_client_cb(void* data);
-static void finalized_ssg_group_cb(void* data);
 
 int main(int argc, char *argv[])
 {
@@ -202,8 +201,8 @@ int main(int argc, char *argv[])
 
     /* SSG group creation */
     ssg_group_id_t gid = ssg_group_create_mpi(MOBJECT_SERVER_GROUP_NAME, MPI_COMM_WORLD, NULL, NULL);
-    ASSERT(gid != SSG_GROUP_ID_NULL, "ssg_group_create_mpi() failed (ret = %s)","SSG_GROUP_ID_NULL");
-    margo_push_finalize_callback(mid, &finalized_ssg_group_cb, (void*)&gid);
+    ASSERT(gid != SSG_GROUP_ID_INVALID, "ssg_group_create_mpi() failed (ret = %s)","SSG_GROUP_ID_NULL");
+    margo_push_finalize_callback(mid, &finalize_ssg_cb, (void*)&gid);
 
     /* Mobject provider initialization */
     mobject_provider_t mobject_prov;
@@ -232,6 +231,7 @@ static void finalize_ssg_cb(void* data)
 {
     ssg_group_id_t* gid = (ssg_group_id_t*)data;
     ssg_group_destroy(*gid);
+    ssg_finalize();
 }
 
 static void finalize_bake_client_cb(void* data)
@@ -246,10 +246,4 @@ static void finalize_sdskv_client_cb(void* data)
     sdskv_client_data* clt_data = (sdskv_client_data*)data;
     sdskv_provider_handle_release(clt_data->provider_handle);
     sdskv_client_finalize(clt_data->client);
-}
-
-static void finalized_ssg_group_cb(void* data)
-{
-    ssg_group_id_t gid = *((ssg_group_id_t*)data);
-    ssg_group_destroy(gid);
 }

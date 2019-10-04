@@ -85,7 +85,6 @@ int mobject_store_connect(mobject_store_t cluster)
     if (!svr_addr_str)
     {
         fprintf(stderr, "Error: Unable to obtain cluster group server address\n");
-        ssg_group_id_free(cluster_handle->gid);
         free(cluster_handle);
         return -1;
     }
@@ -100,7 +99,6 @@ int mobject_store_connect(mobject_store_t cluster)
     {
         fprintf(stderr, "Error: Unable to initialize margo\n");
         free(svr_addr_str);
-        ssg_group_id_free(cluster_handle->gid);
         free(cluster_handle);
         return -1;
     }
@@ -114,20 +112,18 @@ int mobject_store_connect(mobject_store_t cluster)
         fprintf(stderr, "Error: Unable to initialize SSG\n");
         margo_finalize(cluster_handle->mid);
         free(svr_addr_str);
-        ssg_group_id_free(cluster_handle->gid);
         free(cluster_handle);
         return -1;
     }
 
-    /* attach to the cluster group */
-    ret = ssg_group_attach(cluster_handle->gid);
+    /* observe the cluster group */
+    ret = ssg_group_observe(cluster_handle->gid);
     if (ret != SSG_SUCCESS)
     {
-        fprintf(stderr, "Error: Unable to attach to the mobject cluster group\n");
+        fprintf(stderr, "Error: Unable to observe the mobject cluster group\n");
         ssg_finalize();
         margo_finalize(cluster_handle->mid);
         free(svr_addr_str);
-        ssg_group_id_free(cluster_handle->gid);
         free(cluster_handle);
         return -1;
     }
@@ -138,10 +134,10 @@ int mobject_store_connect(mobject_store_t cluster)
     if(gsize == 0)
     {
         fprintf(stderr, "Error: Unable to get SSG group size\n");
+        ssg_group_unobserve(cluster_handle->gid);
         ssg_finalize();
         margo_finalize(cluster_handle->mid);
         free(svr_addr_str);
-        ssg_group_id_free(cluster_handle->gid);
         free(cluster_handle);
         return -1;
     }
@@ -152,10 +148,10 @@ int mobject_store_connect(mobject_store_t cluster)
     if(!cluster_handle->ch_instance)
     {
         fprintf(stderr, "Error: Unable to initialize ch-placement instance\n");
+        ssg_group_unobserve(cluster_handle->gid);
         ssg_finalize();
         margo_finalize(cluster_handle->mid);
         free(svr_addr_str);
-        ssg_group_id_free(cluster_handle->gid);
         free(cluster_handle);
         return -1;
     }
@@ -165,6 +161,10 @@ int mobject_store_connect(mobject_store_t cluster)
     if(ret != 0)
     {
         fprintf(stderr, "Error: Unable to create a mobject client\n");
+        ssg_group_unobserve(cluster_handle->gid);
+        ssg_finalize();
+        margo_finalize(cluster_handle->mid);
+        free(svr_addr_str);
         free(cluster_handle);
         return -1;
     }
@@ -199,10 +199,9 @@ void mobject_store_shutdown(mobject_store_t cluster)
     }
 
     mobject_client_finalize(cluster_handle->mobject_clt);
-    ssg_group_detach(cluster_handle->gid);
+    ssg_group_unobserve(cluster_handle->gid);
     ssg_finalize();
     margo_finalize(cluster_handle->mid);
-    ssg_group_id_free(cluster_handle->gid);
     ch_placement_finalize(cluster_handle->ch_instance);
     free(cluster_handle);
 
@@ -334,13 +333,13 @@ int mobject_store_write_op_operate(mobject_store_write_op_t write_op,
 {
     mobject_provider_handle_t mph = MOBJECT_PROVIDER_HANDLE_NULL;
     uint64_t oid_hash = sdbm_hash(oid);
-    unsigned long server_idx;
-    ch_placement_find_closest(io->cluster->ch_instance, oid_hash, 1, &server_idx);
-    // XXX multiple providers may be in the same node (with distinct mplex ids)
-    hg_addr_t svr_addr = ssg_get_addr(io->cluster->gid, server_idx);
-
+    unsigned long server_rank;
+    ch_placement_find_closest(io->cluster->ch_instance, oid_hash, 1, &server_rank);
+    ssg_member_id_t svr_id = ssg_get_group_member_id_from_rank(io->cluster->gid, server_rank);
+    hg_addr_t svr_addr = ssg_get_group_member_addr(io->cluster->gid, svr_id);
 
     // TODO for now multiplex id is hard-coded as 1
+    // XXX multiple providers may be in the same node (with distinct mplex ids)
     int r = mobject_provider_handle_create(io->cluster->mobject_clt, svr_addr, 1, &mph);
     if(r != 0) return r;
 
@@ -412,10 +411,12 @@ int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
 {
     mobject_provider_handle_t mph = MOBJECT_PROVIDER_HANDLE_NULL;
     uint64_t oid_hash = sdbm_hash(oid);
-    unsigned long server_idx;
-    ch_placement_find_closest(ioctx->cluster->ch_instance, oid_hash, 1, &server_idx);
+    unsigned long server_rank;
+    ch_placement_find_closest(ioctx->cluster->ch_instance, oid_hash, 1, &server_rank);
+    ssg_member_id_t svr_id = ssg_get_group_member_id_from_rank(ioctx->cluster->gid, server_rank);
+    hg_addr_t svr_addr = ssg_get_group_member_addr(ioctx->cluster->gid, svr_id);
+
     // XXX multiple providers may be in the same node (with distinct mplex ids)
-    hg_addr_t svr_addr = ssg_get_addr(ioctx->cluster->gid, server_idx);
     // TODO for now multiplex id is hard-coded as 1
     int r = mobject_provider_handle_create(ioctx->cluster->mobject_clt, svr_addr, 1, &mph);
     if(r != 0) return r;
@@ -429,9 +430,11 @@ int mobject_store_read_op_operate(mobject_store_read_op_t read_op,
 static int mobject_store_shutdown_servers(struct mobject_store_handle *cluster_handle)
 {
     hg_addr_t svr_addr;
+    ssg_member_id_t svr_id;
 
     /* get the address of the first server */
-    svr_addr = ssg_get_addr(cluster_handle->gid, 0);
+    svr_id = ssg_get_group_member_id_from_rank(cluster_handle->gid, 0);
+    svr_addr = ssg_get_group_member_addr(cluster_handle->gid, svr_id);
     if (svr_addr == HG_ADDR_NULL)
     {
         fprintf(stderr, "Error: Unable to obtain address for mobject server\n");
