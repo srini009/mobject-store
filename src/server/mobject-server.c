@@ -79,7 +79,7 @@ int mobject_provider_register(
     /* one proccess writes cluster connect info to file for clients to find later */
     if (my_rank == 0)
     {
-        ret = ssg_group_id_store(cluster_file, srv_ctx->gid);
+        ret = ssg_group_id_store(cluster_file, srv_ctx->gid, SSG_ALL_MEMBERS);
         if (ret != 0)
         {
             fprintf(stderr, "Error: unable to store mobject cluster info to file %s\n",

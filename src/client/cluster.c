@@ -29,14 +29,27 @@ int mobject_store_create(mobject_store_t *cluster, const char * const id)
 {
     struct mobject_store_handle *cluster_handle;
     char *cluster_file;
+    int num_group_addrs = SSG_ALL_MEMBERS;
     int ret;
 
     (void)id; /* XXX: id unused in mobject */
 
+    /* initialize ssg */
+    /* XXX: we need to think about how to do this once per-client... clients could connect to mult. clusters */
+    ret = ssg_init();
+    if (ret != SSG_SUCCESS)
+    {
+        fprintf(stderr, "Error: Unable to initialize SSG\n");
+        return -1;
+    }
+
     /* allocate a new cluster handle and set some fields */
     cluster_handle = (struct mobject_store_handle*)calloc(1,sizeof(*cluster_handle));
     if (!cluster_handle)
+    {
+        ssg_finalize();
         return -1;
+    }
 
     /* use env variable to determine how to connect to the cluster */
     /* NOTE: this is the _only_ method for specifying a cluster for now... */
@@ -45,15 +58,17 @@ int mobject_store_create(mobject_store_t *cluster, const char * const id)
     {
         fprintf(stderr, "Error: %s env variable must point to mobject cluster file\n",
                 MOBJECT_CLUSTER_FILE_ENV);
+        ssg_finalize();
         free(cluster_handle);
         return -1;
     }
 
-    ret = ssg_group_id_load(cluster_file, &cluster_handle->gid);
+    ret = ssg_group_id_load(cluster_file, &num_group_addrs, &cluster_handle->gid);
     if (ret != 0)
     {
         fprintf(stderr, "Error: Unable to load mobject cluster info from file %s\n",
                 cluster_file);
+        ssg_finalize();
         free(cluster_handle);
         return -1;
     }
@@ -81,10 +96,11 @@ int mobject_store_connect(mobject_store_t cluster)
     /* figure out protocol to connect with using address information 
      * associated with the SSG group ID
      */
-    svr_addr_str = ssg_group_id_get_addr_str(cluster_handle->gid);
+    svr_addr_str = ssg_group_id_get_addr_str(cluster_handle->gid, 0);
     if (!svr_addr_str)
     {
         fprintf(stderr, "Error: Unable to obtain cluster group server address\n");
+        ssg_finalize();
         free(cluster_handle);
         return -1;
     }
@@ -98,31 +114,20 @@ int mobject_store_connect(mobject_store_t cluster)
     if (mid == MARGO_INSTANCE_NULL)
     {
         fprintf(stderr, "Error: Unable to initialize margo\n");
+        ssg_finalize();
         free(svr_addr_str);
         free(cluster_handle);
         return -1;
     }
     cluster_handle->mid = mid;
 
-    /* initialize ssg */
-    /* XXX: we need to think about how to do this once per-client... clients could connect to mult. clusters */
-    ret = ssg_init(cluster_handle->mid);
-    if (ret != SSG_SUCCESS)
-    {
-        fprintf(stderr, "Error: Unable to initialize SSG\n");
-        margo_finalize(cluster_handle->mid);
-        free(svr_addr_str);
-        free(cluster_handle);
-        return -1;
-    }
-
     /* observe the cluster group */
-    ret = ssg_group_observe(cluster_handle->gid);
+    ret = ssg_group_observe(mid, cluster_handle->gid);
     if (ret != SSG_SUCCESS)
     {
         fprintf(stderr, "Error: Unable to observe the mobject cluster group\n");
-        ssg_finalize();
         margo_finalize(cluster_handle->mid);
+        ssg_finalize();
         free(svr_addr_str);
         free(cluster_handle);
         return -1;
@@ -135,8 +140,8 @@ int mobject_store_connect(mobject_store_t cluster)
     {
         fprintf(stderr, "Error: Unable to get SSG group size\n");
         ssg_group_unobserve(cluster_handle->gid);
-        ssg_finalize();
         margo_finalize(cluster_handle->mid);
+        ssg_finalize();
         free(svr_addr_str);
         free(cluster_handle);
         return -1;
@@ -149,8 +154,8 @@ int mobject_store_connect(mobject_store_t cluster)
     {
         fprintf(stderr, "Error: Unable to initialize ch-placement instance\n");
         ssg_group_unobserve(cluster_handle->gid);
-        ssg_finalize();
         margo_finalize(cluster_handle->mid);
+        ssg_finalize();
         free(svr_addr_str);
         free(cluster_handle);
         return -1;
@@ -162,8 +167,8 @@ int mobject_store_connect(mobject_store_t cluster)
     {
         fprintf(stderr, "Error: Unable to create a mobject client\n");
         ssg_group_unobserve(cluster_handle->gid);
-        ssg_finalize();
         margo_finalize(cluster_handle->mid);
+        ssg_finalize();
         free(svr_addr_str);
         free(cluster_handle);
         return -1;
@@ -200,8 +205,8 @@ void mobject_store_shutdown(mobject_store_t cluster)
 
     mobject_client_finalize(cluster_handle->mobject_clt);
     ssg_group_unobserve(cluster_handle->gid);
-    ssg_finalize();
     margo_finalize(cluster_handle->mid);
+    ssg_finalize();
     ch_placement_finalize(cluster_handle->ch_instance);
     free(cluster_handle);
 

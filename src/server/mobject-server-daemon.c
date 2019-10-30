@@ -125,6 +125,7 @@ int main(int argc, char *argv[])
         .disable_pipelining = 0, /* use pipelining by default */
     }; 
     margo_instance_id mid;
+    ssg_group_config_t group_config = SSG_GROUP_CONFIG_INITIALIZER;
     int ret;
 
     parse_args(argc, argv, &server_opts);
@@ -145,7 +146,7 @@ int main(int argc, char *argv[])
     margo_enable_remote_shutdown(mid);
 
     /* SSG initialization */
-    ret = ssg_init(mid);
+    ret = ssg_init();
     ASSERT(ret == 0, "ssg_init() failed (ret = %d)\n", ret);
 
     hg_addr_t self_addr;
@@ -200,7 +201,8 @@ int main(int argc, char *argv[])
     margo_push_finalize_callback(mid, &finalize_sdskv_client_cb, (void*)&sdskv_clt_data);
 
     /* SSG group creation */
-    ssg_group_id_t gid = ssg_group_create_mpi(MOBJECT_SERVER_GROUP_NAME, MPI_COMM_WORLD, NULL, NULL);
+    group_config.swim_period_length_ms = 10000; /* 10-second period length ... */
+    ssg_group_id_t gid = ssg_group_create_mpi(mid, MOBJECT_SERVER_GROUP_NAME, MPI_COMM_WORLD, &group_config, NULL, NULL);
     ASSERT(gid != SSG_GROUP_ID_INVALID, "ssg_group_create_mpi() failed (ret = %s)","SSG_GROUP_ID_NULL");
     margo_push_finalize_callback(mid, &finalize_ssg_cb, (void*)&gid);
 

@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
     char *server_op;
     char *server_addr_str;
     ssg_group_id_t server_gid;
+    int num_addrs;
     margo_instance_id mid;
     char proto[24] = {0};
     int group_size;
@@ -67,6 +68,32 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    /* SSG initialization */
+    /* NOTE: initialized before Margo so we can pull relevant SSG info out of GID file */
+    ret = ssg_init();
+    if (ret != SSG_SUCCESS)
+    {
+        fprintf(stderr, "Error: Unable to initialize SSG\n");
+        return(-1);
+    }
+
+    num_addrs = 1;
+    ret = ssg_group_id_load(server_gid_file, &num_addrs, &server_gid);
+    if (ret != 0 || num_addrs < 1)
+    {
+        fprintf(stderr, "Error: Unable to load mobject server group ID\n");
+        ssg_finalize();
+        return -1;
+    }
+
+    server_addr_str = ssg_group_id_get_addr_str(server_gid, 0);
+    if (!server_addr_str)
+    {
+        fprintf(stderr, "Error: Unable to get mobject server group address string\n");
+        ssg_finalize();
+        return -1;
+    }
+
     /* we only need to get the proto portion of the address to initialize margo */
     for(i=0; i<24 && server_addr_str[i] != '\0' && server_addr_str[i] != ':'; i++)
         proto[i] = server_addr_str[i];
@@ -75,6 +102,8 @@ int main(int argc, char *argv[])
     if (mid == MARGO_INSTANCE_NULL)
     {
         fprintf(stderr, "Error: Unable to initialize margo\n");
+        ssg_finalize();
+        free(server_addr_str);
         return(-1);
     }
 
@@ -84,40 +113,13 @@ int main(int argc, char *argv[])
     mobject_server_stat_rpc_id = MARGO_REGISTER(
         mid, "mobject_server_stat", void, void, NULL);
 
-    /* SSG initialization */
-    ret = ssg_init(mid);
-    if (ret != SSG_SUCCESS)
-    {
-        fprintf(stderr, "Error: Unable to initialize SSG\n");
-        margo_finalize(mid);
-        return(-1);
-    }
-
-    ret = ssg_group_id_load(server_gid_file, &server_gid);
-    if (ret != 0)
-    {
-        fprintf(stderr, "Error: Unable to load mobject server group ID\n");
-        ssg_finalize();
-        margo_finalize(mid);
-        return -1;
-    }
-
-    server_addr_str = ssg_group_id_get_addr_str(server_gid);
-    if (!server_addr_str)
-    {
-        fprintf(stderr, "Error: Unable to get mobject server group address string\n");
-        ssg_finalize();
-        margo_finalize(mid);
-        return -1;
-    }
-
     /* observe server group to get all server addresses */
-    ret = ssg_group_observe(server_gid);
+    ret = ssg_group_observe(mid, server_gid);
     if (ret != SSG_SUCCESS)
     {
         fprintf(stderr, "Error: Unable to observe SSG server group\n");
-        ssg_finalize();
         margo_finalize(mid);
+        ssg_finalize();
         free(server_addr_str);
         return(-1);
 
@@ -128,8 +130,8 @@ int main(int argc, char *argv[])
     {
         fprintf(stderr, "Error: Unable to determine SSG server group size\n");
         ssg_group_unobserve(server_gid);
-        ssg_finalize();
         margo_finalize(mid);
+        ssg_finalize();
         free(server_addr_str);
         return(-1);
 
@@ -143,8 +145,8 @@ int main(int argc, char *argv[])
         {
             fprintf(stderr, "Error: NULL address given for group member %d\n", i);
             ssg_group_unobserve(server_gid);
-            ssg_finalize();
             margo_finalize(mid);
+            ssg_finalize();
             free(server_addr_str);
             return(-1);
         }
@@ -153,8 +155,8 @@ int main(int argc, char *argv[])
     }
 
     ssg_group_unobserve(server_gid);
-    ssg_finalize();
     margo_finalize(mid);
+    ssg_finalize();
     free(server_addr_str);
 
     return 0;
