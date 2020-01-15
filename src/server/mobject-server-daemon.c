@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
     group_config.swim_period_length_ms = 10000; /* 10-second period length ... */
     ssg_group_id_t gid = ssg_group_create_mpi(mid, MOBJECT_SERVER_GROUP_NAME, MPI_COMM_WORLD, &group_config, NULL, NULL);
     ASSERT(gid != SSG_GROUP_ID_INVALID, "ssg_group_create_mpi() failed (ret = %s)","SSG_GROUP_ID_NULL");
-    margo_push_finalize_callback(mid, &finalize_ssg_cb, (void*)&gid);
+    margo_push_prefinalize_callback(mid, &finalize_ssg_cb, (void*)&gid);
 
     /* Mobject provider initialization */
     mobject_provider_t mobject_prov;
