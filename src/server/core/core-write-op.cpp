@@ -151,11 +151,11 @@ void write_op_exec_write(void* u, buffer_u buf, size_t len, uint64_t offset)
             ERROR bake_perror("bake_create",ret);
             return;
         }
-        ret = bake_proxy_write(bake_ph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
+        ret = bake_proxy_write(bake_ph, bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
         if(ret != 0) {
             ERROR bake_perror( "bake_proxy_write", ret);
         }
-        ret = bake_persist(bake_ph, rid, 0, len);
+        ret = bake_persist(bake_ph, bti, rid, 0, len);
         if(ret != 0) {
             ERROR bake_perror("bake_persist", ret);
         }
@@ -235,13 +235,13 @@ void write_op_exec_writesame(void* u, buffer_u buf, size_t data_len, size_t writ
             LEAVING;
             return;
         }
-        ret = bake_proxy_write(bph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, data_len);
+        ret = bake_proxy_write(bph, bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, data_len);
         if(ret != 0) {
             ERROR bake_perror("bake_proxy_write", ret);
             LEAVING;
             return;
         }
-        ret = bake_persist(bph, rid, 0, data_len);
+        ret = bake_persist(bph, bti, rid, 0, data_len);
         if(ret != 0) {
             ERROR bake_perror("bake_persist", ret);
             LEAVING;
@@ -315,9 +315,9 @@ void write_op_exec_append(void* u, buffer_u buf, size_t len)
 
         ret = bake_create(bph, bti, len, &rid);
         if (ret != 0) bake_perror("bake_create", ret);
-        ret = bake_proxy_write(bph, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
+        ret = bake_proxy_write(bph, bti, rid, 0, remote_bulk, buf.as_offset, remote_addr_str, len);
         if (ret != 0) bake_perror("bake_proxy_write", ret);
-        ret = bake_persist(bph, rid, 0, len);
+        ret = bake_persist(bph, bti, rid, 0, len);
         if (ret != 0) bake_perror("bake_persist", ret);
 
         insert_region_log_entry(vargs->srv_ctx, oid, offset, len, &rid, ts);
@@ -354,6 +354,7 @@ void write_op_exec_remove(void* u)
     const char *object_name = vargs->object_name;
     oid_t oid = vargs->oid;
     bake_provider_handle_t bake_ph = vargs->srv_ctx->bake_ph;
+    bake_target_id_t bti = vargs->srv_ctx->bake_tid;
     sdskv_provider_handle_t sdskv_ph = vargs->srv_ctx->sdskv_ph;
     sdskv_database_id_t name_db_id = vargs->srv_ctx->name_db_id;
     sdskv_database_id_t oid_db_id = vargs->srv_ctx->oid_db_id;
@@ -430,7 +431,7 @@ void write_op_exec_remove(void* u)
             }
 
             if(seg.type == seg_type_t::BAKE_REGION) {
-                ret = bake_remove(bake_ph, region);
+                ret = bake_remove(bake_ph, bti, region);
                 if (ret != BAKE_SUCCESS) {
                     /* XXX should save the error and keep removing */
                     ERROR bake_perror("write_op_exec_remove: "

@@ -207,7 +207,7 @@ void read_op_exec_read(void* u, uint64_t offset, size_t len, buffer_u buf, size_
                         uint64_t region_offset = r.start - seg.start_index;
                         uint64_t remote_offset = r.start - offset;
                         uint64_t bytes_read = 0;
-                        ret = bake_proxy_read(bph, region, region_offset, remote_bulk,
+                        ret = bake_proxy_read(bph, bti, region, region_offset, remote_bulk,
                                 remote_offset, remote_addr_str, segment_size, &bytes_read);
                         if(ret != 0) {
                             *prval = -1;
