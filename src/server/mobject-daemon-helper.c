@@ -19,7 +19,7 @@ static int seg_map_compare(const void*, size_t, const void*, size_t);
 static int omap_map_compare(const void*, size_t, const void*, size_t);
 
 int mobject_sdskv_provider_setup(
-    sdskv_provider_t sdskv_prov, const char *sdskv_path, sdskv_database_id_t sdskv_backend)
+    sdskv_provider_t sdskv_prov, const char *sdskv_path, sdskv_db_type_t sdskv_backend)
 {
     int ret;
     /* SDSKV provider initialization */

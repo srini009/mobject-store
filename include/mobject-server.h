@@ -60,7 +60,7 @@ int mobject_provider_register(
 int mobject_sdskv_provider_setup(
     sdskv_provider_t sdskv_prov,
     const char *sdskv_path,
-    sdskv_database_id_t sdskv_backend);
+    sdskv_db_type_t sdskv_backend);
 
 #ifdef __cplusplus
 }
