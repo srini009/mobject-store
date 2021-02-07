@@ -176,6 +176,9 @@ int main(int argc, char *argv[])
     ret = bake_provider_register(mid, bake_mplex_id, BAKE_ABT_POOL_DEFAULT, &bake_prov);
     if (ret != 0) bake_perror("bake_provider_register", ret);
     ASSERT(ret == 0, "bake_provider_register() failed (ret = %d)\n", ret);
+    ret = bake_provider_set_symbiomon(bake_prov, metric_provider);
+    if(ret != 0)
+        fprintf(stderr, "Error: bake_provider_set_symbiomon() failed. Contuinuing on.\n");
     ret = bake_provider_add_storage_target(bake_prov, server_opts.pool_file, &bake_tid);
     if (ret != 0) bake_perror("bake_provider_add_storage_target", ret);
     ASSERT(ret == 0, "bake_provider_add_storage_target() failed to add target %s (ret = %d)\n",
@@ -198,6 +201,10 @@ int main(int argc, char *argv[])
     sdskv_provider_t sdskv_prov;
     ret = sdskv_provider_register(mid, sdskv_mplex_id, SDSKV_ABT_POOL_DEFAULT, &sdskv_prov);
     ASSERT(ret == 0, "sdskv_provider_register() failed (ret = %d)\n", ret);
+
+    ret = sdskv_provider_set_symbiomon(sdskv_prov, metric_provider);
+    if(ret != 0)
+        fprintf(stderr, "Error: sdskv_provider_set_symbiomon() failed. Contuinuing on.\n");
 
     ret = mobject_sdskv_provider_setup(sdskv_prov, server_opts.kv_path, server_opts.kv_backend);
 
