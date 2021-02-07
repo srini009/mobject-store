@@ -195,6 +195,7 @@ int main(int argc, char *argv[])
     if (ret != 0) bake_perror("bake_provider_handle_create", ret);
     ASSERT(ret == 0, "bake_provider_handle_create() failed (ret = %d)\n", ret);
     margo_push_finalize_callback(mid, &finalize_bake_client_cb, (void*)&bake_clt_data);
+    margo_push_finalize_callback(mid, &bake_provider_destroy, (void*)&bake_prov);
 
     /* SDSKV provider initialization */
     uint8_t sdskv_mplex_id = 2;
@@ -215,6 +216,7 @@ int main(int argc, char *argv[])
     ret = sdskv_provider_handle_create(sdskv_clt_data.client, self_addr, sdskv_mplex_id, &(sdskv_clt_data.provider_handle));
     ASSERT(ret == 0, "sdskv_provider_handle_create() failed (ret = %d)\n", ret);
     margo_push_finalize_callback(mid, &finalize_sdskv_client_cb, (void*)&sdskv_clt_data);
+    margo_push_finalize_callback(mid, &sdskv_provider_destroy, (void*)&sdskv_prov);
 
     /* SSG group creation */
     group_config.swim_period_length_ms = 10000; /* 10-second period length ... */
