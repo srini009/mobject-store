@@ -237,8 +237,8 @@ int main(int argc, char *argv[])
     }
 
     margo_addr_free(mid, self_addr);
-    //margo_push_finalize_callback(mid, &sdskv_provider_destroy, (void*)&sdskv_prov);
-    //margo_push_finalize_callback(mid, &bake_provider_destroy, (void*)&bake_prov);
+    margo_push_prefinalize_callback(mid, &finalize_sdskv, (void*)&sdskv_prov);
+    margo_push_prefinalize_callback(mid, &finalize_bake, (void*)&bake_prov);
 
 
 
@@ -248,6 +248,20 @@ int main(int argc, char *argv[])
     MPI_Finalize();
 
     return 0;
+}
+
+static void finalize_sdskv(void *data)
+{
+
+  sdskv_provider_t * p = (sdskv_provider_t *)data;
+  sdskv_provider_finalize(*p);
+}
+
+static void finalize_bake(void *data)
+{
+
+  bake_provider_t * p = (bake_provider_t *)data;
+  bake_provider_finalize(*p);
 }
 
 static void finalize_ssg_cb(void* data)
