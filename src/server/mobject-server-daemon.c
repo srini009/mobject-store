@@ -237,8 +237,8 @@ int main(int argc, char *argv[])
     }
 
     margo_addr_free(mid, self_addr);
-    margo_push_finalize_callback(mid, &sdskv_provider_destroy, (void*)&sdskv_prov);
-    margo_push_finalize_callback(mid, &bake_provider_destroy, (void*)&bake_prov);
+    //margo_push_finalize_callback(mid, &sdskv_provider_destroy, (void*)&sdskv_prov);
+    //margo_push_finalize_callback(mid, &bake_provider_destroy, (void*)&bake_prov);
 
 
 
