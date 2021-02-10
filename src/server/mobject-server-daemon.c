@@ -112,6 +112,8 @@ static void parse_args(int argc, char **argv, mobject_server_options *opts)
 }
 
 static void finalize_ssg_cb(void* data);
+static void finalize_bake(void* data);
+static void finalize_sdskv(void* data);
 static void finalize_bake_client_cb(void* data);
 static void finalize_sdskv_client_cb(void* data);
 
