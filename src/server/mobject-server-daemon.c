@@ -256,14 +256,14 @@ static void finalize_sdskv(void *data)
 {
 
   sdskv_provider_t * p = (sdskv_provider_t *)data;
-  sdskv_provider_finalize(*p);
+  sdskv_provider_destroy(*p);
 }
 
 static void finalize_bake(void *data)
 {
 
   bake_provider_t * p = (bake_provider_t *)data;
-  bake_provider_finalize(*p);
+  bake_provider_destroy(*p);
 }
 
 static void finalize_ssg_cb(void* data)
